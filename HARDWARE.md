@@ -24,10 +24,17 @@ alignment** below for when each piece needs to actually be ready, tied to
 
 ## Remote Access Setup
 
-- **Host server**: runs Ollama + API wrapper, exposed on local network (or
-  Ngrok for external access)
+- **Host server**: runs Ollama, listening on the local network
+  (`localhost:11434` by default)
 - **Client devices**: laptop/phone access via REST API or WebSocket
-  connection
+- **Off-LAN access**: **SSH port-forwarding**, not Ngrok — Ngrok's free
+  tier now requires an account signup, which this project's
+  no-account constraint rules out. SSH is already on the machine, costs
+  nothing, and needs no third party:
+  ```bash
+  ssh -L 11434:localhost:11434 user@server
+  # Ollama is now reachable at localhost:11434 on the client
+  ```
 - **Network**: Ethernet to server preferred (WiFi works but adds latency
   to token streaming)
 
@@ -38,7 +45,7 @@ alignment** below for when each piece needs to actually be ready, tied to
 - **Phase 2**: Expose Ollama API on the home network (default
   `localhost:11434`)
 - **Phase 3**: Connect from laptop/phone via HTTP requests to that API
-  endpoint
+  endpoint — on-LAN directly, off-LAN via the SSH port-forward above
 
 **Stop condition**: can spawn 2 concurrent agent instances + access from a
 remote device with <500ms latency.

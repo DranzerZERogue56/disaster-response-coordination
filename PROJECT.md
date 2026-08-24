@@ -72,26 +72,46 @@ incidents, and where the system is actually tested.
 
 ## Tech stack (locked)
 
-- **Simulation engine**: **Mesa** (Python agent-based modeling framework).
-  Chosen over a hand-rolled tick loop or bare SimPy for its built-in
-  many-agent scheduling and visualization conventions — trades a little
-  setup simplicity for ABM structure that fits "many autonomous agents on
-  a shared environment" directly.
-- **Map**: real road network via **OSMnx** (pull an actual city's road
-  graph) for realism/demo value. Fallback to a synthetic grid graph if
-  OSMnx setup isn't working by the end of week 6 (see Risks).
-- **LLM backend**: **Ollama** (local, OpenAI-compatible HTTP endpoint) as
-  the default runtime, since there's no LLM API budget yet (Claude
-  Pro/Max plan only, no API key). All LLM calls go through **one
-  abstraction interface** from week 2 onward, so switching to the Claude
-  API later (or any other provider) is a config change, not a rewrite of
-  negotiation/eval logic.
+Everything below is free, open-source, and usable without creating any
+account or API key — a hard constraint for this project (the only money
+in scope is the optional local hardware in `HARDWARE.md`).
+
+- **Simulation engine**: **Mesa 3.x** (Python agent-based modeling
+  framework). Chosen over a hand-rolled tick loop or bare SimPy for its
+  `AgentSet` API (filtering/grouping/activating heterogeneous agent
+  populations), its scheduling model, and its `discrete_space` module —
+  structure that fits "many autonomous agents on a shared environment"
+  directly. Note: Mesa 3 moved visualization out to a separate
+  Solara-based system (`SolaraViz`, still experimental) and no longer
+  installs all dependencies by default — neither matters here, because
+  the dashboard is React + Leaflet, not Mesa's own viz.
+- **Map**: real road network via **OSMnx** (pulls an actual city's road
+  graph from OpenStreetMap — no API key, no account). A throwaway
+  **spike in weeks 5–6** answers "does the city graph load and route?"
+  and settles the go/no-go; full integration lands in week 13. Fallback
+  is a synthetic grid graph if the spike fails (see Risks).
+- **LLM backend**: **Ollama** (local, OpenAI-compatible HTTP endpoint),
+  free and account-free. All LLM calls go through **one abstraction
+  interface** from week 2 onward — good architecture regardless, and it
+  keeps a provider swap cheap — but **hosted/paid API backends
+  (Anthropic, OpenAI, etc.) are explicitly out of scope for this
+  project**: they cost money and require accounts, which this project's
+  constraints forbid. If local models underperform, the response is
+  smaller scenarios or a stronger local model, not a paid API.
 - **Agent orchestration**: hand-rolled contract-net protocol (see above),
   not LangGraph/AutoGen.
 - **Dashboard**: **React + Leaflet**, live map showing agents, incidents,
-  and resource movement — strong for the live final demo.
-- **Baselines** (see Evaluation): plain Python; MILP baseline via PuLP or
-  OR-Tools.
+  and resource movement — strong for the live final demo. Basemap tiles
+  come from OpenStreetMap (no API key), but OSM's tile usage policy
+  forbids offline/bulk caching, so the dashboard also ships a
+  **tiles-free rendering mode** that draws the road graph directly as
+  lines/markers on a blank canvas. That mode is the one used for the
+  final demo: it removes the podium-network dependency entirely.
+- **Baselines** (see Evaluation): plain Python; MILP baseline via
+  **PuLP**, which bundles the CBC solver and is a thin, easily-learned
+  wrapper — deliberately chosen over OR-Tools, which is far more machine
+  than a small ceiling-comparison baseline needs (and this baseline is
+  first on the cut list anyway).
 
 ## Scope & scale
 
@@ -108,8 +128,8 @@ incidents, and where the system is actually tested.
 Baselines to implement:
 - Greedy nearest-unit assignment
 - Classical contract-net (no LLM, pure utility bidding)
-- Small MILP/optimal solver (PuLP or OR-Tools) on reduced scenarios, as a
-  ceiling comparison
+- Small MILP/optimal solver (**PuLP**, bundled CBC) on reduced scenarios,
+  as a ceiling comparison
 
 Metrics: response time, % incidents served within SLA, resource
 utilization, recovery time post-disruption, and **fairness across zones**
@@ -130,11 +150,11 @@ comparative study, not a large-n statistical claim — realistic for a solo
 
 ## Reproducibility
 
-A scripted setup (install deps, pull a specified small Ollama model, or
-accept an API key via env var to switch backend) so a grader can plausibly
-run this on a clean machine, per the Milestone 13 documentation
-requirement. LLM-dependent tests are mockable/stubbed so CI doesn't
-require live inference.
+A scripted setup (install deps, pull a specified small Ollama model) so a
+grader can plausibly run this on a clean machine, per the Milestone 13
+documentation requirement — and with no account signup or API key needed
+anywhere in that path. LLM-dependent tests are mockable/stubbed so CI
+doesn't require live inference.
 
 ## Testing
 
@@ -169,7 +189,8 @@ behind schedule, cut in this order:
 
 1. Drop the MILP baseline (keep greedy + classical contract-net)
 2. Drop property-based/fuzz tests (keep unit + scenario-replay)
-3. Fall back from real OSMnx map to a synthetic grid graph
+3. Fall back from real OSMnx map to a synthetic grid graph — decided by
+   the weeks 5–6 spike, not left to week 13
 4. Reduce scenario scale from medium to small (~10–20 incidents)
 
 ## Rough scope (one semester, aligned to CALENDAR.md)
