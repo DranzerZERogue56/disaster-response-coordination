@@ -59,7 +59,7 @@ them:
 
 | Week | Dates | What's being built | Hardware needed by then |
 |---|---|---|---|
-| 2–3 | Aug 31–Sep 13 | Early throwaway negotiation prototype (validates NL bidding feasibility per `RISKS.md` #2) | None required — prototype on existing laptop/dev machine with any small local model, just to sanity-check the approach before hardware exists |
+| 2–3 | Aug 31–Sep 13 | ~~Early throwaway negotiation prototype~~ — **deferred to week 9** (decision 2026-08-24) | None. The dev laptop (i7-10610U, no GPU, ~3–6 tok/s) was judged not worth prototyping on, so NL-bidding validation now waits for Phase 1. See `RISKS.md` #2 for the accepted consequence: the SDD gets written before the premise is validated. |
 | 9 | Oct 19–25 | Mesa scenario engine + CI skeleton (Walking Skeleton) | **Phase 1 complete**: server built, Ubuntu installed, Ollama running with 2–3 test models — so the walking skeleton can make a real (if trivial) call to the local LLM |
 | 10 | Oct 26–Nov 1 | Resource agents + contract-net negotiation, real LLM bidding | **Phase 2 + stop condition met**: API exposed on network, 2 concurrent agent instances working with <500ms latency — this is the week negotiation actually needs multiple agents calling the LLM at once |
 | 11 | Nov 2–8 | Incident-command LLM policy layer + disruption injection | Concurrency load increases (command agent + all resource agents now querying Ollama) — confirm the server holds up under this before locking the SDD assumptions further |
