@@ -10,7 +10,8 @@ auction/optimization baselines.
 
 Full docs: [`PROJECT.md`](PROJECT.md) (architecture, tech stack, evaluation
 plan) · [`RISKS.md`](RISKS.md) (draft risk register) ·
-[`CALENDAR.md`](CALENDAR.md) (raw weekly schedule)
+[`HARDWARE.md`](HARDWARE.md) (local GPU server build + when each phase is
+needed) · [`CALENDAR.md`](CALENDAR.md) (raw weekly schedule)
 
 **Current status:** concept locked, no code yet. Halfway audit lands
 Week 8 (Oct 18) at 120/240 hours.
