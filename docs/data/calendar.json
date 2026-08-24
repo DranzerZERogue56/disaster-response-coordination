@@ -1,0 +1,22 @@
+{
+  "weeks": [
+    { "week": 1, "start": "2026-08-24", "end": "2026-08-30", "hat": "Project manager · inception", "milestone": "Milestone 1 — Project Charter & Engineering System", "due": "2026-08-30T23:59:00", "cumulativeHours": 15, "notes": "" },
+    { "week": 2, "start": "2026-08-31", "end": "2026-09-06", "hat": "Product owner · inception", "milestone": "Milestone 2 — Idea Portfolio & Scoping Decision", "due": "2026-09-06T23:59:00", "cumulativeHours": 30, "notes": "" },
+    { "week": 3, "start": "2026-09-07", "end": "2026-09-13", "hat": "Business analyst · requirements", "milestone": "Milestone 3 — Software Requirements Specification v1", "due": "2026-09-13T23:59:00", "cumulativeHours": 45, "notes": "Labor Day Mon Sep 7" },
+    { "week": 4, "start": "2026-09-14", "end": "2026-09-20", "hat": "Business analyst · requirements", "milestone": "Milestone 4 — Non-Functional Requirements, Constraints & Definition of Done", "due": "2026-09-20T23:59:00", "cumulativeHours": 60, "notes": "" },
+    { "week": 5, "start": "2026-09-21", "end": "2026-09-27", "hat": "Architect · design", "milestone": "Milestone 5 — Technology Evaluation & Architecture Decision Records", "due": "2026-09-27T23:59:00", "cumulativeHours": 75, "notes": "" },
+    { "week": 6, "start": "2026-09-28", "end": "2026-10-04", "hat": "Architect · design", "milestone": "Milestone 6 — Technical Specification (System Design Document)", "due": "2026-10-04T23:59:00", "cumulativeHours": 90, "notes": "" },
+    { "week": 7, "start": "2026-10-05", "end": "2026-10-11", "hat": "Project manager · planning", "milestone": "Milestone 7 — Work Breakdown, Schedule & Risk Register", "due": "2026-10-11T23:59:00", "cumulativeHours": 105, "notes": "Seventh Friday Break Fri Oct 9" },
+    { "week": 8, "start": "2026-10-12", "end": "2026-10-18", "hat": "Reviewer · verification of the design", "milestone": "Design Review Checkpoint — Weeks 1–8 (halfway audit)", "due": "2026-10-18T23:59:00", "cumulativeHours": 120, "notes": "Halfway — 120/240 hrs" },
+    { "week": 9, "start": "2026-10-19", "end": "2026-10-25", "hat": "Developer / release engineer · construction", "milestone": "Milestone 9 — Walking Skeleton & Continuous Integration", "due": "2026-10-25T23:59:00", "cumulativeHours": 135, "notes": "" },
+    { "week": 10, "start": "2026-10-26", "end": "2026-11-01", "hat": "Developer · construction", "milestone": "Milestone 10 — Core Increment & Demo", "due": "2026-11-01T23:59:00", "cumulativeHours": 150, "notes": "" },
+    { "week": 11, "start": "2026-11-02", "end": "2026-11-08", "hat": "Tester · verification", "milestone": "Milestone 11 — Test Plan, Test Suite & Defect Log", "due": "2026-11-08T23:59:00", "cumulativeHours": 165, "notes": "" },
+    { "week": 12, "start": "2026-11-09", "end": "2026-11-15", "hat": "Developer / change manager · integration", "milestone": "Milestone 12 — Integrated Release Candidate & Change Log", "due": "2026-11-15T23:59:00", "cumulativeHours": 180, "notes": "" },
+    { "week": 13, "start": "2026-11-16", "end": "2026-11-22", "hat": "Technical writer · documentation", "milestone": "Milestone 13 — Documentation Set & the Clean-Machine Test", "due": "2026-11-22T23:59:00", "cumulativeHours": 195, "notes": "" },
+    { "week": 14, "start": "2026-11-23", "end": "2026-11-29", "hat": "Release engineer · deployment", "milestone": "Milestone 14 — Deployable Release v1.0 & Handoff Package", "due": "2026-11-29T23:59:00", "cumulativeHours": 210, "notes": "Thanksgiving Wed 25 – Fri 27" },
+    { "week": 15, "start": "2026-11-30", "end": "2026-12-06", "hat": "Presenter · closing", "milestone": "Milestone 15 — Presentation Deck, Demo Script & Rehearsal", "due": "2026-12-06T23:59:00", "cumulativeHours": 225, "notes": "" },
+    { "week": 16, "start": "2026-12-07", "end": "2026-12-13", "hat": "Auditor · delivery", "milestone": "Final Submission (Thu Dec 10) & Capstone Presentation (Fri Dec 11)", "due": "2026-12-13T23:59:00", "cumulativeHours": 240, "notes": "Finals Week Dec 7–11" }
+  ],
+  "weeklyHourTarget": 15,
+  "totalHourTarget": 240
+}
