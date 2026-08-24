@@ -1,9 +1,9 @@
 # Adaptive Multi-Agent Disaster Response Coordinator
 
 Senior CS capstone (solo, one semester, 240 hours). A simulated large-scale
-disaster unfolds over a real road network; resource agents (Medical, Fire,
-Shelter/Logistics, Security) negotiate allocation via natural-language
-contract-net bidding, under an LLM-reasoned incident-command policy layer.
+disaster unfolds over a real road network; resource agents 
+(Medical, Fire,Shelter/Logistics, Security) 
+negotiate allocation via natural-language contract-net bidding, under an LLM-reasoned incident-command policy layer.
 Core evaluated capability: **replanning after disruptions** (road closure,
 unit failure, incident surge) — compared against classical
 auction/optimization baselines.
