@@ -3,6 +3,7 @@
 | Week | Dates | Hat / Phase | Due | Hours | Calendar |
 |---|---|---|---|---|---|
 | 1 | Aug 24–Aug 30 | Project manager · inception | Milestone 1 — Project Charter & Engineering System<br>Week 1 Quiz — The Hats You Will Wear<br>due Sun Aug 30, 11:59 pm | 15 / 240 | |
+
 | 2 | Aug 31–Sep 6 | Product owner · inception | Milestone 2 — Idea Portfolio & Scoping Decision<br>Week 2 Quiz — Finding an Idea Worth 240 Hours<br>due Sun Sep 6, 11:59 pm | 30 / 240 | |
 | 3 | Sep 7–Sep 13 | Business analyst · requirements | Milestone 3 — Software Requirements Specification v1<br>Week 3 Quiz — Writing Functional Requirements<br>due Sun Sep 13, 11:59 pm | 45 / 240 | Labor Day Mon Sep 7 |
 | 4 | Sep 14–Sep 20 | Business analyst · requirements | Milestone 4 — Non-Functional Requirements, Constraints & Definition of Done<br>Week 4 Quiz — Non-Functional Requirements, Constraints & Obligations<br>due Sun Sep 20, 11:59 pm | 60 / 240 | |
