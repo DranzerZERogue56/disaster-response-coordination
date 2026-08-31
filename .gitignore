@@ -1,0 +1,29 @@
+# Placeholder .gitignore — real stack work doesn't start until Week 5.
+# Generic Python + Node coverage for now; revisit once Mesa/OSMnx/Ollama
+# and the React+Leaflet dashboard toolchain are actually in the repo.
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+dist/
+build/
+.env
+.env.*
+!.env.example
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Logs
+*.log

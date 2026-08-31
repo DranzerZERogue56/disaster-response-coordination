@@ -1,0 +1,2 @@
+# Keeps .github/workflows/ tracked in git until CI is set up.
+# CI skeleton is part of the Week 9 Walking Skeleton milestone — see CALENDAR.md.
