@@ -63,9 +63,9 @@ them:
 | 9 | Oct 19–25 | Mesa scenario engine + CI skeleton (Walking Skeleton) | **Phase 1 complete**: server built, Ubuntu installed, Ollama running with 2–3 test models — so the walking skeleton can make a real (if trivial) call to the local LLM |
 | 10 | Oct 26–Nov 1 | Resource agents + contract-net negotiation, real LLM bidding | **Phase 2 + stop condition met**: API exposed on network, 2 concurrent agent instances working with <500ms latency — this is the week negotiation actually needs multiple agents calling the LLM at once |
 | 11 | Nov 2–8 | Incident-command LLM policy layer + disruption injection | Concurrency load increases (command agent + all resource agents now querying Ollama) — confirm the server holds up under this before locking the SDD assumptions further |
-| 13 | Nov 16–22 | Dashboard (React + Leaflet) + OSMnx | **Phase 3**: remote access from laptop/phone — develop and view the live dashboard from a client device while the server does the heavy simulation/inference work |
+| 13 | Nov 16–22 | Real road network integration (OSMnx) + static/recorded visualization tooling | **Phase 3**: remote access from laptop/phone — develop the OSMnx integration and generate reports/visualizations from a client device while the server does the heavy simulation/inference work |
 | 14 | Nov 23–29 | Full evaluation runs (5–10 runs/condition) | Sustained concurrent load over many scenario repeats — the real stress test of the hardware, not just a single demo run |
-| 15 | Nov 30–Dec 6 | Live-demo rehearsal | Confirm remote-access latency from wherever the actual presentation happens (podium/laptop) to the home server, not just from the same room |
+| 15 | Nov 30–Dec 6 | Final rehearsal (optional live terminal run) | The presentation no longer needs a live render, so this is mainly rehearsing the walkthrough of the generated report/visualization — but if choosing to run the team-size competition live at the podium, confirm remote-access latency from wherever the presentation happens, not just from the same room |
 
 If hardware acquisition slips behind this table, fall back to the
 Ollama-on-existing-machine path (smaller/quantized model, no dedicated
