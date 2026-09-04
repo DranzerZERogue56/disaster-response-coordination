@@ -39,6 +39,56 @@ better than the dumbest possible approach (just sending the nearest
 available unit to each incident, no negotiation at all) — if it isn't,
 that's a sign something is broken, not a finding worth reporting.
 
+## Related work
+
+Checked (2026-09-04) whether something like this already exists, so the
+charter and later write-ups can point to real prior work instead of
+overclaiming novelty. Short version: most of the individual pieces exist
+already, just not stitched together this way.
+
+- **Closest relative: the [RoboCup Rescue Simulation
+  League](https://rescuesim.robocup.org/)** — a real academic competition
+  running since 2001, where fire, police, and ambulance agents work a
+  simulated earthquake-hit city and get scored on outcomes. Structurally
+  the closest thing out there. But the agents are hand-coded strategies,
+  not language-reasoning ones, there's no plain-English scenario input,
+  and it doesn't produce a written plan — the output is just a score.
+- **The bidding pattern is old.** "Responders announce a need, others
+  bid, the announcer picks a bid" is the [contract-net
+  protocol](https://en.wikipedia.org/wiki/Contract_Net_Protocol), a
+  1980s idea already used in disaster-robot task-allocation research —
+  see e.g. [Contract Net Protocol for Coordination in Multi-Agent
+  Systems](https://www.researchgate.net/publication/232636898_Contract_Net_Protocol_for_Coordination_in_Multi-Agent_System).
+  Always with a fixed formula deciding the bids, though — never an LLM
+  reasoning them out in plain language for a disaster scenario.
+- **Reading a scenario in plain English and turning it into simulation
+  settings** is a known trick elsewhere — factory/production planning,
+  self-driving-car test-scenario generation, and social-simulation
+  research (e.g.
+  [YuLan-OneSim](https://arxiv.org/pdf/2505.07581)) all do a version of
+  it — just not found applied to disaster scenarios specifically.
+- **AI disaster companies exist, but do something else.** [One
+  Concern](https://www.govtech.com/public-safety/One-Concern-Applying-Artificial-IntelligenceI-to-Emergency-Management.html)
+  builds "digital twins" that predict damage before a disaster hits.
+  [Palantir](https://www.newsweek.com/ai-goes-mission-critical-palantir-powers-essential-systems-2126666)
+  pulls together live data during an actual response. Neither one runs a
+  simulation with different team setups and hands back a recommended
+  plan.
+- **LLM-based disaster-response research is early and scattered.** E.g.
+  the DORA benchmark tests whether LLM agents can do disaster-response
+  *analysis* tasks (reading imagery, writing situation reports), not
+  multi-agent negotiation. Nothing found combines LLM-reasoned bidding
+  with trying multiple team sizes for a disaster scenario.
+
+**What that leaves as this project's actual contribution**: not any one
+piece — reasoned bidding, team-size comparison, and scenario-to-
+simulation parsing all exist separately — but combining language-
+reasoned bidding *with* comparing multiple team sizes *and* ending in a
+report meant to become real policy. That specific combination doesn't
+turn up anywhere in this search. Worth stating plainly in the charter/SDD
+as "here's the related work, and here's the specific gap this project
+fills" — a defensible claim, not "nothing like this exists."
+
 ## Architecture
 
 - **Resource agents** — one program "role" per kind of responder:
