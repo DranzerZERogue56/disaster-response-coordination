@@ -98,14 +98,6 @@ line before and after, each time you have a use to log:
 **What I kept/changed:** Kept the mapping as-is since it's just repackaging decisions already made and logged elsewhere; the parts requiring new judgment (problem statement, feasibility verdicts, hour numbers, rejection paragraph) were left `[ TODO ]`, not filled in
 **Why:** Mechanical reformatting of already-disclosed content into a new template, not new design work
 
----
-
-**Date:** `[ DRAFT — rank/edit — READ THIS ONE CAREFULLY ]` 2026-09-06
-**Zone:** `[ DRAFT: Amber, but check this against the Red line yourself ]`
-**Tool:** Claude Code
-**What I asked for:** Asked for "ideas" for the six-line problem statements on all three candidates
-**What I kept/changed:** AI drafted two directional framings per candidate and I picked one per candidate to write into the files as-is, with the `which costs` line left blank for me to fill with a real number. The assignment says AI may not "write your problem statement" — I'm the one who has to decide whether picking/adopting an AI-drafted version like this crosses that line, or whether it only counts once the real cost number and my own judgment go in. Worth thinking hard about, not rubber-stamping.
-**Why:** Flagged high because this is the closest any of tonight's AI use comes to the assignment's explicit red line — rank this one yourself, don't just take Amber as given
 
 ---
 
