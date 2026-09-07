@@ -152,7 +152,7 @@ The real hard part is pipeline quality: the negotiation pipeline (scenario reade
 
 ## 8. If this candidate is rejected
 
-`[ TODO — even though this is the presumptive front-runner, write this honestly: what would actually have to be true for you to walk away from 2+ weeks of sunk work? Name the gate and the number. ]`
+This is the presumptive front-runner, and I don't expect to reject it — but honestly: I'd drop it only if I'm 2+ weeks behind on real work with no credible path to finishing on time. Not one missed deadline — a sustained, compounding delay where I genuinely can't see myself catching up, even with the overtime already planned into the hour budget (§3). If that point is reached, it isn't an instant "closed" — §10's scope-cut order (fewer team sizes, fewer scenarios, synthetic grid fallback) gets invoked first. Only if those cuts still don't close the gap would walking away from the project actually be on the table, and given the sunk work by that point, that would mean the semester itself is in trouble, not just this candidate.
 
 > The most likely real killer, given tonight's evidence: if the OSMnx
 > spike fails AND local LLM bid quality (tested properly in week 9) turns
