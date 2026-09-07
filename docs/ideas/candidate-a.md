@@ -9,7 +9,7 @@
 > required to be in my own words per this milestone's AI policy.
 
 **Candidate name:** Estate Contents to accurately inform Accounting
-**Date started:** 2026-09-06   **Well it came from:** `[ TODO — declare this honestly; the candidate list originated in an AI brainstorming session, which is a different provenance than "hobby" or "work", but is used in my life as my grandfather recently died and this was a tool I resonated with]`
+**Date started:** 2026-09-06   **Well it came from:** an AI brainstorming session — a different provenance than "hobby" or "work" — but it resonated with me personally: my grandfather recently died, and this is a tool I could have used.
 
 ---
 
@@ -124,12 +124,12 @@ model.
 
 | Criterion | (w) | Score | Weighted |
 |---|---:|---:|---:|
-| Evidence a user exists | 3 | | |
-| Fits ~45 hours of features | 3 | | |
-| Novelty load | 2 | | |
-| Dependencies verified | 2 | | |
-| Demonstrable in ten minutes | 1 | | |
-| **Total (max 55)** | | | |
+| Evidence a user exists | 3 | 1 | 3 |
+| Fits ~45 hours of features | 3 | 1 | 3 |
+| Novelty load | 2 | 1 | 2 |
+| Dependencies verified | 2 | 1 | 2 |
+| Demonstrable in ten minutes | 1 | 3 | 3 |
+| **Total (max 55)** | | | **13** |
 
 > Score this after section 2 exists, not before. The heaviest-weighted criterion
 > is the one you currently have no evidence for, so any total you compute now is
