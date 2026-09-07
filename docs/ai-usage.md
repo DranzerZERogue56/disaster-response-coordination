@@ -12,8 +12,8 @@ If I can't describe what, why and how the AI is supposed to perform the action, 
 | Zone | Meaning | Examples |
 |---|---|---|
 | 🟢 Green | `[ can describe why I delegated ]` | `[ I delegated Claude to, grab a live map API I have found so I can pull in real time maps into my project.]` |
-| 🟡 Amber | `[ I might have trouble fully completing it myself] I had AI complete it with only partial knowledge of why]
-| 🔴 Red | `[I had not clue what I was doing] I had AI do whatever it thought was best without reviewing it.
+| 🟡 Amber | I might have trouble fully completing it myself | I had AI complete it with only partial knowledge of why |
+| 🔴 Red | I had not clue what I was doing | I had AI do whatever it thought was best without reviewing it |
 
 ## Tools I have decided to use
 Claude, Claude Code/CLI, Claude CoWork.
