@@ -15,7 +15,7 @@
 > general) and decide accordingly. `[ TODO — did I actually do that? ]`
 
 **Candidate name:** Out-of-State Title and Registration Completion
-**Date started:** 2026-09-06   **Well it came from:** `[ TODO — declare this honestly; the candidate list originated in an AI brainstorming session, and the domain familiarity comes from my employment,]'
+**Date started:** 2026-09-06   **Well it came from:** an AI brainstorming session for the concept itself; the domain familiarity comes from my employment at Kunes.
 
 ---
 
@@ -24,7 +24,7 @@
 For              a title clerk at an independent used-car dealership
 who              processes an out-of-state deal
 the problem is   figuring out which forms and tax treatment apply for that buyer's state, then assembling and checking the paperwork by hand
-which costs      `[ TODO — a NUMBER: days of delay, dollars paid to an outside title service, or the rejection/resubmission rate — get this from section 2, not from memory ]`
+which costs      roughly $300–600 per out-of-state deal, paid to an outside title service — varies within that range because tax treatment and required documents differ state to state
 Today they       use a generic DMS (Dealertrack/DLRdmv) or pay an outside title service
 which falls short because  existing DMS tools don't have out-of-state-specific document-set logic built in, so the clerk still manually researches and assembles the state-specific packet
 
@@ -137,12 +137,17 @@ because the failure surfaces weeks later as a rejected title.
 
 | Criterion | (w) | Score | Weighted |
 |---|---:|---:|---:|
-| Evidence a user exists | 3 | | |
-| Fits ~45 hours of features | 3 | | |
-| Novelty load | 2 | | |
-| Dependencies verified | 2 | | |
-| Demonstrable in ten minutes | 1 | | |
-| **Total (max 55)** | | | |
+| Evidence a user exists | 3 | 1 | 3 |
+| Fits ~45 hours of features | 3 | 4 | 12 |
+| Novelty load | 2 | 4 | 8 |
+| Dependencies verified | 2 | 1 | 2 |
+| Demonstrable in ten minutes | 1 | 4 | 4 |
+| **Total (max 55)** | | | **29** |
+
+> Scores highest of the three on paper. Rejected anyway — the mechanical
+> criteria above don't capture the employment/legal constraint that
+> actually decided this one (see §8), or the fact that it's a simpler,
+> less ambitious project than I want to spend a capstone on.
 
 > Expect this candidate to score high on novelty load and demonstrability and
 > low on dependencies verified. Score it after section 2 and after you have
