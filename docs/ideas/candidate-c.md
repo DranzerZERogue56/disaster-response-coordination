@@ -33,27 +33,13 @@ which falls short because  tabletop exercises are slow and expensive to organize
 milestone's accepted alternative. Three existing tools that address
 overlapping ground, each independently verified 2026-09-06:
 
-**Juvare / WebEOC Nexus** — cloud-based SaaS used by 4,000+ agencies for
-incident logging, resource requests, and ICS form workflows. Does well:
-auditability, interoperability with FEMA reporting formats, low-code
-configurability. Does badly: it's a system of record, not a system of
-decision — it shows the resource-request queue but doesn't propose an
-allocation or reason about tradeoffs. [Juvare](https://www.juvare.com/products/webeoc-nexus/)
+| Tool | What it is | Does well | Does badly |
+|---|---|---|---|
+| [Juvare / WebEOC Nexus](https://www.juvare.com/products/webeoc-nexus/) | Cloud SaaS used by 4,000+ agencies for incident logging, resource requests, ICS form workflows | Auditability, FEMA-reporting interoperability, low-code configurability | System of record, not decision — shows the resource-request queue but doesn't propose an allocation or reason about tradeoffs |
+| [Esri / ArcGIS Mission](https://www.esri.com/en-us/arcgis/products/arcgis-mission/overview) | Geospatial common operating picture: damage-assessment layers, live responder tracking, incident mapping | Spatial analysis (routing, hotspot detection, shelter inventory as of the March 2026 release) | Answers "where," not "who does what next and why" — a map, not a negotiation between responders with partial information |
+| [Everbridge](https://www.everbridge.com/newsroom/article/thoma-bravo-completes-acquisition-of-everbridge/) | Critical event management / mass-notification platform (acquired by Thoma Bravo, taken private, 2024) | Getting alerts and status requests to the right people fast, at enterprise scale | Routes information, doesn't decide allocation — communication infrastructure, not a planning tool |
 
-**Esri / ArcGIS Mission** — the geospatial common operating picture:
-damage-assessment layers, live responder tracking, incident mapping via
-Mission Manager/Responder/Server. Does well: spatial analysis (routing,
-hotspot detection, shelter inventory as of the March 2026 release). Does
-badly: answers "where," not "who does what next and why" — it's a map,
-not a negotiation between responders with partial information.
-[Esri](https://www.esri.com/en-us/arcgis/products/arcgis-mission/overview)
-
-**Everbridge** — critical event management and mass-notification platform
-(acquired by Thoma Bravo, taken private, 2024). Does well: getting alerts
-and status requests to the right people fast at enterprise scale. Does
-badly: routing information, not deciding allocation — it's communication
-infrastructure, not a planning tool.
-[Everbridge](https://www.everbridge.com/newsroom/article/thoma-bravo-completes-acquisition-of-everbridge/)
+All three independently verified 2026-09-06.
 
 **The gap this fills:** none of the three reason about *which* responders
 to send where, try multiple team compositions against a scenario, or
@@ -73,21 +59,20 @@ hours are not filled in below; that estimate is still real work to do.
 
 | # | Feature (one vertical slice each) | Hours |
 |---|---|---:|
-| 1 | Scenario engine (Mesa) + incident generator + naive greedy baseline | |
-| 2 | Resource agents + LLM-based bidding/negotiation via Ollama (swappable backend) | |
-| 3 | Incident-command reasoning role + disruption injection + renegotiation | |
-| 4 | Scenario reader (NL scenario text → simulation settings + candidate team sizes) | |
-| 5 | Team-size competition harness (run several candidate rosters per scenario) | |
-| | Evaluation harness (weighted scoring, fairness metric, greedy comparison) | |
-| | Report generator (Markdown template + incident-command reasoning trace) | |
-| | Walking skeleton + CI | |
-| | Deployment + clean-machine test | |
-| | **Construction total** | **80–100** |
+| 1 | Scenario engine (Mesa) + incident generator + naive greedy baseline | 20 |
+| 2 | Resource agents + LLM-based bidding/negotiation via Ollama (swappable backend) | 15 |
+| 3 | Incident-command reasoning role + disruption injection + renegotiation | 10 |
+| 4 | Scenario reader (NL scenario text → simulation settings + candidate team sizes) | 5 |
+| 5 | Team-size competition harness (run several candidate rosters per scenario) | 10 |
+| | Evaluation harness (weighted scoring, fairness metric, greedy comparison) + Report generator | 4 |
+| | Walking skeleton + CI | 10 |
+| | Deployment + clean-machine test | 15 |
+| | **Construction total** | **89** |
 
 Budget: plan on **60 hours**, hard ceiling **75** — this candidate goes
 over both. Scope Sizer's independent estimate was **124h (range
 99–185)**, using 7 features + 2 integrations (OSMnx, Ollama), complex
-data, novelty load 2. My hand estimate (80–100h) is lower than the
+data, novelty load 2. My hand estimate (89h) is lower than the
 sizer's but still well above the stated ceiling. **Reconciliation:** I'm
 accepting the overage rather than cutting scope to fit, because this is
 the project I want to commit to — the gap gets closed with planned
