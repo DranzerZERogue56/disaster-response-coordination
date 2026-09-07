@@ -9,7 +9,7 @@
 > real work, not yet done.
 
 **Candidate name:** Disaster Response Coordination
-**Date started:** 2026-08-24   **Well it came from:** `[ TODO — state honestly where this idea actually came from ]`
+**Date started:** 2026-08-24   **Well it came from:** talking with a dispatcher while at work — the conversation sparked the idea to work on this.
 
 ---
 
@@ -18,7 +18,7 @@
 For              an emergency management planner at a county or small-city agency
 who              has to decide how to allocate a fixed pool of Medical/Fire/Shelter/Security responders before or during a disaster
 the problem is   current tools (WebEOC, ArcGIS Mission, Everbridge — see the competitive scan below) show the incident queue and the map, but none of them recommend or test different responder allocations against a likely scenario ahead of time
-which costs      `[ TODO — a NUMBER: cost of over/under-allocating responders during a past incident, an EOC license/seat cost, or planner-hours per tabletop exercise — get this from real research, not from memory ]`
+which costs      not yet researched in terms of what the problem itself costs an agency (no interview/agency-cost data yet — see §2's competitive scan for what existing tools cost instead). The one real number I do have is the cost of running this independently: roughly $400–4,000 in local hardware, depending on the route (several cheaper PCs running smaller models vs. one larger GPU box, per `HARDWARE.md`) — a build-cost number, not a problem-cost number, stated honestly as the distinction it is
 Today they       run manual tabletop exercises, or rely on the existing EOC software's live logging with no simulated dry run beforehand
 which falls short because  tabletop exercises are slow and expensive to organize, so agencies can't cheaply test many different team-composition options before committing to one
 
@@ -82,12 +82,20 @@ hours are not filled in below; that estimate is still real work to do.
 | | Report generator (Markdown template + incident-command reasoning trace) | |
 | | Walking skeleton + CI | |
 | | Deployment + clean-machine test | |
-| | **Construction total** | |
+| | **Construction total** | **80–100** |
 
-Budget: plan on **60 hours**, hard ceiling **75**, same as the other two
-candidates — `[ TODO — this is a bigger stack than A or B; does it
-actually fit, or does Scope Sizer say otherwise? Run `tools/size_check.py`
-against a real estimate before trusting this. ]`
+Budget: plan on **60 hours**, hard ceiling **75** — this candidate goes
+over both. Scope Sizer's independent estimate was **124h (range
+99–185)**, using 7 features + 2 integrations (OSMnx, Ollama), complex
+data, novelty load 2. My hand estimate (80–100h) is lower than the
+sizer's but still well above the stated ceiling. **Reconciliation:** I'm
+accepting the overage rather than cutting scope to fit, because this is
+the project I want to commit to — the gap gets closed with planned
+overtime hours beyond the course's 240-hour budget line, not by pretending
+the scope is smaller than it is. If overtime doesn't materialize, `PROJECT.md`'s
+scope-discipline cut order (fewer team sizes tried first, then fewer
+scenarios, then the OSMnx/synthetic-grid fallback) is the fallback plan,
+not a surprise decided under pressure later.
 
 ## 4. Out of scope — will NOT be built
 
@@ -140,18 +148,18 @@ the OSMnx piece gets a real spike tonight.
 
 ## 6. The one hard part
 
-`[ TODO — PROJECT.md doesn't state this in the canvas's exact "name one, two sentences" format. Pull from Risk #2 / the Negotiation protocol section, but write it in your own words: something like local LLM bid quality being good enough to produce meaningfully different outcomes across team-size candidates, rather than noisy/random ones. ]`
+The real hard part is pipeline quality: the negotiation pipeline (scenario reader → agent bidding → allocation) has to be clean and structured enough that its output data (miles traveled, response times, etc.) can actually tell a good team-composition plan apart from a bad one — a sloppy pipeline just produces noisy numbers that make every team size look about the same. That's compounded by environmental variability: obscure or unexpected values in a given scenario can break the pipeline in ways that are hard to predict ahead of time.
 
 ## 7. Scorecard (1–5 each; weight in parentheses)
 
 | Criterion | (w) | Score | Weighted |
 |---|---:|---:|---:|
-| Evidence a user exists | 3 | | |
-| Fits ~45 hours of features | 3 | | |
-| Novelty load | 2 | | |
-| Dependencies verified | 2 | | |
-| Demonstrable in ten minutes | 1 | | |
-| **Total (max 55)** | | | |
+| Evidence a user exists | 3 | 3 | 9 |
+| Fits ~45 hours of features | 3 | 1 | 3 |
+| Novelty load | 2 | 2 | 4 |
+| Dependencies verified | 2 | 3 | 6 |
+| Demonstrable in ten minutes | 1 | 2 | 2 |
+| **Total (max 55)** | | | **24** |
 
 > Score honestly — this candidate has the most sunk work and the most
 > existing conviction behind it, which is exactly the bias the assignment
