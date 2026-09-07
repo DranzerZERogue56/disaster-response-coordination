@@ -12,9 +12,11 @@ An emergency management planner at a county or small-city agency has to decide h
 
 No interview conducted — substituting a competitive scan of three existing tools, per this milestone's accepted alternative, since a real emergency-management planner wasn't reachable on this timeline.
 
-- **Juvare/WebEOC Nexus** (cloud SaaS, 4,000+ agencies): logs incidents and resource requests well, but is a system of record — it doesn't propose an allocation or reason about tradeoffs.
-- **Esri/ArcGIS Mission**: strong spatial analysis (routing, hotspot detection, shelter inventory), but answers "where," not "who does what next and why."
-- **Everbridge** (critical event management, acquired by Thoma Bravo 2024): fast alerting/notification at enterprise scale, but is communication infrastructure, not a planning tool.
+| Tool | Strength | Gap |
+|---|---|---|
+| Juvare/WebEOC Nexus (cloud SaaS, 4,000+ agencies) | Logs incidents and resource requests well | System of record, not decision — doesn't propose an allocation or reason about tradeoffs |
+| Esri/ArcGIS Mission | Strong spatial analysis (routing, hotspot detection, shelter inventory) | Answers "where," not "who does what next and why" |
+| Everbridge (critical event management, acquired by Thoma Bravo 2024) | Fast alerting/notification at enterprise scale | Communication infrastructure, not a planning tool |
 
 None of the three try multiple responder compositions against a scenario or produce a written recommended plan — that's the gap this project fills. Full write-up: `docs/ideas/candidate-c.md` §2.
 
@@ -49,8 +51,6 @@ A live, real-time interactive dashboard (React/Leaflet) · paid/hosted LLM APIs 
 
 **Markdown-only report, not PDF/HTML.** Costs: a less polished-looking deliverable for something meant to double as a company policy document. Accepted because it's free, diffable, and viewable directly on GitHub with no extra tooling. Would revisit if there's spare time in week 13 (documentation week).
 
-`[ TODO — any other tradeoff you want named here? ]`
-
 ## 7. Rejected candidates
 
 **Rejected: Estate Contents to Probate Accounting (Candidate A).** Rejected — closed for this course, not deferred to a date. Two things killed it: cost and fit. The vision-API dependency for Feature 1 isn't free per call, and at the volume a real estate inventory needs, that cost isn't something I can justify on a class budget with no grant or funding behind it. Separately, the one hard part of this project — getting item identification specific enough to retrieve a valid comp, with no way to tell a correct answer from a confidently wrong one except by checking comp variance after the fact — is an open-ended data/ML-calibration problem, and perfecting that isn't where I want to spend a 240-hour capstone. Scorecard total: 13/55.
@@ -82,7 +82,7 @@ The real hard part is pipeline quality: the negotiation pipeline (scenario reade
 
 | Risk | Likelihood | What it costs me | Early warning sign |
 |---|---|---|---|
-| Scope exceeds the 240-hour budget (this candidate runs 80–100h against a 60h construction line) | High | Overtime hours I have to actually log, or scope cut under pressure later | Construction hours tracked in `docs/hours-log.csv` exceeding plan by week 10 |
+| Scope exceeds the 240-hour budget (this candidate runs 89h against a 60h construction line) | High | Overtime hours I have to actually log, or scope cut under pressure later | Construction hours tracked in `docs/hours-log.csv` exceeding plan by week 10 |
 | Local LLM produces weak/inconsistent bids, undermining plan quality | Medium (raised to High) | The whole "team-size competition" signal becomes noise — see §9 | GPU server (`HARDWARE.md` Phase 1) not built by mid-week 8 |
 | Scenario reader misparses a scenario, producing a broken simulation setup | Medium | A bad run gets scored and reported as if it were valid | Schema-validation check (planned) catching malformed output during testing |
 
