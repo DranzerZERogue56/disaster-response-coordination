@@ -71,8 +71,8 @@ of detail that belongs in the technical specification (Week 6).
 **Requirement:** The system shall accept incident reports coming in from field agents through the intake api, any time a report comes in with the required fields filled in (location, severity, timestamp, reporting unit), doesnt matter if the network is up or down since offline is a requirement too.
 **Rationale:** this is the front door of the whole system, if reports cant get in nothing works
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given a field agent submits a report with all required fields filled in, when the intake api receives it, then the system creates the report and returns a confirmation of successful creation.
+- Given the network is down, when a field agent submits a report, then it queues locally; when connectivity returns, then queued reports are sent and processed in timestamp order so a burst of queued reports doesn't overwhelm the system at once.
 
 **Source:** proposal, basic intake needs
 
@@ -82,19 +82,19 @@ of detail that belongs in the technical specification (Week 6).
 **Requirement:** The system shall reject a report thats missing a required field or has a bad value in it (like a severity outside defined scale), before the report ever reaches an agent for reasoning, and it has to tell the sender what field was wrong so they can fix it and resend.
 **Rationale:** garbage in garbage out, if a bad report gets to an agent it could trigger a bad allocation and thats worse in an emergency than just bouncing it back
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given a report is submitted with one field missing or improperly filled, when the system validates it, then it returns a rejection response identifying that field and, where a regex pattern applies to that field, an explanation of what's wrong with the format.
+- Given a report is submitted with multiple bad or missing fields, when the system validates it, then it evaluates fields top-down and returns a rejection response listing all of the bad fields, so the sender sees every problem at once instead of fixing one and resubmitting to find the next.
 
 **Source:** derived from FR-AGENT-01, an agent cant reason on data it cant trust
 
 ### FR-INTAKE-03 — Duplicate report detection
 
 **Priority:** Should
-**Requirement:** The system shall flag a new report as a possible duplicate of an existing incident, when the location and time are close enough to an open incident (need to define the actual radius/window still, TBD), so two field units reporting the same fire dont turn into two separate response chains.
+**Requirement:** The system shall flag a new report as a possible duplicate of an existing incident, when the new report is within 1 block and 10 minutes of an open incident and the address matches or the event description corroborates the same event, so two field units reporting the same fire dont turn into two separate response chains.
 **Rationale:** not critical for a first release but it would look bad in a demo if the same incident spawned two conflicting resource assignments
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given two reports are submitted within 1 block and 10 minutes of each other, when their addresses match or their event descriptions describe the same kind of event (e.g., "building on fire" and "burning house" both describing a structure fire), then the system tags them as the same incident and combines both reports' data to improve accuracy.
+- Given two reports are submitted within 1 block and 10 minutes of each other but their addresses are different, when the system checks them, then it does not merge them and keeps them as separate incidents — the address field is what the system uses to make that distinction.
 
 **Source:** came up thinking through the WebEOC comparison, its a problem they already solved and I dont want to look worse than the incumbent on something this basic
 
@@ -103,33 +103,33 @@ of detail that belongs in the technical specification (Week 6).
 ### FR-AGENT-01 — Report severity classification
 
 **Priority:** Must
-**Requirement:** The system (agent) shall classify an incoming incident report into a severity level, within [x] seconds of intake, using the fields on the report, not waiting on a human to tag it first.
+**Requirement:** The system (agent) shall classify an incoming incident report into a severity level, within 5 seconds of intake, using the fields on the report, not waiting on a human to tag it first.
 **Rationale:** severity is what everything else hangs off of, allocation, alerting, escalation, all of it reads this number
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given a report with all required fields, when the agent classifies it, then classification completes within 5 seconds and the report is tagged with a severity level.
+- Given the agent cannot confidently determine a severity level from the report's fields, when classification is attempted, then the report is immediately escalated to a human instead of guessing.
 
 **Source:** proposal, this is basically step one of the agent doing its job
 
 ### FR-AGENT-02 — Proposal generation
 
 **Priority:** Must
-**Requirement:** The system (agent) shall generate a proposed resource assignment or action for a classified (classified as in given a class/name) incident, after classification finishes, and the proposal has to include which resource its recommending and why, not just a yes or no.
+**Requirement:** The system (agent) shall generate a proposed resource assignment or action for a classified (classified as in given a class/name) incident, after classification finishes, and the proposal has to include which resource its recommending, a confidence score, why, and a list of other possible resources that could be called, not just a yes or no.
 **Rationale:** this is the actual reasoning step, if the agent cant produce a proposal with a reason attached then its not really doing agentic reasoning its just doing lookup
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given a classified incident, when the agent generates a proposal, then the proposal includes the recommended resource, a confidence score, the reasoning why, and a list of other possible resources that could be called.
+- Given no available resource is a good fit for the incident, when the agent generates a proposal, then it still produces a proposal (e.g., the best available option) rather than returning nothing.
 
 **Source:** this is the core novelty of the whole project so it has to be in here
 
 ### FR-AGENT-03 — Confidence threshold escalation to human
 
 **Priority:** Must
-**Requirement:** The system (agent) shall escalate a proposal to a human dispatcher for approval instead of acting on it automatically, whenever the agents confidence score on that proposal falls below a set threshold (still need to pick the actual number), or the incident is tagged high severity.
+**Requirement:** The system (agent) shall escalate a proposal to a human dispatcher for approval instead of acting on it automatically, whenever the agent's confidence score on that proposal is below 75 (on a 0-100 scale), or the incident is tagged high severity.
 **Rationale:** I dont want an agent making an autonomous call on a life safety decision it isnt sure about, this is also probably the thing a defense committee asks about first
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given a proposal has a confidence score of 75 or above and the incident is not tagged high severity, when the agent finishes reasoning, then the proposal proceeds automatically to the assignment step without requiring human approval.
+- Given a proposal has a confidence score below 75, or the incident is tagged high severity, when the agent finishes reasoning, then the proposal is escalated to a human dispatcher, who must approve, modify, or reject it before any resource is actually dispatched.
 
 **Source:** competitive gap analysis, this is what none of the competitors really do (WebEOC and Esri dont reason at all, Palantir doesnt run local)
 
