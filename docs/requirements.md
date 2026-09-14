@@ -20,11 +20,9 @@ Benjamin Wrenn: V1.1: 9/11/26:
 
 ## 1. Purpose and Scope
 
-`[ TODO — one paragraph: what this system is for, who it serves, what problem it removes. One paragraph: what's explicitly outside the boundary of this release. If your requirement count falls outside 18-35, defend it here in two sentences. ]`
+This system is for dispatchers who need a report or proposal on how to respond to an incident. It replaces the slow, manual process of working out a response plan by hand, speeding up that part of the human workflow.
 
-> Requirement areas are being worked out in `docs/to-review.md` (staging
-> file, not part of the submission) before landing here as full
-> six-part requirements.
+This release is explicitly a proposal/plan system, not a real-time incident response system — it does not handle live incident reports as they happen in the field. It produces a plan a human reviews and acts on, not a live operational tool.
 
 ## 2. Stakeholders and Personas
 
@@ -38,10 +36,12 @@ Benjamin Wrenn: V1.1: 9/11/26:
 
 ## 3. Definitions
 
-`[ TODO — every term your requirements use in a project-specific sense. If a reader could interpret a word two ways, it belongs here. ]`
-
 | Term | Definition in this document |
 |---|---|
+| Severity level | The NFPA-style scale: Minor, Moderate, Serious, Severe, Critical (mapping to a 1-5 scale) |
+| Confidence score | A 0-100 numeric scale representing the agent's certainty in its own proposal — works like a school grading percentage; higher number, more confident |
+| Node | A software process running one agent instance, not necessarily a separate physical machine |
+| Lower level agents | A fallback tier of smaller, faster, lower-cost-to-run local models, used when the primary model isn't available or fast enough |
 
 ## 4. Assumptions and Dependencies
 
