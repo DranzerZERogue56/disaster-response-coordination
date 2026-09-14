@@ -101,9 +101,46 @@ line before and after, each time you have a use to log:
 
 ---
 
-**Date:** `[ DRAFT — rank/edit ]` 2026-09-06
+**Date:** `[ DRAFT — rank/edit ]` 2026-09-06 (good)
 **Zone:** `[ DRAFT: Green ]`
 **Tool:** Claude Code
 **What I asked for:** Run a real OSMnx dependency spike (install, geocode test, build a real road graph for Macomb IL, route between two real businesses)
 **What I kept/changed:** Kept the actual results as evidence (graph size, route distance/time); no interpretation was handed to me beyond "pass/fail," which I still have to confirm I agree with
 **Why:** Mechanical technical execution with a clearly describable task and objective pass/fail result
+
+---
+
+**Date:** `[ DRAFT — rank/edit ]` 2026-09-13 (good)
+**Zone:** `[ DRAFT: Green ]`
+**Tool:** Claude Code
+**What I asked for:** Scaffold `docs/requirements.md` from the real course SRS template, pull the course's own worked example (PantryPilot) for reference boxes only
+**What I kept/changed:** Kept the real template structure and the course's own sample text as clearly-labeled reference material, not my content; every real field left `[ TODO ]`
+**Why:** Mechanical setup, same shape as the Week 2 template-pulling entry above
+
+
+---
+
+**Date:** `[ DRAFT — rank/edit ]` 2026-09-13 (good)
+**Zone:** `[ DRAFT: Green ]`
+**Tool:** Claude Code
+**What I asked for:** Mechanically reformat 30 self-written requirements from a bulleted Actor/Action/Object/Condition shape into the linter-required `**Requirement:**` sentence shape (merge only, no wording changes beyond joining the sentence), fix heading levels, flat-field formatting
+**What I kept/changed:** All content is my own words from the bulleted draft, merged rather than rewritten; verified against `tools/check_requirements.py` afterward (0 errors, 0 warnings) rather than just trusting the reformat
+**Why:** Pure mechanical transformation of my own text into the required shape — no new sentences authored
+
+---
+
+**Date:** `[ DRAFT — rank/edit ]` 2026-09-13 (good)
+**Zone:** `[ DRAFT: Green ]`
+**Tool:** Claude Code
+**What I asked for:** For 6 requirements, asked guiding questions (happy path? failure case? what's the actual number for this placeholder?) one at a time instead of proposing answers
+**What I kept/changed:** Every Given/When/Then sentence and every resolved number (1 block/10 min, 5 seconds, confidence threshold 75) is my answer to a question; AI reformatted my answers into Given/When/Then structure but the content itself is mine
+**Why:** This is exactly the "ask, I decide" mode the policy allows — AI enumerated what a complete criterion needs, I supplied the actual behavior
+
+---
+
+**Date:** `[ DRAFT — rank/edit ]` 2026-09-13 (good)
+**Zone:** `[ DRAFT: Green ]`
+**Tool:** Claude Code
+**What I asked for:** Add a project-board card for every Must-priority requirement identifier, per the assignment's board-mirroring requirement
+**What I kept/changed:** Card titles are exact requirement identifiers already in the doc; descriptions/stopping-conditions are generic ("linter passes + acceptance criteria satisfied") not project-specific judgment calls
+**Why:** Mechanical mirroring of already-decided identifiers onto the board, same pattern as Milestone 2's board setup
