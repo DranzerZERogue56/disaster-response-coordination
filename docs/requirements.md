@@ -136,11 +136,11 @@ of detail that belongs in the technical specification (Week 6).
 ### FR-AGENT-04 — Agent decision timeout
 
 **Priority:** Should
-**Requirement:** The system (agent) shall abandon a reasoning attempt that hasnt produced a proposal, if it runs past [X] seconds without finishing, at which point it falls back to a default or manual path instead of just hanging.
+**Requirement:** The system (agent) shall abandon a reasoning attempt that hasnt produced a proposal, if it runs past ~60 seconds without finishing (rough target, pending actual model selection/benchmarking), at which point it falls back to a non-LLM path and returns an error to the human overseer instead of just hanging.
 **Rationale:** local inference on consumer hardware isnt instant, and a hung agent during an actual incident is worse than no agent
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given a reasoning attempt completes within ~60 seconds, when it finishes, then it produces a proposal as normal.
+- Given a reasoning attempt exceeds ~60 seconds without producing a proposal, when the timeout triggers, then the system abandons it, returns an error to the human overseer, and falls back to a non-LLM path instead of continuing to wait.
 
 **Source:** hardware constraint, comes from the local ai server spec (24gb card, not a datacenter)
 
@@ -149,11 +149,11 @@ of detail that belongs in the technical specification (Week 6).
 ### FR-COORD-01 — Conflicting resource claim resolution
 
 **Priority:** Must
-**Requirement:** The system shall resolve a conflict where two agents propose the same unit for two different incidents, before either assignment is finalized, using a defined tiebreak (severity first, then whichever incident was reported first, still need to lock this rule down).
+**Requirement:** The system shall resolve a conflict where two agents propose the same unit for two different incidents, before either assignment is finalized, using a defined tiebreak: severity first, then the amount of useful information in the report, then whichever incident was reported first (always logged, used as the final fallback).
 **Rationale:** this is the whole point of calling it multi agent, if conflicts just silently overwrite each other its not coordination its a race condition
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given two agents propose the same unit for two different incidents, when the tiebreak is applied, then the higher-severity incident wins (or, if tied, whichever has more useful information; if still tied, whichever was reported first), and the resolution is logged as having followed the correct protocol.
+- Given the losing agent's incident still needs a unit, when its original proposal is rejected by the tiebreak, then it finds and proposes the next best available unit instead of leaving the incident unassigned.
 
 **Source:** core project goal, decentralized coordination
 
@@ -163,8 +163,8 @@ of detail that belongs in the technical specification (Week 6).
 **Requirement:** The system shall reconcile two agents holding different pictures of the same incident when one has newer info than the other, any time agents share overlapping incident data and the timestamps dont match, favoring the newer report unless a human overrides it.
 **Rationale:** decentralized means nobody has the full picture by default, if I dont handle this its not actually decentralized its just one agent pretending to be many
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given two agents have different timestamped data for the same incident, when reconciliation runs, then the newer data becomes the active record and the older data is kept as history rather than deleted.
+- Given a human overrides the automatic reconciliation, when they do, then the override is logged the same way as FR-RES-02's overrides — who did it, when, and what the original automatic decision was.
 
 **Source:** same as above, this is the architecture I pitched
 
@@ -174,19 +174,19 @@ of detail that belongs in the technical specification (Week 6).
 **Requirement:** The system shall apply a consistent tiebreak rule, any time two agent proposals cant both be satisfied with available resources.
 **Rationale:** gets its own line separate from COORD-01 because the tiebreak logic gets reused in more places than just the resource claim case
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given two agent proposals conflict in a way other than claiming the same unit, when the tiebreak applies, then it resolves using the same order as FR-COORD-01: severity, then information richness, then reported-first.
+- Given two proposals are truly identical across all tiebreak dimensions, when the tiebreak is applied, then both are validated, but only one is pushed forward/acted on and the other is kept as history rather than discarded.
 
 **Source:** derived from FR-COORD-01
 
 ### FR-COORD-04 — Cross agent consensus timeout
 
 **Priority:** Could
-**Requirement:** The system shall finalize a decision using the best available proposal instead of waiting indefinitely for every agent to agree, if agents havent reached consensus within [X] seconds, defaulting to whichever proposal has the highest confidence score.
+**Requirement:** The system shall finalize a decision using the best available proposal instead of waiting indefinitely for every agent to agree, if agents havent reached consensus within 5 minutes, defaulting to whichever proposal has the highest confidence score.
 **Rationale:** nice to have so it doesnt stall out live in front of the committee, but the system still works without it if I run out of time
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given agents reach consensus within 5 minutes, when consensus is reached, then the agreed-upon proposal proceeds normally to the assignment step.
+- Given agents haven't reached consensus within 5 minutes, when the timeout fires, then the system finalizes using whichever proposal has the highest confidence score, and the other agents' proposals are kept as history rather than discarded.
 
 **Source:** risk I noticed while thinking through the negotiation logic, agents could in theory just never agree
 
