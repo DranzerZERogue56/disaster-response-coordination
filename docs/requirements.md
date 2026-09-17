@@ -417,9 +417,61 @@ of detail that belongs in the technical specification (Week 6).
 
 ## 6. Non-Functional Requirements
 
-Placeholder for Week 4. Leave this empty — do not write vague quality
-words here now ("the system shall be secure"); fill it in when each one
-can be made measurable.
+**How many:** 12+, spanning at least 6 of the 8 categories below. For any
+category skipped, one sentence saying why it doesn't apply — "not
+applicable" alone earns nothing. Every requirement needs all four
+fields: metric, threshold, condition, method. If you can't say how
+you'd measure it in an afternoon, it's not a requirement yet.
+
+> **REFERENCE EXAMPLES FROM THE COURSE'S OWN TEMPLATE — not yours, one
+> per category, showing the shape:**
+>
+> | Category | Worked example |
+> |---|---|
+> | Performance | NFR-PERF-01 — p95 response time under 1.5s with 200 seeded records on a throttled "Fast 3G" connection (Must). Measured by: 20 loads in browser dev tools with throttling, p95 recorded in `docs/measurements.md`. |
+> | Reliability | NFR-REL-01 — no unhandled exception reaches the user; every failure names what failed and what to do next (Must). Measured by: one test per failure mode in the test plan. |
+> | Security | NFR-SEC-01 — no credential, token, or key appears in the repository at any commit (Must). Measured by: secret scan over full history, run in CI, zero findings. |
+> | Privacy | NFR-PRIV-01 — a signed-in user can delete their account and all rows referencing it in one action (Must). Measured by: create data, delete account, query every table for the user id, expect zero rows. |
+> | Accessibility | NFR-ACC-01 — every interactive control is reachable and operable by keyboard alone, with a visible focus indicator (Must). Measured by: manual pass, unplug the mouse, complete the core tasks. |
+> | Usability | NFR-USE-01 — a first-time user completes the primary task without help in under 3 minutes (Should). Measured by: two observed sessions, timed, notes recorded. |
+> | Maintainability | NFR-MNT-01 — a clean clone reaches a running app in under 10 minutes using only the README (Must). Measured by: clean-machine test, timed, once per iteration. |
+> | Portability | NFR-PORT-01 — runs on the two most recent major versions of two different browsers (Should). Measured by: manual smoke test of the three core flows on each. |
+
+### 6.1 Performance
+
+| ID | Requirement (metric · threshold · condition) | Priority | How it is measured |
+|---|---|---|---|
+| `[ TODO ]` | | | |
+
+### 6.2 Reliability & Availability
+
+| ID | Requirement | Priority | How it is measured |
+|---|---|---|---|
+| `[ TODO ]` | | | |
+
+### 6.3 Security
+
+| ID | Requirement | Priority | How it is measured |
+|---|---|---|---|
+| `[ TODO ]` | | | |
+
+### 6.4 Privacy & Data Handling
+
+| ID | Requirement | Priority | How it is measured |
+|---|---|---|---|
+| `[ TODO ]` | | | |
+
+### 6.5 Accessibility
+
+| ID | Requirement | Priority | How it is measured |
+|---|---|---|---|
+| `[ TODO ]` | | | |
+
+### 6.6 Usability · 6.7 Maintainability · 6.8 Portability
+
+| ID | Requirement | Priority | How it is measured |
+|---|---|---|---|
+| `[ TODO ]` | | | |
 
 ## 7. Out of Scope (the Won't-Have List)
 
@@ -448,6 +500,57 @@ can be made measurable.
 | Date | Version | Change | Reason |
 |---|---|---|---|
 | `[ TODO — YYYY-MM-DD ]` | 1.0 | Initial specification | Milestone 3 |
+| `[ TODO — YYYY-MM-DD ]` | 1.1 | Non-functional requirements, constraints, assumptions, dependencies, and obligations added | Milestone 4 |
+
+## 10. Constraints
+
+Things you did NOT choose and cannot change.
+
+**How many:** at least 4, each stating what it rules out.
+
+> **REFERENCE EXAMPLE:** CON-01 — total effort is capped at ~240 hours across 16 weeks (course) — rules out: a second client application.
+
+| ID | Constraint | Where it comes from | What it rules out |
+|---|---|---|---|
+| `[ TODO ]` | | | |
+
+## 11. Assumptions
+
+Things you are treating as true but have NOT verified.
+
+**How many:** at least 4, each with an owner, a verify-by date, and the consequence if false.
+
+> **REFERENCE EXAMPLE:** ASM-01 — the product-lookup API's free tier permits storing responses (owner: me, verify by: Week 5) — if false: cache locally instead, scope drops to manual entry.
+
+| ID | Assumption | Owner | Verify by | If it is false |
+|---|---|---|---|---|
+| `[ TODO ]` | | | | |
+
+## 12. Dependencies
+
+Things outside your control that you need.
+
+**How many:** at least 3, each with a pinned plan/version, a failure mode, and a fallback.
+
+> **REFERENCE EXAMPLE:** DEP-01 — a third-party API (plan + date checked) — failure mode: rate limit or outage — fallback: what the app does instead.
+
+| ID | Dependency | Version / plan pinned | Failure mode | Fallback |
+|---|---|---|---|---|
+| `[ TODO ]` | | | | |
+
+## 13. Obligations
+
+License, third-party terms, data rights. State your license position either
+as a chosen SPDX identifier (with `LICENSE` present at the repo root) or
+restate the Week 1 dated deferral with the two candidate licenses and the
+question that will settle it. At least one obligation below must be
+verified at its primary source **this week** — a real URL and a real date,
+not assumed.
+
+| Obligation | Primary source (URL) | Date checked | What it requires of me |
+|---|---|---|---|
+| `[ TODO — project license ]` | | | |
+| `[ TODO — a dependency's license ]` | | | |
 
 ---
 
