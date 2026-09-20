@@ -198,30 +198,33 @@ of detail that belongs in the technical specification (Week 6).
 **Requirement:** The system shall assign an available resource or unit to an incident, once an agent proposal is approved, either automatically under the FR-AGENT-03 threshold or manually by a dispatcher.
 **Rationale:** this is the actual output the whole reasoning pipeline exists to produce
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given an approved proposal and the recommended unit is still available, when the assignment happens, then the unit's status updates to "assigned" and the incident is recorded as having a confirmed responder.
+- Given the recommended unit becomes unavailable between when the proposal was generated and when it's assigned, when the assignment is attempted, then the system triggers a secondary follow-up that creates a second path to a responder instead of leaving the incident without one.
 
 **Source:** proposal
 
 ### FR-RES-02 — Manual reassignment override
 
 **Priority:** Must
-**Requirement:** A dispatcher shall override any system generated assignment, at any time, and the override has to log who did it and why, it cant just silently replace the agents choice.
+**Requirement:** A dispatcher shall override any system generated assignment, at any time, and the override is only accepted with a reason and has to log who did it and why, it cant just silently replace the agents choice; after the initial reason is sent, the dispatcher gets a follow-up window to expand on it without time pressure.
 **Rationale:** a human always needs the last word here, this is basically a trust requirement not just a functional one
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given a dispatcher overrides a system-generated assignment with a reason, when they submit it, then the system records who did it, when, why, the original agent choice, and the time elapsed between the AI requesting human approval and the human approving it.
+- Given a dispatcher attempts an override without providing a reason, when they submit it, then the system rejects the override until a reason is provided.
+- Given an override has been submitted with its initial reason, when the override takes effect immediately, then the dispatcher gets a follow-up window to expand on or defend their reasoning, without time pressure, and that explanation is added to the same log entry.
 
 **Source:** same reasoning as FR-AGENT-03, human in the loop
 
 ### FR-RES-03 — Resource availability tracking
 
 **Priority:** Must
-**Requirement:** The system shall track the current status of every known resource, available, assigned, or out of service, updated in real time as assignments happen, so an agent never proposes a unit thats already committed somewhere else.
+**Requirement:** The system shall track the current status of every known resource, available, assigned, or out of service, updated in real time as assignments happen, and shall reserve a unit the moment it is proposed, so an agent never proposes a unit thats already committed somewhere else.
 **Rationale:** without this the whole allocation piece is just guessing
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given a unit's status changes (e.g., it gets assigned), when the change happens, then every agent sees the updated status.
+- Given a status update can't be delivered to an agent (update failure or a node offline), when the failure occurs, then the system either caches the update or sends a warning to the other agents.
+- Given an agent proposes a unit, when the proposal is made, then the unit is immediately reserved, and the reservation is cached, timestamped, and sent to the other agents so their decisions exclude that unit.
+- Given a reserved unit's proposal is rejected, times out, or loses a tiebreak, when that happens, then the unit returns to available within 4 minutes.
 
 **Source:** proposal, basic state tracking
 
@@ -230,22 +233,22 @@ of detail that belongs in the technical specification (Week 6).
 ### FR-DEGRADE-01 — Node failure detection
 
 **Priority:** Must
-**Requirement:** The system shall detect when an agent node stops responding, within [X] seconds of the node missing its expected heartbeat.
+**Requirement:** The system shall detect when an agent node stops responding, within 30 seconds of the node missing its expected heartbeat.
 **Rationale:** for a decentralized system this isnt optional, if a node dies silently the other agents picture of the incident goes stale and nobody knows it
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given an agent node misses its expected heartbeat, when 30 seconds pass without it responding, then the system detects the node has stopped responding and notifies both the other agents and a human.
+- Given a node was flagged as not responding, when it starts responding again, then it is marked as recovered, the earlier notifications are updated to show a late recovery, and a human is required to check that the interruption did not affect any information.
 
 **Source:** architecture requirement, decentralized means it has to handle nodes dying
 
 ### FR-DEGRADE-02 — Model load failure fallback
 
 **Priority:** Must
-**Requirement:** The system shall fall back to a rules based or manual workflow for that agent, if the local model fails to load or crashes mid session, instead of the agent just going silent.
+**Requirement:** The system shall fall back for that agent, first to a lower level (smaller) model, then to a rules based workflow, then to a manual workflow, if the local model fails to load or crashes mid session, instead of the agent just going silent.
 **Rationale:** ties back to running on a single 24gb card, hardware is going to hiccup sometimes and the demo cant just die because of it
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given the primary model fails to load or crashes mid session, when the failure is detected, then the agent falls back in order: a lower level (smaller) model first, then a rules based workflow, then a manual workflow, instead of going silent.
+- Given the fallback path also fails, when the failure is detected, then the system retries the backup 6 times, once every 10 seconds for 1 minute, and escalates to human intervention if it still fails.
 
 **Source:** local ai server spec, Ollama on consumer gpu
 
@@ -255,19 +258,19 @@ of detail that belongs in the technical specification (Week 6).
 **Requirement:** The system shall continue operating on locally available data, when a node loses contact with the rest of the network, instead of freezing or refusing to act.
 **Rationale:** this is literally the selling point against Palantir, if I dont handle this case the offline and decentralized claim is just marketing
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given a node loses contact with the rest of the network, when it is isolated, then it continues operating on locally available data, making assumptions where information lacks detail and marking those plans as needing to be filled out more.
+- Given an isolated node made decisions from local, possibly stale data, when it comes back online, then its cached decisions are checked to see whether its plan is unique and which parts conflict with or can't work with the rest of the network's state.
 
 **Source:** competitive gap analysis vs Palantir
 
 ### FR-DEGRADE-04 — Degraded mode recovery
 
-**Priority:** Could
+**Priority:** Should
 **Requirement:** The system shall reconcile state between a reconnected node and the rest of the network, once connectivity is restored after a partition, merging whatever decisions got made independently during the outage.
 **Rationale:** this is the hard one honestly, might end up being a stretch goal depending on how the 240 hours goes
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given a reconnected node's decisions don't conflict with the rest of the network's, when reconciliation runs, then they are merged into the network's state and the node's independent decisions are kept as history.
+- Given a reconnected node's decisions conflict with the rest of the network's (e.g., both assigned the same unit while apart), when reconciliation runs, then the conflict is resolved using the FR-COORD tiebreak (severity, then information richness, then reported-first).
 
 **Source:** follows from FR-DEGRADE-03, if you can go offline you eventually have to come back online
 
