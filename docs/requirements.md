@@ -396,12 +396,12 @@ of detail that belongs in the technical specification (Week 6).
 
 ### FR-AUTH-01 — Role based access control
 
-**Priority:** Must
-**Requirement:** The system shall restrict which actions a user can take, like a dispatcher being able to override versus an observer only being able to view, based on the role assigned to their account at login.
-**Rationale:** not exciting but its a baseline expectation for anything touching emergency response, and its cheap to build early
+**Priority:** Should
+**Requirement:** The system shall restrict which actions a user can take, like a dispatcher being able to override versus an observer only being able to view, based on the role assigned to their account at login, logging every permitted or blocked action to a log that no one can delete from.
+**Rationale:** not exciting but its a baseline expectation for anything touching emergency response, and its cheap to build early. In the MVP there is a single admin account; role based access is the design it scales into
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given a user takes an action their role permits (for example the admin creating, changing, or deleting records), when the action runs, then it is recorded in a log file where only put (add an entry) and get (read entries) are allowed, and no one, including the admin, can delete entries.
+- Given a user attempts an action outside their role (for example a dispatcher test account trying to delete records directly), when the attempt is made, then it is blocked and the attempt is logged.
 
 **Source:** standard requirement, not project specific
 

@@ -97,7 +97,7 @@ Pulled directly from `PROJECT.md`'s locked stack decisions:
 5. More than one city/road-network per scenario.
 6. Firearms/hazmat-specific responder types — Medical, Fire,
    Shelter/Logistics, Security only.
-7. Multi-user accounts or role-based access — single local user.
+7. Multi-user accounts or role-based access beyond the single admin account. The MVP has one account; FR-AUTH-01 is the design it scales into.
 8. A PDF/HTML-rendered report — Markdown only for now; nicer rendering is
    a nice-to-have, not required.
 9. Real-time/streaming disruption injection beyond the three fixed types

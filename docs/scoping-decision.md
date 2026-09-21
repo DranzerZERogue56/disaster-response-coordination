@@ -43,7 +43,7 @@ None scoped with real hours/weeks for this course cycle. Two "if I can" aspirati
 
 ## 5. Out of scope — will not be built
 
-A live, real-time interactive dashboard (React/Leaflet) · paid/hosted LLM APIs (Anthropic, OpenAI, etc.) · classical (non-LLM) contract-net as a formal comparison baseline · a MILP/optimal-solver ceiling comparison (PuLP/CBC) · more than one city/road-network per scenario · firearms/hazmat-specific responder types · multi-user accounts or role-based access · a PDF/HTML-rendered report · real-time/streaming disruption injection beyond the three fixed types · scenarios beyond ~30–50 incidents / 25–40 units
+A live, real-time interactive dashboard (React/Leaflet) · paid/hosted LLM APIs (Anthropic, OpenAI, etc.) · classical (non-LLM) contract-net as a formal comparison baseline · a MILP/optimal-solver ceiling comparison (PuLP/CBC) · more than one city/road-network per scenario · firearms/hazmat-specific responder types · multi-user accounts or role-based access beyond the single admin account (the MVP has one account; FR-AUTH-01 is the design it scales into) · a PDF/HTML-rendered report · real-time/streaming disruption injection beyond the three fixed types · scenarios beyond ~30–50 incidents / 25–40 units
 
 ## 6. Accepted tradeoffs
 
