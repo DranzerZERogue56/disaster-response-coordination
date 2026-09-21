@@ -42,6 +42,7 @@ the schedule slips.
 - [`docs/charter.md`](docs/charter.md) — project charter (purpose, constraints, non-goals, risks, cut order)
 - [`docs/ai-usage.md`](docs/ai-usage.md) — AI usage policy and dated log
 - [`docs/hours-log.csv`](docs/hours-log.csv) — logged work sessions
+- [`docs/definition-of-done.md`](docs/definition-of-done.md) — the checklist every work item must pass before it counts as Done
 - `docs/adr/` — architecture decision records (Week 5+)
 - `docs/` (site root) — static GitHub Pages progress dashboard, live at
   https://dranzerzerogue56.github.io/disaster-response-coordination/

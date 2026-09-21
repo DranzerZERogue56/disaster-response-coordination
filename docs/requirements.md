@@ -444,37 +444,47 @@ you'd measure it in an afternoon, it's not a requirement yet.
 
 | ID | Requirement (metric · threshold · condition) | Priority | How it is measured |
 |---|---|---|---|
-| `[ TODO ]` | | | |
+| NFR-PERF-01 | Report classification (FR-AGENT-01) completes within 5 s of intake, p95 over 20 seeded reports, on the target hardware (24 GB GPU, local model) | Must | Script timestamps intake to severity tag for 20 runs; p95 recorded in `docs/measurements.md` |
 
 ### 6.2 Reliability & Availability
 
 | ID | Requirement | Priority | How it is measured |
 |---|---|---|---|
-| `[ TODO ]` | | | |
+| NFR-REL-01 | A dead agent node is detected within 30 s of its missed heartbeat (FR-DEGRADE-01) | Must | Kill a node process mid-scenario, time until the notification fires, 5 trials, all within 30 s |
+| NFR-REL-02 | A reserved unit whose proposal is rejected or times out returns to available within 4 min (FR-RES-03) | Must | Reject a proposal in a test scenario, poll unit status, record time to "available" |
+| NFR-REL-03 | In a simulated 2-minute network outage with 10 seeded reports submitted, 0 reports are lost and all are processed after reconnection (FR-INTAKE-01) | Must | Disable the network, submit the 10 reports, restore the network, compare submitted vs processed counts |
+| NFR-REL-04 | In a simulated 20-minute network outage stress test with 100 seeded reports submitted, no more than 2% are lost | Should | Same procedure as NFR-REL-03 at 100 reports; record lost count in `docs/measurements.md` |
 
 ### 6.3 Security
 
 | ID | Requirement | Priority | How it is measured |
 |---|---|---|---|
-| `[ TODO ]` | | | |
+| NFR-SEC-01 | No agent reasoning step makes an outbound call to an external host, even when internet is available (FR-INFER-01) | Must | Run a full scenario with outbound network blocked; it completes, and a connection log shows zero external hosts |
+| NFR-SEC-02 | No assignment is dispatched without human approval when the agent's confidence is below 75 (0–100 scale) or the incident severity is Severe or Critical (FR-AGENT-03) | Must | Seed five proposals and assert dispatch behavior: confidence 74 (Moderate) is held for approval; 75 (Moderate) and 90 (Moderate) dispatch automatically; 95 at Severe and 95 at Critical are both held for approval |
+| NFR-SEC-03 | No real incident data appears in the repository at any commit; every incident report in the repo is synthetic, since this release is a demo | Must | All seeded reports live under one `data/synthetic/` folder, each marked `synthetic: true`; a check script fails on any report file outside that folder or without the marker; manual spot-check of 10 random reports for real addresses or names before each milestone submission |
+| NFR-SEC-04 | No credential, token, or key appears in the repository at any commit | Must | Run a secret scan over the full git history manually before each milestone submission, zero findings; automated in CI once CI exists (Milestone 9) |
 
 ### 6.4 Privacy & Data Handling
 
 | ID | Requirement | Priority | How it is measured |
 |---|---|---|---|
-| `[ TODO ]` | | | |
+| NFR-PRIV-01 | The system stores no personal data about callers (no name, phone number, or other identifier) in this release, and stored incident-report data, including the decision and override audit trail, is purged 24 hours after receipt (demo retention, to allow recalling what happened) | Must | Submit seeded reports that include a caller name and phone number and assert neither is persisted anywhere; run the purge with the retention clock overridden so the test does not wait 24 h, then query every data store for the seeded report IDs and expect zero rows |
 
 ### 6.5 Accessibility
 
 | ID | Requirement | Priority | How it is measured |
 |---|---|---|---|
-| `[ TODO ]` | | | |
+| NFR-ACC-01 | Every dispatcher action in the web UI (approve, modify, reject, override) is reachable and operable by keyboard alone, with a visible focus indicator at every step | Must | Manual pass with the mouse unplugged: complete all four actions on a seeded proposal, confirming focus is visible after every keypress |
+| NFR-ACC-02 | Severity is never conveyed by color alone; each of the five NFPA levels (Minor, Moderate, Serious, Severe, Critical) also appears as text | Must | View the UI in grayscale and correctly name all five levels on five seeded incidents, one per level |
 
 ### 6.6 Usability · 6.7 Maintainability · 6.8 Portability
 
 | ID | Requirement | Priority | How it is measured |
 |---|---|---|---|
-| `[ TODO ]` | | | |
+| NFR-USE-01 | A dispatcher completes an approve-or-reject decision within 45 s of a proposal appearing in the web UI | Should | Two observed sessions with three seeded proposals each, timed with a stopwatch from proposal appearing to decision submitted; every trial within 45 s, notes recorded |
+| NFR-MNT-01 | A clean clone reaches a running app in under 5 min using only the README, with local model files already downloaded | Must | Clean-machine test following only the README, timed with a stopwatch, once per iteration; model download time is recorded separately |
+
+**6.8 Portability — not used.** Portability is out of scope for this release: the system is deliberately local-only and tied to specific hardware (a 24 GB GPU host), so running across browsers, operating systems, or cloud targets is not a goal of the MVP.
 
 ## 7. Out of Scope (the Won't-Have List)
 
