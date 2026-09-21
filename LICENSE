@@ -1,8 +1,14 @@
 License decision deferred to Week 5.
 
-Reason: [TODO — fill in before committing. The assignment requires
-reading actual license texts at spdx.org/licenses or
-choosealicense.com and making this call yourself; it may not be
-AI-generated.]
+Reason: I don't care much about the license at this stage, and I want
+other people to be able to take the project. My leading candidate is MIT,
+with GPL-3.0-only as the backup. The question that will settle it: do I
+want others free to take this and close-source their own changes (MIT
+allows it), or do I require that improvements stay open (GPL requires it)?
+
+Candidate license texts read at their primary source on 2026-09-20:
+https://spdx.org/licenses/MIT.html
+https://spdx.org/licenses/GPL-3.0-only.html
 
 Dated: 2026-08-31
+Restated: 2026-09-20

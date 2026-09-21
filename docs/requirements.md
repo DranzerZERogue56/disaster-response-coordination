@@ -470,6 +470,24 @@ you'd measure it in an afternoon, it's not a requirement yet.
 |---|---|---|---|
 | NFR-PRIV-01 | The system stores no personal data about callers (no name, phone number, or other identifier) in this release, and stored incident-report data, including the decision and override audit trail, is purged 24 hours after receipt (demo retention, to allow recalling what happened) | Must | Submit seeded reports that include a caller name and phone number and assert neither is persisted anywhere; run the purge with the retention clock overridden so the test does not wait 24 h, then query every data store for the seeded report IDs and expect zero rows |
 
+#### 6.4.1 Data inventory
+
+Every data element the system touches. All stored data lives in a SQLite database (planned; the final stack decision is Week 5) with strict file permissions and a single admin account that holds create, read, update, and delete rights. Dispatcher accounts are fictional test accounts, so no real person's identity is stored.
+
+| Data element | Why held | Where it lives | Retention | How it is deleted |
+|---|---|---|---|---|
+| Incident report (location, severity, timestamp, reporting unit) | The input every proposal is built from | SQLite database | 24 h (NFR-PRIV-01) | Automatic purge job at 24 h |
+| Caller name, phone number, or any other caller identifier | Not held: callers are external customers and no personal data about them is stored in this release | Nowhere; dropped at intake | None | Not applicable |
+| Agent proposals, confidence scores, and reasoning (audit trail) | Explain and review every agent decision (FR-AUDIT-01) | SQLite database | 24 h | Purged with the audit trail |
+| Dispatcher override log (who, when, reason, approval timing) | Accountability for human overrides (FR-AUDIT-02) | SQLite database | 24 h | Purged with the audit trail |
+| Dispatcher test accounts (fictional identities) | Let the demo show approve, modify, reject, and override | SQLite database | Life of the project; contain no real person's data | Admin deletes the account |
+| Admin account credential (password hash) *(added by assistant, inferred from the single-admin decision; confirm)* | Authenticate the one admin account | SQLite database with owner-only file permissions; never in the repo (NFR-SEC-04) | Life of the project | Admin deletes the account, or the database file is removed |
+| Queued reports awaiting reconnection *(added by assistant, from FR-INTAKE-01; confirm)* | Keep reports from being lost during a network outage (NFR-REL-03) | Local queue on the reporting device | Until delivered after reconnection | Removed from the queue once delivered |
+| Unit status and reservations (available, assigned, out of service, timestamps) *(added by assistant, from FR-RES-03)* | Stop agents proposing a unit that is already committed | **Verify: storage location is decided in the Week 6 design** | Reservations released within 4 min (NFR-REL-02); records purged at 24 h | Automatic release, then the 24 h purge |
+| Synthetic scenario files | Demo and test input (NFR-SEC-03) | `data/synthetic/` in the repo | Life of the project; contain no real data | Deleted from the repo if no longer needed |
+| Cached map graph (OSMnx, OpenStreetMap data) | Routing without refetching (Nominatim policy, §13) | Local disk cache; public OpenStreetMap data only, no personal data | Until refreshed | Delete the cache folder |
+| Local model files | Run agent reasoning locally (FR-INFER-01) | Local disk, managed by Ollama | Life of the project | `ollama rm <model>` |
+
 ### 6.5 Accessibility
 
 | ID | Requirement | Priority | How it is measured |
@@ -525,7 +543,10 @@ Things you did NOT choose and cannot change.
 
 | ID | Constraint | Where it comes from | What it rules out |
 |---|---|---|---|
-| `[ TODO ]` | | | |
+| CON-01 | Total effort is capped at ~240 hours across 16 weeks | Course | Any feature set beyond the MVP; a second client application |
+| CON-02 | Solo project: one developer, with fixed weekly milestone deadlines | Course | Parallel workstreams, peer code review, dividing the build across people |
+| CON-03 | No paid or hosted LLM APIs and no accounts or API keys | Project rule in `PROJECT.md` (cost) | Cloud-hosted models; any dependency that needs signup or billing |
+| CON-04 | The GPU server hardware is not acquired yet; the current dev laptop runs models at about 3–6 tokens/sec | Budget, per `HARDWARE.md` and `RISKS.md` #2 | Validating model speed and multi-agent load before the hardware exists; full-scale deployment. This release is an MVP built to scale later |
 
 ## 11. Assumptions
 
@@ -537,7 +558,11 @@ Things you are treating as true but have NOT verified.
 
 | ID | Assumption | Owner | Verify by | If it is false |
 |---|---|---|---|---|
-| `[ TODO ]` | | | | |
+| ASM-01 | The GPU server (or a set of smaller PCs running smaller models) is available by Week 9 | me | 2026-10-14 (mid-Week 8, the `RISKS.md` early-warning point) | Fall back to the dev laptop with the smaller "lower level" models; scenarios shrink |
+| ASM-02 | A smaller local model can classify a report within the 5 s target (NFR-PERF-01) | me | 2026-10-25 (end of Week 9, first real model calls) | Raise the threshold, or use the rules-based fallback for classification |
+| ASM-03 | The model's confidence score is meaningful enough that a threshold of 75 separates safe from unsafe auto-dispatch | me | 2026-11-01 (end of Week 10, after real negotiation runs) | Escalate more proposals to humans; recalibrate the threshold |
+| ASM-04 | Decision-trail evidence for the defense can be captured (recording or export) within the 24-hour purge window | me | 2026-11-29 (Week 14, before presentation rehearsal) | Extend retention for the defense week, or record the demo run |
+| ASM-05 | An active dispatcher will be reachable to review the synthetic-scenario demo and give feedback | me | 2026-10-04 (end of Week 6, before the design is locked) | Use the two dispatcher conversations already on record as the only evidence, and say so |
 
 ## 12. Dependencies
 
@@ -549,7 +574,10 @@ Things outside your control that you need.
 
 | ID | Dependency | Version / plan pinned | Failure mode | Fallback |
 |---|---|---|---|---|
-| `[ TODO ]` | | | | |
+| DEP-01 | Ollama (local model runner) | v0.34.2, released 2026-09-15 (checked 2026-09-20) | Fails to start, or crashes under load | Rules-based workflow (FR-DEGRADE-02) |
+| DEP-02 | An open-weight local model, small and fast; not yet decided, choosing between two candidates: Phi-3.5-mini-instruct (MIT) and Qwen2.5-7B-Instruct (Apache-2.0) (checked 2026-09-20). Hosted models such as Anthropic's Haiku are excluded by CON-03 | Model choice deferred to the Week 9 first real model calls (see ASM-02) | Too slow, too inaccurate, or its license forbids the use | Swap to the other candidate or a smaller "lower level" model behind the swappable backend interface |
+| DEP-03 | Mesa (agent simulation library) | 3.5.1, released 2026-03-15 (checked 2026-09-20) | A version change breaks the scenario engine | Pin the version; fall back to a hand-rolled simple tick loop |
+| DEP-04 | OSMnx and OpenStreetMap street data | OSMnx 2.1.1, released 2026-07-21 (checked 2026-09-20); OSM data under ODbL | Rate limit, outage, or slow graph download | Cache the graph on disk; fall back to a synthetic grid graph (`RISKS.md` #3) |
 
 ## 13. Obligations
 
@@ -562,8 +590,14 @@ not assumed.
 
 | Obligation | Primary source (URL) | Date checked | What it requires of me |
 |---|---|---|---|
-| `[ TODO — project license ]` | | | |
-| `[ TODO — a dependency's license ]` | | | |
+| Project license: **decision deferred to Week 5** (dated deferral restated 2026-09-20). Candidates: MIT (leading choice) and GPL-3.0-only (backup). Deciding question: do I want others to be free to take the project and close-source their own changes (MIT permits it), or require that improvements stay open (GPL requires it)? Current lean: "I want other people to take it," which points to MIT. | https://spdx.org/licenses/MIT.html and https://spdx.org/licenses/GPL-3.0-only.html | 2026-09-20 | Once chosen: place the full license text in `LICENSE` at the repo root and state its SPDX identifier in this section. Until then the `LICENSE` file carries the dated deferral note |
+| Ollama (MIT) | https://github.com/ollama/ollama/blob/main/LICENSE | 2026-09-20 | Keep the copyright and license notice if any Ollama code is redistributed; used here as a separate installed tool, not redistributed |
+| Mesa (Apache-2.0) | https://github.com/mesa/mesa/blob/main/LICENSE | 2026-09-20 | Keep the license notice; state changes if Mesa code is modified and redistributed; no redistribution planned |
+| OSMnx (MIT) | https://github.com/gboeing/osmnx/blob/main/LICENSE.txt | 2026-09-20 | Keep the copyright and license notice if redistributed |
+| OpenStreetMap map data (ODbL) | https://www.openstreetmap.org/copyright | 2026-09-20 | Credit "OpenStreetMap and its contributors" wherever the data is shown; if I alter or build on the data and distribute the result, it must be under the same license |
+| Nominatim geocoding usage policy | https://operations.osmfoundation.org/policies/nominatim/ | 2026-09-20 | No more than 1 request per second; identify the app with a valid User-Agent (not a stock library one); display attribution; cache results instead of refetching |
+| Model candidate: Phi-3.5-mini-instruct (MIT) | https://huggingface.co/microsoft/Phi-3.5-mini-instruct/resolve/main/LICENSE | 2026-09-20 | Keep the copyright and license notice if the weights are redistributed |
+| Model candidate: Qwen2.5-7B-Instruct (Apache-2.0) | https://huggingface.co/Qwen/Qwen2.5-7B-Instruct/blob/main/LICENSE | 2026-09-20 | Keep the license notice; note that the smaller Qwen2.5-3B-Instruct is under a different research license (`qwen-research`), so the 3B size is excluded as a candidate |
 
 ---
 
