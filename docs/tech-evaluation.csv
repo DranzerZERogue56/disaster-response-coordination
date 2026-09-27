@@ -1,45 +1,45 @@
 decision,criterion,weight,option,score,evidence
 # Long format: one row per (decision, option, criterion). Scores are 0-5.
 # Weights within a decision must sum to 1.00. Every row needs evidence.
-# STAGE 1 COMMIT: weights and options only, no scores yet. Scores land in a
-# later commit so the weights can't be quietly bent to fit a favorite.
-llm-model,classification latency vs NFR-PERF-01 (5s p95, 24GB GPU),0.30,llama3.2:3b,,
-llm-model,classification latency vs NFR-PERF-01 (5s p95, 24GB GPU),0.30,mistral:7b,,
-llm-model,clean-clone setup time vs NFR-MNT-01 (5 min),0.20,llama3.2:3b,,
-llm-model,clean-clone setup time vs NFR-MNT-01 (5 min),0.20,mistral:7b,,
-llm-model,license cleanliness for ship/no-ship,0.20,llama3.2:3b,,
-llm-model,license cleanliness for ship/no-ship,0.20,mistral:7b,,
-llm-model,reasoning quality for FR-AGENT-01 / FR-COORD tiebreak logic,0.20,llama3.2:3b,,
-llm-model,reasoning quality for FR-AGENT-01 / FR-COORD tiebreak logic,0.20,mistral:7b,,
-llm-model,already have hands-on familiarity,0.10,llama3.2:3b,,
-llm-model,already have hands-on familiarity,0.10,mistral:7b,,
-data-store,purge/delete simplicity vs NFR-PRIV-01 (24h purge),0.25,SQLite,,
-data-store,purge/delete simplicity vs NFR-PRIV-01 (24h purge),0.25,PostgreSQL,,
-data-store,clean-clone setup time vs NFR-MNT-01 (5 min),0.25,SQLite,,
-data-store,clean-clone setup time vs NFR-MNT-01 (5 min),0.25,PostgreSQL,,
-data-store,concurrent writes at reservation moment (FR-RES-03 / FR-COORD-01),0.25,SQLite,,
-data-store,concurrent writes at reservation moment (FR-RES-03 / FR-COORD-01),0.25,PostgreSQL,,
-data-store,operational burden on one person,0.15,SQLite,,
-data-store,operational burden on one person,0.15,PostgreSQL,,
-data-store,already shipped with it before,0.10,SQLite,,
-data-store,already shipped with it before,0.10,PostgreSQL,,
-simulation-framework,built-in scheduling/data-collection fit (FR-SIM-01 / FR-COORD),0.30,Mesa,,
-simulation-framework,built-in scheduling/data-collection fit (FR-SIM-01 / FR-COORD),0.30,hand-rolled loop,,
-simulation-framework,hours to first working version,0.25,Mesa,,
-simulation-framework,hours to first working version,0.25,hand-rolled loop,,
-simulation-framework,docs/tutorials available for contract-net-style logic,0.20,Mesa,,
-simulation-framework,docs/tutorials available for contract-net-style logic,0.20,hand-rolled loop,,
-simulation-framework,clean-clone setup time vs NFR-MNT-01 (5 min),0.15,Mesa,,
-simulation-framework,clean-clone setup time vs NFR-MNT-01 (5 min),0.15,hand-rolled loop,,
-simulation-framework,already used before,0.10,Mesa,,
-simulation-framework,already used before,0.10,hand-rolled loop,,
-map-routing,hours to first working version / novelty load,0.30,synthetic location graph,,
-map-routing,hours to first working version / novelty load,0.30,OSMnx real-street graph,,
-map-routing,realism vs FR-MAP-01 (zone boundary on dashboard),0.25,synthetic location graph,,
-map-routing,realism vs FR-MAP-01 (zone boundary on dashboard),0.25,OSMnx real-street graph,,
-map-routing,offline reliability during outage sim (NFR-REL-03 / NFR-REL-04),0.20,synthetic location graph,,
-map-routing,offline reliability during outage sim (NFR-REL-03 / NFR-REL-04),0.20,OSMnx real-street graph,,
-map-routing,clean-clone setup time vs NFR-MNT-01 (5 min),0.15,synthetic location graph,,
-map-routing,clean-clone setup time vs NFR-MNT-01 (5 min),0.15,OSMnx real-street graph,,
-map-routing,already validated by a spike,0.10,synthetic location graph,,
-map-routing,already validated by a spike,0.10,OSMnx real-street graph,,
+# Weights were committed with no scores in commit b65d1f6 (2026-09-27),
+# before any option was scored, so the weights weren't bent to fit a favorite.
+llm-model,classification latency vs NFR-PERF-01 (5s p95 on 24GB GPU),0.30,llama3.2:3b,5,"Smallest tag in the family: 3B params, 2.0GB pull, lowest compute of the two - most likely to clear the 5s p95 target (ollama.com/library/llama3.2, checked 2026-09-27)"
+llm-model,classification latency vs NFR-PERF-01 (5s p95 on 24GB GPU),0.30,mistral:7b,3,"7B params, 4.4GB pull - more than double llama3.2:3b's size, more compute per token, higher risk against the 5s p95 target (ollama.com/library/mistral, checked 2026-09-27)"
+llm-model,clean-clone setup time vs NFR-MNT-01 (5 min),0.20,llama3.2:3b,5,"2.0GB pull (ollama.com/library/llama3.2, checked 2026-09-27)"
+llm-model,clean-clone setup time vs NFR-MNT-01 (5 min),0.20,mistral:7b,3,"4.4GB pull, roughly 2.2x the download (ollama.com/library/mistral, checked 2026-09-27)"
+llm-model,license cleanliness for ship/no-ship,0.20,llama3.2:3b,2,"Custom 'Llama 3.2 Community License', not OSI-approved, carries a 700M-MAU commercial-license clause (github.com/meta-llama/llama-models LICENSE, checked 2026-09-27) - irrelevant at capstone scale but not a clean SPDX permissive license"
+llm-model,license cleanliness for ship/no-ship,0.20,mistral:7b,5,"Apache-2.0, OSI-approved, no usage-based clause (ollama.com/library/mistral, checked 2026-09-27)"
+llm-model,reasoning quality for FR-AGENT-01 / FR-COORD tiebreak logic,0.20,llama3.2:3b,3,"3B params; the model card and Ollama's own listing position the 1B/3B tags as lightweight/mobile-oriented rather than multi-step-reasoning-oriented (ollama.com/library/llama3.2, checked 2026-09-27)"
+llm-model,reasoning quality for FR-AGENT-01 / FR-COORD tiebreak logic,0.20,mistral:7b,4,"Vendor listing states it 'outperforms Llama 2 13B on all benchmarks' at 7B (ollama.com/library/mistral, checked 2026-09-27); more headroom for the severity + tiebreak reasoning in FR-AGENT-01/FR-COORD-01"
+llm-model,already have hands-on familiarity,0.10,llama3.2:3b,4,"Most Ollama getting-started material defaults to the llama3.2 family (ollama.com/library/llama3.2, checked 2026-09-27); I have not run either model yet"
+llm-model,already have hands-on familiarity,0.10,mistral:7b,3,"Function-calling (v0.3+) is an extra concept to learn on top of the base chat interface (ollama.com/library/mistral, checked 2026-09-27); I have not run either model yet"
+data-store,purge/delete simplicity vs NFR-PRIV-01 (24h purge),0.25,SQLite,5,"Single file; a DELETE WHERE plus VACUUM is the whole purge job, matches NFR-PRIV-01 and FR-AUDIT-01/02's 24h retention directly"
+data-store,purge/delete simplicity vs NFR-PRIV-01 (24h purge),0.25,PostgreSQL,4,"Same DELETE semantics, but needs a scheduled job (cron or pg_cron) as a second moving part to actually fire the purge"
+data-store,clean-clone setup time vs NFR-MNT-01 (5 min),0.25,SQLite,5,"No server process to install or start; ships as a library, fits the 5-minute clean-machine test with room to spare"
+data-store,clean-clone setup time vs NFR-MNT-01 (5 min),0.25,PostgreSQL,2,"A separate service has to be installed and started before the app can even connect, eating into the 5-minute budget"
+data-store,concurrent writes at reservation moment (FR-RES-03 / FR-COORD-01),0.25,SQLite,3,"Single-writer lock; fine at solo-capstone/demo scale with a handful of agent processes, but this is the seam Spike SP-02 exists to actually measure"
+data-store,concurrent writes at reservation moment (FR-RES-03 / FR-COORD-01),0.25,PostgreSQL,5,"MVCC gives real concurrent writers by design, a direct fit for the simultaneous-reservation race in FR-RES-03/FR-COORD-01"
+data-store,operational burden on one person,0.15,SQLite,5,"Nothing to run or monitor beyond the app itself"
+data-store,operational burden on one person,0.15,PostgreSQL,3,"One more long-running service to keep healthy locally and in whatever CI Milestone 9 adds"
+data-store,already shipped with it before,0.10,SQLite,4,"Already the chosen store for the auth/account tables since Week 4 (FR-AUTH-01 work); extending it is not new ground"
+data-store,already shipped with it before,0.10,PostgreSQL,1,"No prior hands-on use; would be new setup, new failure modes, and a new backup/restore runbook to write from scratch"
+simulation-framework,built-in scheduling/data-collection fit (FR-SIM-01 / FR-COORD),0.30,Mesa,5,"Built-in scheduler, agent set, and DataCollector classes cover scripted playback (FR-SIM-01) and stepping competing agent teams (FR-COORD) out of the box; Apache-2.0 (github.com/projectmesa/mesa LICENSE, checked 2026-09-27)"
+simulation-framework,built-in scheduling/data-collection fit (FR-SIM-01 / FR-COORD),0.30,hand-rolled loop,2,"Scheduler, data collection, and any spatial bookkeeping all have to be written and debugged from scratch"
+simulation-framework,hours to first working version,0.25,Mesa,3,"New library API to learn; a scripted first scenario is a realistic first spike, not a same-day win"
+simulation-framework,hours to first working version,0.25,hand-rolled loop,4,"No new library to learn, so a bare while-loop and a dict of agents can produce a first result faster - but it stays fast only until FR-COORD's tiebreak and reconciliation logic needs real scheduling"
+simulation-framework,docs/tutorials available for contract-net-style logic,0.20,Mesa,5,"Official docs site plus a maintained tutorial/example repo lowers search cost for adapting the scheduler to a contract-net step"
+simulation-framework,docs/tutorials available for contract-net-style logic,0.20,hand-rolled loop,2,"No framework docs; every extension is bespoke and undocumented outside my own code"
+simulation-framework,clean-clone setup time vs NFR-MNT-01 (5 min),0.15,Mesa,4,"One `pip install mesa`, no separate service"
+simulation-framework,clean-clone setup time vs NFR-MNT-01 (5 min),0.15,hand-rolled loop,5,"Zero extra dependency"
+simulation-framework,already used before,0.10,Mesa,1,"Never used Mesa before this project"
+simulation-framework,already used before,0.10,hand-rolled loop,4,"Closest in shape to loop/scheduler code already written in prior coursework"
+map-routing,hours to first working version / novelty load,0.30,synthetic location graph,5,"A Python dict of named locations plus a fixed distance table; no new library, ships in under an hour, and matches the synthetic-only demo data already required by NFR-SEC-03"
+map-routing,hours to first working version / novelty load,0.30,OSMnx real-street graph,2,"New library and new geospatial concepts (graph projection, nearest-node snapping) on top of the Mesa and contract-net learning already underway - real hours, not yet budgeted"
+map-routing,realism vs FR-MAP-01 (zone boundary on dashboard),0.25,synthetic location graph,2,"Hand-authored nodes/edges with estimated distances; not real streets, a weaker match to FR-MAP-01's dashboard framing"
+map-routing,realism vs FR-MAP-01 (zone boundary on dashboard),0.25,OSMnx real-street graph,5,"Actual OpenStreetMap street graph and real distances - the literal fit for FR-MAP-01; MIT licensed (github.com/gboeing/osmnx LICENSE.txt, checked 2026-09-27)"
+map-routing,offline reliability during outage sim (NFR-REL-03 / NFR-REL-04),0.20,synthetic location graph,5,"No network call, no Overpass dependency, ever - trivially survives the 2-minute and 20-minute outage simulations"
+map-routing,offline reliability during outage sim (NFR-REL-03 / NFR-REL-04),0.20,OSMnx real-street graph,4,"Graph can be cached to disk after the first pull, but the first `graph_from_place` call needs the network and the Overpass API - an untested seam against NFR-REL-03/04"
+map-routing,clean-clone setup time vs NFR-MNT-01 (5 min),0.15,synthetic location graph,5,"No download, ships as part of the repo"
+map-routing,clean-clone setup time vs NFR-MNT-01 (5 min),0.15,OSMnx real-street graph,2,"First run downloads the Macomb-area graph from the Overpass API, a network call and a multi-second-to-minute wait against the 5-minute clean-machine test"
+map-routing,already validated by a spike,0.10,synthetic location graph,2,"Not yet spiked, but the shape matches the synthetic scenario data already planned"
+map-routing,already validated by a spike,0.10,OSMnx real-street graph,5,"Spike SP-01 (run 2026-09-06) returned real routes for two address pairs in Macomb, IL"
