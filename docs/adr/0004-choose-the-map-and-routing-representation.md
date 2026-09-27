@@ -8,18 +8,18 @@
 
 ## Context
 
-FR-MAP-01 requires displaying the boundary of an active incident zone on the operator dashboard, updated whenever the zone is redefined. The obvious, most realistic way to satisfy this is OSMnx, a library that pulls a real OpenStreetMap street graph and computes real routes and distances — and this was in fact spiked successfully back on 2026-09-06 (Spike SP-01), returning real routes for two test address pairs in Macomb, IL.
+FR-MAP-01 requires displaying the boundary of an active incident zone on the operator dashboard, updated whenever the zone is redefined. The obvious, most realistic way to satisfy this is OSMnx, a library that pulls a real OpenStreetMap street graph and computes real routes and distances. This was spiked back on 2026-09-06 (Spike SP-01): the underlying road graph for Macomb, IL built and routed correctly, but the spike also surfaced a real gap — geocoding a bare business name (rather than a structured address) failed for the first test pair, and only succeeded once a second pair was tried. The routing engine works; feeding it realistic input from an incident report is a separate, still-open problem.
 
 But this milestone's novelty-load count came up short before this decision even reached the matrix: local Ollama serving and the hand-rolled contract-net protocol (ADR 0001) are new, and Mesa (ADR 0003) is also new. That's already 3 new things to learn simultaneously inside a 240-hour solo budget, and OSMnx would make it 4 — a real geospatial library with its own concepts (graph projection, nearest-node snapping, Overpass API rate limits) layered on top of everything else. NFR-REL-03 and NFR-REL-04 also matter here directly: the system has to survive a simulated 2-minute and 20-minute network outage with 0% and ≤2% report loss respectively, and OSMnx's first graph pull is a network call to the Overpass API — a live dependency sitting exactly inside the window those two requirements are testing.
 
-Two real options were evaluated: OSMnx (the real-street graph, already spiked and working) and a synthetic location graph (a small hand-authored set of named locations and a fixed distance table, no external library or network call).
+Two real options were evaluated: OSMnx (the real-street graph, spiked and routing correctly, but with an unresolved business-name-to-address geocoding gap) and a synthetic location graph (a small hand-authored set of named locations and a fixed distance table, no external library or network call).
 
 ## Options considered
 
 | Option | Weighted score | The detail that decided it |
 |---|---:|---|
 | synthetic location graph | 3.95 | No new library, no network dependency, ships in under an hour, and matches the synthetic-only demo data NFR-SEC-03 already requires — the cost is lower realism against FR-MAP-01 |
-| OSMnx real-street graph | 3.45 | Best fit for FR-MAP-01's literal "real dashboard" framing, and already proven to work (Spike SP-01) — the cost is a fourth simultaneous new technology and an untested network seam against the outage requirements |
+| OSMnx real-street graph | 3.45 | Best fit for FR-MAP-01's literal "real dashboard" framing, and its routing engine is proven (Spike SP-01) — the cost is a fourth simultaneous new technology, an untested network seam against the outage requirements, and an unsolved geocoding-input gap the spike exposed |
 
 ## Decision
 
@@ -36,8 +36,8 @@ This keeps the project's total novelty load at 3 new things (Ollama/local servin
 
 **Negative**
 
-- Weaker fit to FR-MAP-01's literal framing — a hand-authored distance table is not "the boundary of an active incident zone" on a real street map, and a design reviewer in Week 8 may reasonably ask why the dashboard doesn't show real geography. Mitigation: none needed for the MVP defense, since NFR-SEC-03 already requires synthetic-only demo data anyway, so a synthetic map is consistent with a synthetic scenario. Cost of upgrading later: the already-completed Spike SP-01 means OSMnx integration is de-risked technically; budgeting ~4-6 hours to re-integrate it once Mesa and the contract-net protocol are stable is realistic.
-- Loses the demonstrated value of Spike SP-01 for this milestone specifically — the spike proved OSMnx works, but that proof isn't being used yet. This is intentional: proving something works and having the hours to integrate it under everything else happening this week are two different questions.
+- Weaker fit to FR-MAP-01's literal framing — a hand-authored distance table is not "the boundary of an active incident zone" on a real street map, and a design reviewer in Week 8 may reasonably ask why the dashboard doesn't show real geography. Mitigation: none needed for the MVP defense, since NFR-SEC-03 already requires synthetic-only demo data anyway, so a synthetic map is consistent with a synthetic scenario. Cost of upgrading later: Spike SP-01 de-risked the routing engine itself, but not the geocoding-input problem it also found; budgeting ~4-6 hours for the routing re-integration plus a still-unbudgeted amount for solving business-name-to-coordinate resolution once Mesa and the contract-net protocol are stable is realistic.
+- Loses the demonstrated value of Spike SP-01 for this milestone specifically — the spike proved the routing engine works, but that proof isn't being used yet, and it didn't fully solve the input side either. This is intentional: proving something works and having the hours to integrate it under everything else happening this week are two different questions.
 
 ## Revisit trigger
 
