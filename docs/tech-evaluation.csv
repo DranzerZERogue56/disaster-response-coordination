@@ -42,4 +42,4 @@ map-routing,offline reliability during outage sim (NFR-REL-03 / NFR-REL-04),0.20
 map-routing,clean-clone setup time vs NFR-MNT-01 (5 min),0.15,synthetic location graph,5,"No download, ships as part of the repo"
 map-routing,clean-clone setup time vs NFR-MNT-01 (5 min),0.15,OSMnx real-street graph,2,"First run downloads the Macomb-area graph from the Overpass API, a network call and a multi-second-to-minute wait against the 5-minute clean-machine test"
 map-routing,already validated by a spike,0.10,synthetic location graph,2,"Not yet spiked, but the shape matches the synthetic scenario data already planned"
-map-routing,already validated by a spike,0.10,OSMnx real-street graph,5,"Spike SP-01 (run 2026-09-06) returned real routes for two address pairs in Macomb, IL"
+map-routing,already validated by a spike,0.10,OSMnx real-street graph,4,"Spike SP-01 (run 2026-09-06): the road graph built and routed correctly (641 nodes, 1804 edges, 7.3s) and one of two test address pairs returned a real route (2.12mi); the other failed at business-name geocoding, a separate unsolved gap (docs/spikes/SP-01)"

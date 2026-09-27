@@ -11,8 +11,7 @@
 | Classify a report's severity within 5 seconds of intake | FR-AGENT-01, measured as NFR-PERF-01 (p95 over 20 seeded reports, 24GB GPU) | LLM model choice |
 | All agent reasoning runs locally, zero external API calls, even with internet available | FR-INFER-01, checked by NFR-SEC-01 (zero external hosts in a connection log) | LLM model choice — already forces "local," leaves only "which local model" as a real decision |
 | Abandon a reasoning attempt past ~60s, fall back to a non-LLM path | FR-AGENT-04 | LLM model choice (latency margin) |
-| Resolve two agents proposing the same unit before either assignment finalizes, with a defined tiebreak | FR-COORD-01, FR-COORD-03 | Simulation framework, data store (the write race at the reservation moment) |
-| Reserve a unit the instant it's proposed, so no agent proposes an already-committed unit | FR-RES-03 | Data store (concurrent-write behavior) |
+| Reserve a unit the instant it's proposed and resolve two agents proposing the same unit before either assignment finalizes, with a defined tiebreak | FR-RES-03, FR-COORD-01, FR-COORD-03 | Simulation framework and data store (both sides of the concurrent-write race at the reservation moment) |
 | Log every proposal and every dispatcher override; purge both 24h after receipt | FR-AUDIT-01, FR-AUDIT-02, NFR-PRIV-01 | Data store (purge/delete simplicity) |
 | Replay a scripted incident sequence at a controlled pace for a reliable demo | FR-SIM-01 | Simulation framework |
 | A clean clone reaches a running app in under 5 minutes using only the README | NFR-MNT-01 | All four decisions (setup-time criterion) |
@@ -27,7 +26,7 @@ Full scored matrix: [`tech-evaluation.csv`](tech-evaluation.csv). Summary:
 | Local language model | `llama3.2:3b` vs. `mistral:7b` | **llama3.2:3b** — 3.90 | 3.90 vs 3.60 |
 | Data store | SQLite vs. PostgreSQL | **SQLite** — 4.40 | 4.40 vs 3.30 |
 | Simulation/agent framework | Mesa vs. hand-rolled loop | **Mesa** — 3.95 | 3.95 vs 3.15 |
-| Map/routing representation | synthetic location graph vs. OSMnx | **synthetic location graph** — 3.95 | 3.95 vs 3.45 |
+| Map/routing representation | synthetic location graph vs. OSMnx | **synthetic location graph** — 3.95 | 3.95 vs 3.35 |
 
 No decision fell within the tool's 0.25 "coin flip" margin. Full reasoning, including the one place the matrix's own top-scored criterion pointed the other way (data store — see ADR 0002), is in the individual ADRs: [0001](adr/0001-choose-the-local-language-model.md), [0002](adr/0002-choose-the-data-store.md), [0003](adr/0003-choose-the-simulation-framework.md), [0004](adr/0004-choose-the-map-and-routing-representation.md).
 
@@ -65,7 +64,7 @@ Row 3 isn't hypothetical — it's the exact reason ADR 0002 notes SQLite scored 
 
 | Item | Cost | Fallback |
 |---|---|---|
-| Ollama, Mesa, SQLite, Python | $0 (all free/open-source, self-hosted) | — |
+| Ollama, Mesa, SQLite, Python | $0 (all free/open-source, self-hosted) | No vendor tier to lose; if any single package were abandoned upstream, fork it or replace it behind the same interface pattern already used for the LLM (ADR 0001) |
 | Local model weights (llama3.2:3b) | $0 (downloaded once, run locally, no per-call fee — required by FR-INFER-01 anyway) | Swap to a smaller/quantized tag if the 24GB GPU is under memory pressure |
 | GPU hardware to run the model | One-time, ~$400–$4,000 depending on route chosen (per `HARDWARE.md`'s phased plan) | Smaller local model + CPU inference if hardware acquisition slips |
 | GitHub private repo hosting | $0 (within GitHub's free private-repo limits) | Move to a self-hosted git remote if that ever changes |
@@ -74,8 +73,9 @@ Row 3 isn't hypothetical — it's the exact reason ADR 0002 notes SQLite scored 
 
 | Service | Free-tier term | Fallback if it changes |
 |---|---|---|
-| GitHub private repositories | Free tier currently has no repo-count or collaborator limit relevant at solo scale | Self-host a git remote |
-| Overpass API (only relevant if ADR 0004 is superseded and OSMnx is reintroduced) | Public instance has fair-use rate limits, not a hard quota | Cache the graph locally after first pull; self-host an Overpass instance if rate-limited during development |
+| GitHub private repositories | GitHub Free for personal accounts currently allows unlimited private repositories and unlimited collaborators, with a reduced feature set (not a hard quota) | Self-host a git remote if that ever tightens |
+| Nominatim geocoding (only relevant if ADR 0004 is superseded and OSMnx is reintroduced) | Public instance: 1 request/second, single-threaded, results must be cached, no reselling | Cache all geocoding results locally on first lookup; self-host a Nominatim instance if the demo needs more throughput |
+| Overpass API (only relevant if ADR 0004 is superseded and OSMnx is reintroduced) | Public instances: soft guideline of ~10,000 requests/day and <1GB/day, 512MiB/180s per-request resource cap, HTTP 429 if a request queues past 15s | Cache the pulled street graph to disk after first download (a repeat pull is never needed for one fixed demo town); self-host an Overpass instance for anything heavier |
 
 No paid cloud AI usage exists anywhere in this design — FR-INFER-01 makes that a non-option, not a cost-optimization.
 
@@ -84,7 +84,7 @@ No paid cloud AI usage exists anywhere in this design — FR-INFER-01 makes that
 | Dependency | SPDX identifier | Ship/no-ship |
 |---|---|---|
 | Ollama (runtime) | MIT | Ship |
-| `llama3.2:3b` (model weights) | Custom "Llama 3.2 Community License" (not OSI-approved; no SPDX identifier applies) | Ship — the 700M-MAU commercial clause doesn't reach a capstone demo; monitor if the project is ever productized (see ADR 0001 revisit trigger) |
+| `llama3.2:3b` (model weights) | `LicenseRef-Llama3.2-Community` (SPDX's construct for a non-standard license text; not OSI-approved) | Ship — the 700M-MAU commercial clause doesn't reach a capstone demo; monitor if the project is ever productized (see ADR 0001 revisit trigger) |
 | Mesa | Apache-2.0 | Ship |
 | SQLite | Public domain | Ship |
 | OSMnx (deferred, not in the current MVP) | MIT | Ship if/when ADR 0004 is superseded |
@@ -102,6 +102,9 @@ No paid cloud AI usage exists anywhere in this design — FR-INFER-01 makes that
 | `mistral:7b`: 7B params, 4.4GB pull, Apache-2.0 | https://ollama.com/library/mistral | 2026-09-27 |
 | Llama 3.2 model license: custom, non-OSI, 700M-MAU commercial clause | https://github.com/meta-llama/llama-models/blob/main/models/llama3_2/LICENSE | 2026-09-27 |
 | MIT permits closed-source redistribution with notice preservation only; GPL-3.0-only requires derivative works distributed to the public to also be GPL-3.0 | https://opensource.org/license/mit ; https://www.gnu.org/licenses/gpl-3.0.en.html | 2026-09-27 |
+| GitHub Free (personal): unlimited private repos and collaborators, reduced feature set | https://docs.github.com/en/get-started/learning-about-github/githubs-plans | 2026-09-27 |
+| Nominatim public-instance policy: 1 req/sec, single-threaded, must cache, no reselling | https://operations.osmfoundation.org/policies/nominatim/ | 2026-09-27 |
+| Overpass API public-instance guideline: ~10,000 req/day, <1GB/day, 512MiB/180s per request | https://dev.overpass-api.de/overpass-doc/en/preface/commons.html | 2026-09-27 |
 
 ## 8. Known gaps in this submission
 
