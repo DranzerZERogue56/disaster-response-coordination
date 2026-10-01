@@ -532,6 +532,7 @@ Every data element the system touches. All stored data lives in a SQLite databas
 |---|---|---|---|
 | `[ TODO — YYYY-MM-DD ]` | 1.0 | Initial specification | Milestone 3 |
 | `[ TODO — YYYY-MM-DD ]` | 1.1 | Non-functional requirements, constraints, assumptions, dependencies, and obligations added | Milestone 4 |
+| 2026-09-30 | 1.2 | DEP-02 and the two model-candidate obligation rows updated from the placeholder Phi-3.5-mini/Qwen2.5-7B pair to the actual Milestone 5 decision (`llama3.2:3b`, ADR 0001) | Milestone 6 prep — keep requirements consistent with the resolved tech evaluation |
 
 ## 10. Constraints
 
@@ -575,7 +576,7 @@ Things outside your control that you need.
 | ID | Dependency | Version / plan pinned | Failure mode | Fallback |
 |---|---|---|---|---|
 | DEP-01 | Ollama (local model runner) | v0.34.2, released 2026-09-15 (checked 2026-09-20) | Fails to start, or crashes under load | Rules-based workflow (FR-DEGRADE-02) |
-| DEP-02 | An open-weight local model, small and fast; not yet decided, choosing between two candidates: Phi-3.5-mini-instruct (MIT) and Qwen2.5-7B-Instruct (Apache-2.0) (checked 2026-09-20). Hosted models such as Anthropic's Haiku are excluded by CON-03 | Model choice deferred to the Week 9 first real model calls (see ASM-02) | Too slow, too inaccurate, or its license forbids the use | Swap to the other candidate or a smaller "lower level" model behind the swappable backend interface |
+| DEP-02 | Local model for agent reasoning: **`llama3.2:3b`** via Ollama. Resolved by Milestone 5 ADR 0001 (2026-09-27), which scored it against `mistral:7b` on latency, setup time, license, and reasoning-quality criteria (3.90 vs. 3.60) — see `docs/adr/0001-choose-the-local-language-model.md` and `docs/tech-evaluation.csv`. This replaces the earlier Phi-3.5-mini-instruct / Qwen2.5-7B-Instruct candidate pair named in this row as of Milestone 4; those two were never run against real criteria, so Milestone 5 restarted the evaluation rather than picking between them. Hosted models such as Anthropic's Haiku remain excluded by CON-03 and FR-INFER-01. | `llama3.2:3b`, 2.0GB, checked 2026-09-27 (https://ollama.com/library/llama3.2) | Too slow, too inaccurate, or ADR 0001's revisit trigger fires (p95 latency exceeds 5s, or over 40% of proposals route to human review) | Swap to `mistral:7b` (already scored and evidenced as the runner-up) behind the swappable backend interface, per ADR 0001's consequences section |
 | DEP-03 | Mesa (agent simulation library) | 3.5.1, released 2026-03-15 (checked 2026-09-20) | A version change breaks the scenario engine | Pin the version; fall back to a hand-rolled simple tick loop |
 | DEP-04 | OSMnx and OpenStreetMap street data | OSMnx 2.1.1, released 2026-07-21 (checked 2026-09-20); OSM data under ODbL | Rate limit, outage, or slow graph download | Cache the graph on disk; fall back to a synthetic grid graph (`RISKS.md` #3) |
 
@@ -596,8 +597,8 @@ not assumed.
 | OSMnx (MIT) | https://github.com/gboeing/osmnx/blob/main/LICENSE.txt | 2026-09-20 | Keep the copyright and license notice if redistributed |
 | OpenStreetMap map data (ODbL) | https://www.openstreetmap.org/copyright | 2026-09-20 | Credit "OpenStreetMap and its contributors" wherever the data is shown; if I alter or build on the data and distribute the result, it must be under the same license |
 | Nominatim geocoding usage policy | https://operations.osmfoundation.org/policies/nominatim/ | 2026-09-20 | No more than 1 request per second; identify the app with a valid User-Agent (not a stock library one); display attribution; cache results instead of refetching |
-| Model candidate: Phi-3.5-mini-instruct (MIT) | https://huggingface.co/microsoft/Phi-3.5-mini-instruct/resolve/main/LICENSE | 2026-09-20 | Keep the copyright and license notice if the weights are redistributed |
-| Model candidate: Qwen2.5-7B-Instruct (Apache-2.0) | https://huggingface.co/Qwen/Qwen2.5-7B-Instruct/blob/main/LICENSE | 2026-09-20 | Keep the license notice; note that the smaller Qwen2.5-3B-Instruct is under a different research license (`qwen-research`), so the 3B size is excluded as a candidate |
+| Chosen model: `llama3.2:3b` — custom "Llama 3.2 Community License" (`LicenseRef-Llama3.2-Community`, not OSI-approved) | https://github.com/meta-llama/llama-models/blob/main/models/llama3_2/LICENSE | 2026-09-27 | Not a standard permissive license; carries a 700M-MAU commercial-use clause irrelevant at capstone scale. Monitor if this project is ever taken past a demo (ADR 0001 revisit trigger) |
+| Runner-up model (documented fallback): `mistral:7b` (Apache-2.0) | https://ollama.com/library/mistral | 2026-09-27 | Keep the license notice if ever switched to; no redistribution planned |
 
 ---
 
