@@ -1,0 +1,31 @@
+// Containers (Level 2) — Disaster Response Coordination
+// Version: v0.1   Date: 2026-09-30
+// Legend: solid arrow = call/data; dashed arrow = reads/writes to a shared store
+digraph containers {
+    rankdir=LR;
+    fontname="Helvetica";
+    node [fontname="Helvetica", shape=box, style=filled, fillcolor="#eef2f7"];
+    edge [fontname="Helvetica", fontsize=10];
+
+    subgraph cluster_trust {
+        label = "Trust boundary: operator's own machine. No secrets or hosted services inside this box.";
+        style = dashed; color = "#888888"; fontsize = 11;
+
+        engine [label="Simulation & Negotiation Engine\n(Python process, Mesa)\nruns: batch competition AND\ninteractive demo mode", fillcolor="#d6e4ff"];
+        webui [label="Dispatcher Web UI\n(Flask + HTML/JS,\nlocalhost only)\ninteractive mode only", fillcolor="#d6e4ff"];
+        db [label="SQLite database\n(one file, single admin account,\nowner-only file permissions)", shape=cylinder, fillcolor="#fde2e2"];
+    }
+
+    ollama [label="Ollama\n(local LLM runtime,\nseparate process,\nmodel: llama3.2:3b)", fillcolor="#e2d6ff"];
+    operator [label="Operator / Student", shape=ellipse, fillcolor="#fff3cd"];
+    dispatcher [label="Dispatcher (human)", shape=ellipse, fillcolor="#fff3cd"];
+
+    operator -> engine [label="CLI"];
+    dispatcher -> webui [label="HTTP (approve/modify/\nreject/override)"];
+    webui -> engine [label="HTTP (internal):\npending proposals,\ndecisions"];
+    engine -> ollama [label="local call:\nclassify/propose/parse"];
+    engine -> db [label="read/write", style=dashed];
+    webui -> db [label="read/write\n(auth, audit log)", style=dashed];
+
+    note [shape=note, fillcolor="#f8f9fa", label="Holds secrets? None of these hold a network\nsecret - there is no API key anywhere in this\nsystem (FR-INFER-01 / CON-03). The SQLite file\nitself holds the one admin password hash."];
+}

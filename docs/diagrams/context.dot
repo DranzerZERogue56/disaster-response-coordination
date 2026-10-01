@@ -1,0 +1,31 @@
+// System Context (Level 1) — Disaster Response Coordination
+// Version: v0.1   Date: 2026-09-30
+// Legend: solid arrow = data/control crosses here; dashed box = outside our trust boundary
+digraph context {
+    rankdir=LR;
+    fontname="Helvetica";
+    node [fontname="Helvetica", shape=box, style=filled, fillcolor="#eef2f7"];
+    edge [fontname="Helvetica", fontsize=10];
+
+    subgraph cluster_trust {
+        label = "Trust boundary: everything in this box runs on the operator's own machine.\nNo secrets leave it. No network call crosses out of it in the shipped MVP.";
+        style = dashed;
+        color = "#888888";
+        fontsize = 11;
+        system [label="Disaster Response\nCoordination System", shape=box3d, fillcolor="#d6e4ff"];
+    }
+
+    operator [label="Operator / Student\n(launches runs)", shape=ellipse, fillcolor="#fff3cd"];
+    dispatcher [label="Dispatcher\n(human, interactive-mode only)", shape=ellipse, fillcolor="#fff3cd"];
+    reporter [label="Scripted / Typed Scenario\n(stands in for field agents)", shape=ellipse, fillcolor="#fff3cd"];
+    ollama [label="Ollama\n(local LLM runtime,\nseparate local process)", shape=box, fillcolor="#e2d6ff"];
+
+    operator -> system [label="CLI: run batch competition\nor launch interactive demo"];
+    dispatcher -> system [label="HTTP (localhost only): approve /\nmodify / reject / override\n(interactive mode)"];
+    system -> dispatcher [label="HTTP (localhost only): pending\nproposal, severity, confidence"];
+    reporter -> system [label="Intake API: incident report\n(FR-INTAKE-01)"];
+    system -> ollama [label="Local process call:\nclassify / propose / read scenario"];
+    ollama -> system [label="Model output\n(text, parsed to JSON)"];
+
+    note [shape=note, fillcolor="#f8f9fa", label="Not shown: OSMnx / Overpass API.\nDeferred by ADR 0004 (synthetic location\ngraph for the MVP) — no live network\ncall exists in the shipped system."];
+}

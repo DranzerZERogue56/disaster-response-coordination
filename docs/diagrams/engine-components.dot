@@ -1,0 +1,44 @@
+// Level-3 component diagram — the Simulation & Negotiation Engine container
+// (chosen because this is where the hard part lives: the negotiation, the
+// confidence-threshold branch, and the batch-vs-interactive mode split)
+// Version: v0.1   Date: 2026-09-30
+digraph engine_components {
+    rankdir=TB;
+    fontname="Helvetica";
+    node [fontname="Helvetica", shape=box, style=filled, fillcolor="#eef2f7"];
+    edge [fontname="Helvetica", fontsize=9];
+
+    scenario_reader [label="Scenario Reader\n(FR-SIM-01)"];
+    intake [label="Intake Gateway\n(FR-INTAKE-01/02/03)"];
+    agents [label="Resource Agents\nMedical / Fire / Shelter / Security\n(FR-AGENT-01/02)"];
+    command [label="Incident-Command Role\n(sets negotiation ground rules,\nwrites report rationale)"];
+    coordinator [label="Negotiation Coordinator\n(FR-COORD-01/02/03/04)"];
+    approval [label="Approval Gateway\n(FR-AGENT-03, NFR-SEC-02)"];
+    registry [label="Resource/Unit Registry\n(FR-RES-01/03, FR-DEGRADE-01)"];
+    audit [label="Audit Logger\n(FR-AUDIT-01/02, FR-INFER-04)"];
+    notify [label="Notification Dispatcher\n(FR-ALERT-01/02)"];
+    roster [label="Roster Competition Runner\n(batch mode orchestrator)"];
+    report [label="Report & Visualization Generator"];
+    llm [label="LLM Client\n(Ollama wrapper, FR-DEGRADE-02,\nFR-INFER-01/02/03/04)", fillcolor="#e2d6ff"];
+
+    roster -> scenario_reader;
+    roster -> agents;
+    roster -> report;
+    scenario_reader -> llm;
+    intake -> agents;
+    agents -> llm;
+    agents -> coordinator;
+    agents -> registry;
+    coordinator -> registry;
+    coordinator -> audit;
+    coordinator -> approval;
+    command -> llm;
+    command -> coordinator;
+    approval -> audit;
+    registry -> audit;
+    registry -> notify;
+    report -> audit [style=dashed, label="read"];
+    report -> registry [style=dashed, label="read"];
+
+    note [shape=note, fillcolor="#f8f9fa", label="Dependency graph is acyclic: everything\nbottoms out at Audit Logger or LLM Client,\nneither of which calls back upward.\nApproval Gateway also calls out to the\nDispatcher Web UI container in interactive\nmode (not shown - that's a container-level\nedge, see containers.dot)."];
+}
