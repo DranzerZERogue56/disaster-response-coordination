@@ -14,3 +14,6 @@ date,hat,task,estimate_hours,actual_hours,notes
 2026-09-25,architect,HW 5 research and prep (7am-12pm),5,5,"Reading and research toward the tech evaluation before starting the write-up."
 2026-09-26,architect,HW 5 research and prep (2pm-10pm),4,8,"Reading and research toward the tech evaluation before starting the write-up; ran long."
 2026-09-27,architect,"HW 5: tech-evaluation matrix, 5 ADRs, 3 spikes, LICENSE",2,2,"Milestone 5 build session: weighted the 4-decision matrix, wrote all ADRs and spike plans, resolved the license deferral."
+2026-09-29,architect,"HW 6: architecture.md scaffold through interface contracts and data model",6,7,"Purpose/Scope, context/container/component diagrams, 11 interface contracts, data model + migration 0001."
+2026-10-01,architect,"HW 6: sequence flows, error handling, dependency spec, traceability",5,5,"Sequence flows, edge-case register, AI dependency spec, full traceability table, open questions."
+2026-10-04,architect,"HW 6: medium-tier spike (SP-02) and hard-tier design defense memo",2,4,"Ran the SQLite write-contention spike for real, updated ADR 0002, wrote the design defense memo."
