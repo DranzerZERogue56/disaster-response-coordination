@@ -172,6 +172,16 @@ Idempotency  Re-notifying the same `assignment_id` creates a new notification ro
 Side effects None beyond the notification record. Acknowledgment tracking (FR-ALERT-02, Should-priority) isn't implemented by this interface in v0.1; `notifications` reserves a nullable `acknowledged_at` column for it (§6)
 Limits       None specified
 
+### Purge Job                                       (serves NFR-PRIV-01)
+Purpose      Delete every row 24 hours past its retention clock (`received_at` for reports, `generated_at` for proposals, and the same window for overrides/units/nodes/notifications), except `dispatcher_accounts` and `scenario_runs`, which are the two deliberate exceptions named in §6
+Auth         Internal only; runs on a schedule, not callable by a dispatcher or the Web UI
+Request      `{retention_hours: int, now_override: timestamp (test-only, lets a test skip waiting 24h)}`
+Success      `{purged: {incident_reports: int, agent_proposals: int, dispatcher_overrides: int, units: int, agent_nodes: int, notifications: int}, run_at: timestamp}`
+Errors       `PURGE_FAILED` — surfaced the same way `WRITE_FAILED` is (never silently retried); a failed purge is a privacy-relevant failure, not an ordinary one
+Idempotency  Running it twice in immediate succession is safe — the second run finds nothing past the retention clock and reports zero rows purged for every table
+Side effects Hard-deletes rows (not a soft-delete flag) — this is what NFR-PRIV-01's own measurement method requires: "query every data store for the seeded report IDs and expect zero rows," which a flag alone wouldn't satisfy
+Limits       Runs once per hour in practice (fine against a 24-hour window); the exact schedule isn't pinned to a specific cron expression in this release — see Open Question OQ-3, since this is the interface that makes that question concrete
+
 Error envelope used system-wide:
 ```json
 {
@@ -351,3 +361,175 @@ Mechanism      Plain numbered SQL files applied in order, tracked in a `schema_m
 Direction      Forward-only. A 16-week solo project with one developer and no shared staging database has little use for rollback migrations; if a migration turns out wrong, the fix is a new, higher-numbered migration, not a reverse of the old one
 Path + runner  `migrations/0001-initial.sql`, applied by `tools/migrate.py <db-path>` — the runner reads every `migrations/NNNN-*.sql` file whose number isn't already in `schema_migrations`, applies it inside one transaction, and records the version
 Conventions    All timestamps stored as ISO 8601 UTC text (SQLite has no native timestamp type); all IDs are integer auto-increment; enums are plain TEXT constrained by the invariants above, not a SQL CHECK constraint (SQLite's CHECK support is usable but the project's existing checkers (`tools/check_requirements.py`-style scripts) are the established pattern for enforcing structure, so enum validation happens at the Python layer, consistent with that)
+
+## 7. Sequence Flows
+
+### Flow 1 — The money path: a report becomes a notified, confirmed assignment     (serves FR-INTAKE-01, FR-AGENT-01, FR-AGENT-02, NFR-SEC-02, FR-RES-01, FR-RES-03, FR-ALERT-01)
+Submit Incident Report → Classify & Propose (via LLM Generate) → Resource/Unit Registry.reserve() → Log Decision.log_proposal() → Decide Proposal auto-path (confidence ≥ 75, not Severe/Critical) → Resource/Unit Registry marks `assigned` → Notify Responder → Log Decision records `final_status='approved'`.
+
+| Step | What can go wrong | System behavior | User sees |
+|---|---|---|---|
+| Submit report | a required field is missing | `FIELD_MISSING`, every bad field named at once (FR-INTAKE-02) | Batch: logged, scenario continues. Interactive: inline rejection naming the field |
+| reserve() | a faster proposal already reserved the unit | `UNIT_ALREADY_RESERVED`; this agent proposes the next-best available unit instead (FR-COORD-01) | Nothing — resolved before any human-visible step |
+| Decide Proposal | confidence lands at 74, one point under the threshold | routes to escalation instead of auto-approving (NFR-SEC-02) — see Flow 2/3's sibling, the escalation path, not re-walked here | A pending item appears in the Web UI (interactive), or the stand-in policy decides (batch, ADR 0006) |
+| Notify Responder | no acknowledgment channel is configured for the unit | `UNIT_UNREACHABLE` logged; the assignment itself is unaffected, since FR-ALERT-01's job is the notification, not the acknowledgment | Nothing visible — FR-ALERT-02's ack tracking is Should-priority, not built in v0.1 |
+
+### Flow 2 — The risky path: a reasoning call crosses into Ollama, a process we don't control the timing of     (serves FR-AGENT-01, FR-AGENT-04, FR-INFER-02, FR-DEGRADE-02)
+Classify & Propose → LLM Generate → Ollama (the one real process boundary in this design) → the model responds slow or with output that fails schema validation → LLM Client retries once with the schema restated → a second failure engages FR-DEGRADE-02's fallback chain: smaller local model → rules-based workflow → manual workflow.
+
+| Step | What can go wrong | System behavior | User sees |
+|---|---|---|---|
+| Ollama call | response exceeds ~60s | `TIMEOUT`; attempt abandoned, logged, falls to a non-LLM path (FR-AGENT-04) | Interactive: the proposal never appears as LLM-generated, a manual-workflow placeholder does. Batch: logged, scenario continues |
+| Ollama call | output doesn't match `output_schema` | `SCHEMA_VALIDATION_FAILED`; one retry, schema restated in the prompt | Nothing, unless the retry also fails |
+| retry | second schema failure | falls to the smaller "lower level" model (FR-DEGRADE-02 step 1) | Nothing in the proposal's shape — the audit log's `model_identifier` names which model actually answered |
+| lower model | also fails to load | falls to the rules-based workflow (FR-DEGRADE-02 step 2) | The proposal's `reasoning` field reads as rules-based, visible in the audit log, never disguised as an LLM call |
+
+### Flow 3 — The failure path: Flow 2 with Ollama actually down     (serves FR-DEGRADE-02, FR-AGENT-04)
+Same chain as Flow 2, with the boundary fully broken instead of merely slow: Ollama isn't running, or crashes mid-session.
+
+| Step | What can go wrong | System behavior | User sees |
+|---|---|---|---|
+| Ollama call | process unreachable at all | `MODEL_UNAVAILABLE`; skips straight to the fallback chain instead of waiting out the ~60s timeout | Flow 2's fallback path, triggered immediately rather than after a wait |
+| lower model | also unreachable (same process, same outage) | rules-based workflow (FR-DEGRADE-02 step 2) | Reasoning field marked rules-based in the audit log |
+| rules-based workflow | also fails (a bug, or input it can't handle) | manual workflow (FR-DEGRADE-02 step 3): retries 6 times, once every 10 seconds, for 1 minute total | A pending manual-review item, clearly marked, never mistaken for an AI proposal |
+| manual workflow | all 6 retries exhausted | escalates to human intervention, FR-DEGRADE-02's last step | An explicit system-down alert, distinct from an ordinary pending-approval item |
+
+## 8. Error Handling and Edge Cases
+
+| Category | Policy |
+|---|---|
+| Invalid input | Rejected before it reaches an agent, every bad field named at once, never one-at-a-time (FR-INTAKE-02). `400` on the HTTP surface |
+| Not authorized | A session with the wrong role is blocked and the attempt is logged, not just blocked silently (FR-AUTH-01). `401` with no session, `403` with a session the role forbids |
+| Not found | `404`; never distinguishes "doesn't exist" from "you can't see it" in the response body, since this is a single-admin, fictional-account demo with no real need for that distinction |
+| Conflict | `409`; resolved automatically by the FR-COORD tiebreak where one applies (unit double-claim), or rejected back to the caller to retry with different input (an empty override reason) |
+| Dependency failure | Ollama unreachable or slow: FR-DEGRADE-02's fallback chain, never a bare error to the user until every fallback is exhausted. A SQLite write failure on the Audit Logger: `WRITE_FAILED` is always surfaced to the human overseer immediately, never silently retried, since a missing audit entry defeats the reason that interface exists |
+| Exhaustion | The manual workflow's 6 retries used up escalates to human intervention (FR-DEGRADE-02's last step). The offline report queue has no documented maximum size — see Open Question OQ-1 |
+
+For every call that leaves this process (SQLite is an embedded library accessed in-process, not a separate service, so it has no timeout/retry policy of its own — the Resource/Unit Registry, Audit Logger, and other SQLite-backed interfaces in §5 fail synchronously or not at all):
+
+| Call | Timeout (s) | Retries + backoff | Fallback | User is told? |
+|---|---|---|---|---|
+| LLM Generate → Ollama | 60 | 1 retry, schema restated in the prompt, no delay | FR-DEGRADE-02 chain: smaller model → rules-based → manual | Not directly — the audit log's `model_identifier` records which path actually answered; nothing surfaces unless every fallback is exhausted |
+| Dispatcher Web UI → Engine (Decide Proposal / Override Assignment, interactive mode) | 5 | 3 retries, 1s/2s/4s backoff | A "can't reach the engine" banner; the proposal stays pending rather than silently failing | Yes, explicitly |
+| Engine → Dispatcher Web UI (pushing a newly-escalated proposal) | 5 | 3 retries, same backoff | Falls back to the Web UI polling `GET /api/proposals/pending` every 10s | No explicit error — the update just arrives a little later |
+| Manual workflow's own retry (every automated reasoning path has already failed) | n/a — this is the intentional retry loop itself, not a network call | 6 retries, 10s apart, 1 minute total | Escalates to human intervention | Yes, an explicit system-down alert |
+
+### Edge-case register
+
+| # | Edge case | Expected behavior |
+|---|---|---|
+| 1 | A scenario run starts with zero incident reports queued | The run completes immediately with `score = 0` and a note that it processed zero reports — not a crash |
+| 2 | `severity_raw` is present but an empty string, not missing entirely | Treated as `FIELD_INVALID` (present but fails its format rule), not `FIELD_MISSING` |
+| 3 | Two reports exactly 1 block and exactly 10 minutes apart, to the second | Still counts as inside FR-INTAKE-03's duplicate window — the boundary is inclusive |
+| 4 | A proposal's confidence is exactly 75 and severity is not Severe/Critical | Auto-approves (NFR-SEC-02's own worked example states 75 dispatches automatically) |
+| 5 | A proposal's confidence is exactly 75 but severity is Critical | Still escalates — severity Severe/Critical overrides confidence regardless of the number (FR-AGENT-03's "or" condition) |
+| 6 | Two proposals tie on severity, information richness, **and** reported-at timestamp to the second | FR-COORD-03's true-tie case: both are validated, the lower `agent_proposals.id` is pushed forward as a deterministic tiebreak-of-the-tiebreak, the other is kept as history |
+| 7 | A dispatcher overrides an assignment that was already overridden once before | Both are logged as separate `dispatcher_overrides` rows; there is no "undo," each override stands on its own |
+| 8 | An agent node's heartbeat arrives at exactly the 30-second mark | Not flagged `not_responding` — the invariant requires *more than* 30 seconds, so the boundary favors the node |
+| 9 | An override's `reason` field is whitespace only, not literally empty | `REASON_REQUIRED` still fires — the DB check is `length(trim(reason)) > 0`, not a bare non-NULL check |
+| 10 | A unit's 4-minute auto-release (NFR-REL-02) and a human override arrive at the same unit in the same instant | The override wins — it's the later-timestamped write in practice, and the auto-release becomes a no-op against an already-reassigned unit |
+| 11 | The 24-hour purge job runs on a `scenario_run`'s raw data before the Report & Visualization Generator has read it | Unresolved in this version — this is Open Question OQ-3 (§11), named here as the concrete case it actually causes |
+| 12 | A `team_size_config` requests zero units of a type a report needs (e.g. `"Medical": 0`) | Every report needing that type immediately returns `CLASSIFICATION_UNCERTAIN` and escalates — not a crash, not a silent misassignment to the wrong unit type |
+| 13 | Ollama returns a confidence score outside 0–100 (a malformed or hallucinated value) | `SCHEMA_VALIDATION_FAILED` — the `output_schema` enforces the 0–100 range, so this is caught and retried like any other schema failure, never silently clamped to a valid-looking number |
+| 14 | A simulated field report carries a timestamp in the future | Accepted as-is — nothing in `docs/requirements.md` requires a timestamp-in-the-past check, and this design deliberately does not add one; named here so it reads as a decision, not an oversight |
+| 15 | Many thousands of `incident_reports` rows have accumulated across many unpurged `scenario_runs` during one long development/testing session | No degradation — every query in §5 that touches this table filters by `scenario_run_id`, so per-run row counts (30–50) are what every real query actually scans, regardless of total accumulated history |
+
+## 9. External and Nondeterministic Dependencies
+
+**AI component: `llama3.2:3b` via Ollama** — the only reasoning path in this system (FR-INFER-01, FR-INFER-02, FR-DEGRADE-02).
+
+Purpose              Every classification, proposal-generation, and scenario-parsing call (FR-AGENT-01, FR-AGENT-02, FR-SIM-01) goes through this one path
+Inputs               Report fields (`location`, `severity_raw`, `timestamp_reported`, `reporting_unit`, `description`) for classify/propose calls; raw scenario text for Scenario Reader calls
+Privacy rule         NFR-PRIV-01 drops any caller name/phone number at intake, before this interface is ever reached — nothing personal is in the data model to begin with (§6), so nothing personal is ever in a prompt either. No prompt or response leaves the local machine (FR-INFER-01) — enforced in code, verified by NFR-SEC-01's connection-log test
+Prompt template path `prompts/classify-and-propose.txt`, `prompts/scenario-reader.txt` — not yet written; this is a build-phase (Week 9+) artifact, named here so the path exists in the design before the code does
+Model identifier     `llama3.2:3b`, verified at https://ollama.com/library/llama3.2, checked 2026-09-27 (ADR 0001)
+Parameters           `temperature=0.2` (favors consistent output over creative variance — this is a life-safety decision aid, not a writing assistant), `max_tokens=512`, `top_p=0.9` — defaults chosen now, not yet benchmarked; revisit once real timing data exists (ASM-02)
+Output schema        A JSON object requiring `severity` (one of the five NFPA-mapped levels), `confidence` (int, 0–100), `recommended_unit_id` (int), `reasoning` (string), `alternatives` (array of unit ids, capped at 5 entries)
+Validator             A hand-rolled Python check (required keys present, each type and range correct), not the `jsonschema` library — the schema is small and fixed enough that adding a new dependency for it would cost more than it saves, consistent with this project's existing low-dependency pattern
+Behavior on invalid output `SCHEMA_VALIDATION_FAILED` → one retry with the schema restated → FR-DEGRADE-02's fallback chain (§5 LLM Generate, §7 Flow 2/3) — not repeated here
+Token/latency/cost budget **Cost: $0, always** — this runs locally under FR-INFER-01, so there is no per-token bill to cap; stating this plainly instead of inventing a dollar figure that doesn't apply. **Latency hard cap: 60 seconds** (FR-AGENT-04) — exceeding it abandons the attempt rather than waiting longer. **Output cap: 512 tokens** per call
+Non-AI fallback       The three-tier chain in FR-DEGRADE-02: a smaller local model, then a rules-based workflow, then a manual workflow with 6 retries at 10s intervals — fully specified in §5 (LLM Generate) and §7 (Flows 2 and 3), not repeated here
+Logging + retention   Every call's `model_identifier`, `model_version`, and the proposal it produced are written through Log Decision (FR-INFER-04) before any decision exists (FR-AUDIT-01); purged with the rest of the audit trail 24 hours after `generated_at` (NFR-PRIV-01) — the model-version record is only ever meaningful tied to the specific proposal it informed, so purging them together is correct, not a gap
+
+**No other third-party dependency exists in the current MVP.** The one candidate was OSMnx/the Overpass API for real-street routing, which ADR 0004 deferred to a synthetic location graph — if that ADR is ever superseded, its dependency spec (cost, limits, behavior when unavailable) would need to be added here; see §13 of `docs/requirements.md` for the Nominatim/Overpass policy facts already on file from that evaluation.
+
+| Fact | Value | Source URL | Date checked |
+|---|---|---|---|
+| Model identifier | `llama3.2:3b`, 3B parameters, 2.0GB pull | https://ollama.com/library/llama3.2 | 2026-09-27 |
+| Model license | Custom "Llama 3.2 Community License" (`LicenseRef-Llama3.2-Community`), not OSI-approved | https://github.com/meta-llama/llama-models/blob/main/models/llama3_2/LICENSE | 2026-09-27 |
+| Ollama runtime license | MIT | https://github.com/ollama/ollama/blob/main/LICENSE | 2026-09-27 |
+
+## 10. Traceability
+
+Every Must-priority requirement appears below with a component and an interface. Every Should/Could-priority requirement also appears — some with full interface treatment (where it was cheap to add once the Must-priority neighbor was already built), some explicitly marked not yet interfaced, which is a decision, not an oversight. Every component in §4 serves at least one requirement (visible in its own table row, §4).
+
+| Requirement | Priority | Component(s) | Interface(s) | Flow |
+|---|---|---|---|---|
+| FR-INTAKE-01 | Must | Intake Gateway | Submit Incident Report | Flow 1 |
+| FR-INTAKE-02 | Must | Intake Gateway | Submit Incident Report | Flow 1 |
+| FR-INTAKE-03 | Should | Intake Gateway | Submit Incident Report (duplicate-merge path) | Edge case 3 |
+| FR-AGENT-01 | Must | Resource Agents | Classify & Propose | Flow 1, 2, 3 |
+| FR-AGENT-02 | Must | Resource Agents | Classify & Propose | Flow 1 |
+| FR-AGENT-03 | Must | Approval Gateway | Decide Proposal | Flow 1 (auto path) |
+| FR-AGENT-04 | Should | Resource Agents, LLM Client | Classify & Propose, LLM Generate | Flow 2, 3 |
+| FR-COORD-01 | Must | Negotiation Coordinator | Resource/Unit Registry (reserve conflict), Resolve Negotiation Conflict | Flow 1 (reserve step) |
+| FR-COORD-02 | Must | Negotiation Coordinator | Resolve Negotiation Conflict | — (not separately diagrammed; see §5) |
+| FR-COORD-03 | Must | Negotiation Coordinator | Resolve Negotiation Conflict | Edge case 6 |
+| FR-COORD-04 | Could | — | Out of scope this release (§1) | — |
+| FR-RES-01 | Must | Approval Gateway, Resource/Unit Registry | Decide Proposal, Resource/Unit Registry | Flow 1 |
+| FR-RES-02 | Must | Dispatcher Web UI | Override Assignment | — (not separately diagrammed; see §5) |
+| FR-RES-03 | Must | Resource/Unit Registry | Resource/Unit Registry | Flow 1 |
+| FR-DEGRADE-01 | Must | Resource/Unit Registry | Resource/Unit Registry (heartbeat ops) | — (not separately diagrammed; see §5) |
+| FR-DEGRADE-02 | Must | LLM Client | LLM Generate | Flow 2, 3 |
+| FR-DEGRADE-03 | Should | — | Not yet interfaced | Open Question OQ-5 |
+| FR-DEGRADE-04 | Should | — | Not yet interfaced | Open Question OQ-5 |
+| FR-INFER-01 | Must | LLM Client | LLM Generate | Flow 2, 3 |
+| FR-INFER-02 | Must | LLM Client | LLM Generate | Flow 2, 3 |
+| FR-INFER-03 | Should | — | Not yet interfaced | Open Question OQ-6 |
+| FR-INFER-04 | Should | Audit Logger | Log Decision | — |
+| FR-ALERT-01 | Must | Notification Dispatcher | Notify Responder | Flow 1 |
+| FR-ALERT-02 | Should | Notification Dispatcher | Notify Responder (reserved `acknowledged_at` column, logic not built) | — |
+| FR-MAP-01 | Should | Report & Visualization Generator | — (rendered output, not a callable interface) | — |
+| FR-MAP-02 | Could | — | Out of scope this release (§1) | — |
+| FR-AUDIT-01 | Must | Audit Logger | Log Decision | Flow 1 |
+| FR-AUDIT-02 | Must | Audit Logger | Log Decision, Override Assignment | — |
+| FR-AUTH-01 | Should | Dispatcher Web UI, Audit Logger | Decide Proposal, Override Assignment, Log Decision | — |
+| FR-SIM-01 | Must | Scenario Reader | Play Scenario | — |
+| NFR-PERF-01 | Must | Resource Agents, LLM Client | Classify & Propose | Flow 1, 2 |
+| NFR-REL-01 | Must | Resource/Unit Registry | Resource/Unit Registry (heartbeat) | — |
+| NFR-REL-02 | Must | Resource/Unit Registry | Resource/Unit Registry | Edge case 10 |
+| NFR-REL-03 | Must | Intake Gateway | Submit Incident Report (offline queue) | — |
+| NFR-REL-04 | Should | Intake Gateway | Same mechanism as NFR-REL-03, not separately interfaced | — |
+| NFR-SEC-01 | Must | LLM Client | LLM Generate | — |
+| NFR-SEC-02 | Must | Approval Gateway | Decide Proposal | Flow 1 |
+| NFR-SEC-03 | Must | — | Enforced by repo convention (`data/synthetic/` + marker + check script), not a runtime interface | — |
+| NFR-SEC-04 | Must | Dispatcher Accounts (entity, §6) | — (schema-level: `password_hash`/`password_salt`, never in the repo) | — |
+| NFR-PRIV-01 | Must | — | Purge Job | — |
+| NFR-ACC-01 | Must | Dispatcher Web UI | — (UI-layer requirement, not a backend interface) | — |
+| NFR-ACC-02 | Must | Dispatcher Web UI | — (UI-layer requirement, not a backend interface) | — |
+| NFR-USE-01 | Should | Dispatcher Web UI | Decide Proposal (Limits field) | — |
+| NFR-MNT-01 | Must | — (cross-cutting) | `tools/migrate.py`, README, the clean-clone test itself | — |
+| NFR-PORT-01 | — | — | Out of scope this release (§1; already marked "not used" in `docs/requirements.md` §6.8) | — |
+
+**`FR-NEG-01` is not a real requirement.** It appears only once in `docs/requirements.md`, inside §5's "Identifier" instruction bullet, as the example of the naming format (`FR-<AREA>-<nn>`, e.g. `FR-NEG-01`) — not as an actual numbered requirement. `tools/spec-check.py`'s traceability check reads it as an identifier because it matches the ID pattern, which this note exists to explain rather than quietly work around.
+
+## 11. Open Questions and Design Risks
+
+| # | Open question | What it blocks | Owner | Decide by |
+|---|---|---|---|---|
+| OQ-1 | What is the offline report queue's maximum size before it starts rejecting new reports outright? `docs/requirements.md` doesn't set one | Finishing the Submit Incident Report interface's Limits field for real, rather than leaving it open-ended | Dranzer Rogue | End of Week 9 (the walking-skeleton milestone, when the queue is first actually built) |
+| OQ-2 | What is the actual acknowledgment channel for Notify Responder — is a responder's ack simulated input, a timed auto-ack, or something else? FR-ALERT-01 doesn't specify | Building FR-ALERT-02's ack tracking at all | Dranzer Rogue | End of Week 10 (after the walking skeleton proves out the basic notify path) |
+| OQ-3 | Does the Purge Job's schedule risk deleting a `scenario_run`'s raw data before the Report & Visualization Generator has read it, since `scenario_runs` itself is exempt from the 24h purge but the data it summarizes is not? | Finalizing the Purge Job's actual run schedule, and whether report generation needs to be forced to run immediately after a scenario finishes rather than whenever convenient | Dranzer Rogue | End of Week 9 — before any batch competition run is trusted to produce a report after the fact |
+| OQ-4 | Is a 20-minute outage stress test (NFR-REL-04, Should) worth building as its own test harness, or does the 2-minute NFR-REL-03 harness just get a longer duration argument? | Scoping the Milestone 11 test plan | Dranzer Rogue | End of Week 10 |
+| OQ-5 | Are FR-DEGRADE-03 (network partition behavior) and FR-DEGRADE-04 (degraded mode recovery) actually in scope for this release, or are they the stretch goal the original requirement's own rationale named them as ("might end up being a stretch goal depending on how the 240 hours goes")? | Whether §4's component table needs a dedicated partition-handling component at all | Dranzer Rogue | End of Week 7 (the Work Breakdown milestone, where the 2-week cut rule gets applied for real) |
+| OQ-6 | Does FR-INFER-03's startup hardware check belong in the LLM Client, or is it a separate preflight script run once before anything else starts? | A small design choice, but it changes whether LLM Client's responsibility sentence in §4 needs a rewrite | Dranzer Rogue | End of Week 9 |
+
+## 12. Change Log for This Document
+
+| Version | Date | Change | Why |
+|---|---|---|---|
+| v0.1 | 2026-09-30 | Initial draft: §1-4 (Purpose/Scope, Context, Containers, Components) | Milestone 6 |
+| v0.1 | 2026-09-30 | §5 Interface Contracts, error envelope, status-code policy | Milestone 6 |
+| v0.1 | 2026-09-30 | §6 Data Model, migration 0001 | Milestone 6 |
+| v0.1 | 2026-10-03 | §7 Sequence Flows, §8 Error Handling and Edge Cases | Milestone 6 |
+| v0.1 | 2026-10-03 | §9 Dependency Specification, §10 Traceability, §11 Open Questions, §12 this log | Milestone 6 |
