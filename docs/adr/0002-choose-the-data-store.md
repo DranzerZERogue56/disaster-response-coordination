@@ -51,3 +51,7 @@ Revisit this ADR if Spike SP-02 measures any lost or duplicated reservation acro
 | Claim in this ADR | Source | Checked on |
 |---|---|---|
 | SQLite is public domain, no license restriction | https://sqlite.org/copyright.html | 2026-09-27 |
+
+## Update — 2026-10-04
+
+Spike SP-02 (`docs/spikes/SP-02-sqlite-write-contention-under-concurrent-mesa-agents.md`) ran against the real schema from `migrations/0001-initial.sql`: 20 trials, 3 concurrent OS processes racing to reserve the same unit each trial. Zero double-bookings, zero lost writes, max 0.026s per trial. The revisit trigger above — "any lost or duplicated reservation" — did not fire. This ADR's decision stands confirmed, not superseded; this note records the new evidence without editing the original Context/Decision/Consequences above, per this project's own ADR-immutability discipline.

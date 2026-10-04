@@ -533,3 +533,16 @@ Every Must-priority requirement appears below with a component and an interface.
 | v0.1 | 2026-09-30 | §6 Data Model, migration 0001 | Milestone 6 |
 | v0.1 | 2026-10-03 | §7 Sequence Flows, §8 Error Handling and Edge Cases | Milestone 6 |
 | v0.1 | 2026-10-03 | §9 Dependency Specification, §10 Traceability, §11 Open Questions, §12 this log | Milestone 6 |
+| v0.1 | 2026-10-04 | §13 Medium Tier: de-risking spike | Milestone 6 |
+
+## 13. Medium Tier — De-risking Spike (extra credit)
+
+**A spike that de-risks the riskiest interface**, per the Medium Tier option list — run against the Resource/Unit Registry's `reserve()` contract (§5), the mechanism FR-RES-03 and FR-COORD-01 depend on to prevent two agents double-booking the same unit.
+
+[`docs/spikes/SP-02-sqlite-write-contention-under-concurrent-mesa-agents.md`](spikes/SP-02-sqlite-write-contention-under-concurrent-mesa-agents.md) — planned in Milestone 5 but not run until now. Run for real today against this milestone's actual `migrations/0001-initial.sql` schema (not a toy table), via [`spikes/sp-02-sqlite-write-contention.py`](../spikes/sp-02-sqlite-write-contention.py): 20 trials, 3 concurrent OS processes racing to reserve the same unit each trial.
+
+**Result:** 20/20 clean. Zero double-bookings, zero lost writes, max 0.026 seconds per 3-way race. ADR 0002's revisit trigger ("any lost or duplicated reservation") did not fire — the data-store decision stands confirmed by real evidence, recorded as a dated update note on ADR 0002 rather than an edit to its original text, per this project's ADR-immutability discipline.
+
+**What changed in the spec because of it:** nothing in §5's Resource/Unit Registry contract needed to change — the spike confirmed the existing design rather than finding a flaw in it. What it *did* change is the confidence behind §6's single-writer design note, which was previously backed only by reasoning ("fine at solo-capstone/demo scale") and is now backed by a real measurement at the scale this project actually uses (3 concurrent writers).
+
+A second candidate spike — whether `llama3.2:3b`'s output actually validates against the Classify & Propose schema (§9) — was considered but not run here: this environment has no GPU and no Ollama installation, so a live model call couldn't be executed honestly before the deadline. That question is already planned as Milestone 5's Spike SP-03, to be run on the project's real target hardware.
