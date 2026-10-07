@@ -71,9 +71,9 @@ Plannable effort (available − buffer) = **`_` h**
 
 | Task | Name | Reqs | O | M | P | E | Done when | Depends on |
 |---|---|---|---:|---:|---:|---:|---|---|
-| T-4.1 | Classify & Propose for one resource-agent role | FR-AGENT-01, FR-AGENT-02 | _ | _ | _ | _ | 10 seeded reports each receive a severity tag and a proposal with a confidence score within the target latency | T-2.1a, T-3.1 |
-| T-4.2 | Extend Classify & Propose to the remaining three roles | FR-AGENT-01, FR-AGENT-02 | _ | _ | _ | _ | All four role types independently classify and propose against role-appropriate seeded reports | T-4.1 |
-| T-4.3 | ~60s reasoning timeout + non-LLM fallback trigger | FR-AGENT-04 | _ | _ | _ | _ | Artificially delaying a model response past 60s triggers the documented fallback and logs a TIMEOUT error | T-2.3, T-4.1 |
+| T-4.1 | Classify & Propose for one resource-agent role | FR-AGENT-01, FR-AGENT-02 | 3 | 5 | 8 | 5.17 | 10 seeded reports each receive a severity tag and a proposal with a confidence score within the target latency | T-2.1a, T-3.1 |
+| T-4.2 | Extend Classify & Propose to the remaining three roles | FR-AGENT-01, FR-AGENT-02 | 2 | 3 | 5 | 3.17 | All four role types independently classify and propose against role-appropriate seeded reports | T-4.1 |
+| T-4.3 | ~60s reasoning timeout + non-LLM fallback trigger | FR-AGENT-04 | 1 | 2 | 3 | 2.00 | Artificially delaying a model response past 60s triggers the documented fallback and logs a TIMEOUT error | T-2.3, T-4.1 |
 
 ### WP-5 — Negotiation & Resource Registry  ·  requirements FR-COORD-01, FR-COORD-02, FR-COORD-03, FR-DEGRADE-01, FR-RES-01, FR-RES-03  ·  owner: me
 
