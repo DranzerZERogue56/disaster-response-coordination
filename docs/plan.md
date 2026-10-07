@@ -135,10 +135,10 @@ Plannable effort (available − buffer) = **`_` h**
 
 | Task | Name | Reqs | O | M | P | E | Done when | Depends on |
 |---|---|---|---:|---:|---:|---:|---|---|
-| T-12.1 | README clean-machine test | NFR-MNT-01 | _ | _ | _ | _ | A clean clone reaches a running app in under 5 minutes using only the README | T-1.1,T-2.1a,T-2.1b,T-3.1,T-4.1,T-5.1,T-6.1,T-7.1,T-8.1,T-9.1,T-10.1,T-11.1 |
-| T-12.2 | Automate the secret scan in CI | NFR-SEC-04 | _ | _ | _ | _ | A CI run on a commit containing a fake API key fails the build | — |
-| T-12.3 | Author 3-5 pre-written demo scenarios | - | _ | _ | _ | _ | Each scenario file passes the structural check and produces a non-empty run | T-11.4 |
-| T-12.4 | Record the post-run visualization into a short demo clip | - | _ | _ | _ | _ | One scenario's run produces a viewable short clip with no live network dependency at playback time | T-10.2 |
+| T-12.1 | README clean-machine test | NFR-MNT-01 | 1 | 2 | 3 | 2.00 | A clean clone reaches a running app in under 5 minutes using only the README | T-1.1,T-2.1a,T-2.1b,T-3.1,T-4.1,T-5.1,T-6.1,T-7.1,T-8.1,T-9.1,T-10.1,T-11.1 |
+| T-12.2 | Automate the secret scan in CI | NFR-SEC-04 | 1 | 2 | 3 | 2.00 | A CI run on a commit containing a fake API key fails the build | — |
+| T-12.3 | Author 3-5 pre-written demo scenarios | - | 2 | 4 | 6 | 4.00 | Each scenario file passes the structural check and produces a non-empty run | T-11.4 |
+| T-12.4 | Record the post-run visualization into a short demo clip | - | 1 | 2 | 3 | 2.00 | One scenario's run produces a viewable short clip with no live network dependency at playback time | T-10.2 |
 
 `E = (O + 4M + P) / 6`  ·  spread `P / O` over 4 means: spike it or split it.
 
