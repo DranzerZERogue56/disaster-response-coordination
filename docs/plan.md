@@ -111,9 +111,9 @@ Plannable effort (available − buffer) = **`_` h**
 
 | Task | Name | Reqs | O | M | P | E | Done when | Depends on |
 |---|---|---|---:|---:|---:|---:|---|---|
-| T-9.1 | Team-size config loader + scenario_runs orchestration | - | _ | _ | _ | _ | Launching one batch run with a given team_size_config produces exactly the right number of unit/agent_node rows | T-5.1, T-3.4 |
-| T-9.2 | Five-measure effectiveness score + naive-baseline comparison | - | _ | _ | _ | _ | Scoring one completed run produces all five sub-measures plus one combined score and a comparable baseline score from logged data only | T-9.1, T-6.1 |
-| T-9.3 | Disruption injectors (road closure, unit failure, incident surge) | - | _ | _ | _ | _ | Injecting each disruption type mid-run visibly changes at least one in-flight proposal or reservation | T-9.1, T-5.3 |
+| T-9.1 | Team-size config loader + scenario_runs orchestration | - | 2 | 4 | 6 | 4.00 | Launching one batch run with a given team_size_config produces exactly the right number of unit/agent_node rows | T-5.1, T-3.4 |
+| T-9.2 | Five-measure effectiveness score + naive-baseline comparison | - | 2 | 4 | 6 | 4.00 | Scoring one completed run produces all five sub-measures plus one combined score and a comparable baseline score from logged data only | T-9.1, T-6.1 |
+| T-9.3 | Disruption injectors (road closure, unit failure, incident surge) | - | 3 | 5 | 8 | 5.17 | Injecting each disruption type mid-run visibly changes at least one in-flight proposal or reservation | T-9.1, T-5.3 |
 
 ### WP-10 — Report & Visualization  ·  requirements FR-MAP-01 (plus PROJECT.md Report generation)  ·  owner: me
 
