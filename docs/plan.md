@@ -105,7 +105,7 @@ Plannable effort (available − buffer) = **`_` h**
 
 | Task | Name | Reqs | O | M | P | E | Done when | Depends on |
 |---|---|---|---:|---:|---:|---:|---|---|
-| T-8.1 | Notify Responder + reserved acknowledgment column | FR-ALERT-01, FR-ALERT-02 | _ | _ | _ | _ | A finalized assignment produces exactly one notification row; the acknowledged_at column exists and accepts a manually-set timestamp | T-6.2 |
+| T-8.1 | Notify Responder + reserved acknowledgment column | FR-ALERT-01, FR-ALERT-02 | 1 | 2 | 3 | 2.00 | A finalized assignment produces exactly one notification row; the acknowledged_at column exists and accepts a manually-set timestamp | T-6.2 |
 
 ### WP-9 — Roster Competition & Scoring  ·  requirements enabling work (PROJECT.md Roster Competition / Evaluation)  ·  owner: me
 
