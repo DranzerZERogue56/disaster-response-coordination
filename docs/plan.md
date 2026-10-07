@@ -126,10 +126,10 @@ Plannable effort (available − buffer) = **`_` h**
 
 | Task | Name | Reqs | O | M | P | E | Done when | Depends on |
 |---|---|---|---:|---:|---:|---:|---|---|
-| T-11.1 | Unit tests on core negotiation logic | - | _ | _ | _ | _ | The test suite covers every tiebreak branch and passes in CI | T-5.3 |
-| T-11.2 | Scenario-replay regression test on one fixed scenario | FR-SIM-01 | _ | _ | _ | _ | Running the same scenario twice produces byte-identical scoring output | T-9.2 |
-| T-11.3 | Property/fuzz test: a resource is never double-booked | FR-RES-03 | _ | _ | _ | _ | A randomized-input fuzz run of 1,000 proposal attempts never produces two live reservations on one unit | T-5.1 |
-| T-11.4 | Structural check on Scenario Reader output | FR-SIM-01 | _ | _ | _ | _ | Feeding 10 malformed scenario texts to the checker correctly rejects all 10 before they reach the simulation | T-3.4 |
+| T-11.1 | Unit tests on core negotiation logic | - | 2 | 3 | 5 | 3.17 | The test suite covers every tiebreak branch and passes in CI | T-5.3 |
+| T-11.2 | Scenario-replay regression test on one fixed scenario | FR-SIM-01 | 1 | 2 | 4 | 2.17 | Running the same scenario twice produces byte-identical scoring output | T-9.2 |
+| T-11.3 | Property/fuzz test: a resource is never double-booked | FR-RES-03 | 2 | 3 | 5 | 3.17 | A randomized-input fuzz run of 1,000 proposal attempts never produces two live reservations on one unit | T-5.1 |
+| T-11.4 | Structural check on Scenario Reader output | FR-SIM-01 | 1 | 2 | 3 | 2.00 | Feeding 10 malformed scenario texts to the checker correctly rejects all 10 before they reach the simulation | T-3.4 |
 
 ### WP-12 — Docs, CI & Demo Prep  ·  requirements NFR-MNT-01, NFR-SEC-04  ·  owner: me
 
