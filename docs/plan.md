@@ -62,10 +62,10 @@ Plannable effort (available − buffer) = **`_` h**
 
 | Task | Name | Reqs | O | M | P | E | Done when | Depends on |
 |---|---|---|---:|---:|---:|---:|---|---|
-| T-3.1 | Submit Incident Report (validation + field errors) | FR-INTAKE-01, FR-INTAKE-02 | _ | _ | _ | _ | 5 hand-written malformed reports each return the correct named-field error | T-1.1 |
-| T-3.2 | Offline queue + reconnection drain in timestamp order | FR-INTAKE-01, NFR-REL-03 | _ | _ | _ | _ | Simulating a network-down flag queues 10 reports; flipping it delivers all 10 in timestamp order | T-3.1 |
-| T-3.3 | Duplicate-report detection and merge | FR-INTAKE-03 | _ | _ | _ | _ | Two reports within 1 block/10 minutes with a matching address merge into one incident record | T-3.1 |
-| T-3.4 | Scenario Reader (Play Scenario interface) | FR-SIM-01 | _ | _ | _ | _ | Replaying one prewritten scenario file produces the exact same ordered sequence of report submissions on two separate runs | T-2.1a, T-3.1 |
+| T-3.1 | Submit Incident Report (validation + field errors) | FR-INTAKE-01, FR-INTAKE-02 | 2 | 4 | 7 | 4.17 | 5 hand-written malformed reports each return the correct named-field error | T-1.1 |
+| T-3.2 | Offline queue + reconnection drain in timestamp order | FR-INTAKE-01, NFR-REL-03 | 3 | 5 | 9 | 5.33 | Simulating a network-down flag queues 10 reports; flipping it delivers all 10 in timestamp order | T-3.1 |
+| T-3.3 | Duplicate-report detection and merge | FR-INTAKE-03 | 2 | 4 | 7 | 4.17 | Two reports within 1 block/10 minutes with a matching address merge into one incident record | T-3.1 |
+| T-3.4 | Scenario Reader (Play Scenario interface) | FR-SIM-01 | 3 | 5 | 8 | 5.17 | Replaying one prewritten scenario file produces the exact same ordered sequence of report submissions on two separate runs | T-2.1a, T-3.1 |
 
 ### WP-4 — Resource Agents & Classification  ·  requirements FR-AGENT-01, FR-AGENT-02, FR-AGENT-04  ·  owner: me
 
