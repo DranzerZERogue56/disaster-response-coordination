@@ -88,9 +88,9 @@ Plannable effort (available − buffer) = **`_` h**
 
 | Task | Name | Reqs | O | M | P | E | Done when | Depends on |
 |---|---|---|---:|---:|---:|---:|---|---|
-| T-6.1 | Log Decision (append-only proposal/override log) | FR-AUDIT-01, FR-AUDIT-02, FR-INFER-04 | _ | _ | _ | _ | An UPDATE or DELETE against a logged row is rejected by the database layer itself | T-1.1 |
-| T-6.2 | Decide Proposal auto-path + ADR 0006 batch stand-in policy | FR-AGENT-03, NFR-SEC-02 | _ | _ | _ | _ | The 5 confidence/severity cases from NFR-SEC-02's own worked example each route to the documented outcome | T-6.1, T-4.2 |
-| T-6.3 | Override Assignment (reason-required + follow-up window) | FR-RES-02 | _ | _ | _ | _ | An override submitted with an empty reason is rejected; one with a reason logs elapsed-time-since-escalation correctly | T-6.1 |
+| T-6.1 | Log Decision (append-only proposal/override log) | FR-AUDIT-01, FR-AUDIT-02, FR-INFER-04 | 2 | 3 | 5 | 3.17 | An UPDATE or DELETE against a logged row is rejected by the database layer itself | T-1.1 |
+| T-6.2 | Decide Proposal auto-path + ADR 0006 batch stand-in policy | FR-AGENT-03, NFR-SEC-02 | 2 | 4 | 6 | 4.00 | The 5 confidence/severity cases from NFR-SEC-02's own worked example each route to the documented outcome | T-6.1, T-4.2 |
+| T-6.3 | Override Assignment (reason-required + follow-up window) | FR-RES-02 | 2 | 3 | 5 | 3.17 | An override submitted with an empty reason is rejected; one with a reason logs elapsed-time-since-escalation correctly | T-6.1 |
 
 ### WP-7 — Dispatcher Web UI  ·  requirements FR-AUTH-01, NFR-ACC-01, NFR-ACC-02, NFR-USE-01  ·  owner: me
 
