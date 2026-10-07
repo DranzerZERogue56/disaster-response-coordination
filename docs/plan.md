@@ -79,10 +79,10 @@ Plannable effort (available − buffer) = **`_` h**
 
 | Task | Name | Reqs | O | M | P | E | Done when | Depends on |
 |---|---|---|---:|---:|---:|---:|---|---|
-| T-5.1 | Resource/Unit Registry reserve/release/get_status | FR-RES-01, FR-RES-03 | _ | _ | _ | _ | The real (non-spike) registry module passes the same assertions Spike SP-02's script already validated | T-1.1 |
-| T-5.2 | Agent-node heartbeat + 30s not-responding detection | FR-DEGRADE-01 | _ | _ | _ | _ | Stopping a simulated node's heartbeat for 31 seconds flips its status to not_responding and notifies | T-5.1 |
-| T-5.3 | Resolve Negotiation Conflict (severity/richness/reported-first tiebreak) | FR-COORD-01, FR-COORD-03 | _ | _ | _ | _ | 5 hand-crafted conflicting-proposal pairs each resolve to the documented winner | T-5.1, T-4.2 |
-| T-5.4 | Partial-view reconciliation (newer-timestamp-wins) | FR-COORD-02 | _ | _ | _ | _ | Two agents given different-timestamped data for one incident converge on the newer record after reconciliation runs | T-5.3 |
+| T-5.1 | Resource/Unit Registry reserve/release/get_status | FR-RES-01, FR-RES-03 | 2 | 3 | 5 | 3.17 | The real (non-spike) registry module passes the same assertions Spike SP-02's script already validated | T-1.1 |
+| T-5.2 | Agent-node heartbeat + 30s not-responding detection | FR-DEGRADE-01 | 2 | 3 | 5 | 3.17 | Stopping a simulated node's heartbeat for 31 seconds flips its status to not_responding and notifies | T-5.1 |
+| T-5.3 | Resolve Negotiation Conflict (severity/richness/reported-first tiebreak) | FR-COORD-01, FR-COORD-03 | 3 | 5 | 8 | 5.17 | 5 hand-crafted conflicting-proposal pairs each resolve to the documented winner | T-5.1, T-4.2 |
+| T-5.4 | Partial-view reconciliation (newer-timestamp-wins) | FR-COORD-02 | 2 | 4 | 6 | 4.00 | Two agents given different-timestamped data for one incident converge on the newer record after reconciliation runs | T-5.3 |
 
 ### WP-6 — Approval, Audit & Override  ·  requirements FR-AGENT-03, FR-AUDIT-01, FR-AUDIT-02, FR-INFER-04, FR-RES-02, NFR-SEC-02  ·  owner: me
 
