@@ -119,8 +119,8 @@ Plannable effort (available − buffer) = **`_` h**
 
 | Task | Name | Reqs | O | M | P | E | Done when | Depends on |
 |---|---|---|---:|---:|---:|---:|---|---|
-| T-10.1 | Markdown report template + fill-in script | - | _ | _ | _ | _ | Running it against one completed scenario_run produces a report with all five required sections | T-9.2 |
-| T-10.2 | Post-run static image (Matplotlib + synthetic location graph) | FR-MAP-01 | _ | _ | _ | _ | One completed run produces one saved image file showing the final zone/unit state | T-9.1 |
+| T-10.1 | Markdown report template + fill-in script | - | 2 | 3 | 5 | 3.17 | Running it against one completed scenario_run produces a report with all five required sections | T-9.2 |
+| T-10.2 | Post-run static image (Matplotlib + synthetic location graph) | FR-MAP-01 | 1 | 2 | 4 | 2.17 | One completed run produces one saved image file showing the final zone/unit state | T-9.1 |
 
 ### WP-11 — Testing  ·  requirements FR-RES-03, FR-SIM-01 (plus PROJECT.md's 4-layer test pyramid)  ·  owner: me
 
