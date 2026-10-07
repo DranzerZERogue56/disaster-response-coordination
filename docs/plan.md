@@ -71,7 +71,7 @@ Plannable effort (available − buffer) = **`_` h**
 
 | Task | Name | Reqs | O | M | P | E | Done when | Depends on |
 |---|---|---|---:|---:|---:|---:|---|---|
-| T-4.1 | Classify & Propose for one resource-agent role | FR-AGENT-01, FR-AGENT-02 | 3 | 5 | 8 | 5.17 | 10 seeded reports each receive a severity tag and a proposal with a confidence score within the target latency | T-2.1a, T-3.1 |
+| T-4.1 | Classify & Propose for one resource-agent role | FR-AGENT-01, FR-AGENT-02 | 2 | 3 | 4 | 3.00 | 10 seeded reports each receive a severity tag and a proposal with a confidence score within the target latency | T-2.1a, T-3.1 |
 | T-4.2 | Extend Classify & Propose to the remaining three roles | FR-AGENT-01, FR-AGENT-02 | 2 | 3 | 5 | 3.17 | All four role types independently classify and propose against role-appropriate seeded reports | T-4.1 |
 | T-4.3 | ~60s reasoning timeout + non-LLM fallback trigger | FR-AGENT-04 | 1 | 2 | 3 | 2.00 | Artificially delaying a model response past 60s triggers the documented fallback and logs a TIMEOUT error | T-2.3, T-4.1 |
 
@@ -81,7 +81,7 @@ Plannable effort (available − buffer) = **`_` h**
 |---|---|---|---:|---:|---:|---:|---|---|
 | T-5.1 | Resource/Unit Registry reserve/release/get_status | FR-RES-01, FR-RES-03 | 2 | 3 | 5 | 3.17 | The real (non-spike) registry module passes the same assertions Spike SP-02's script already validated | T-1.1 |
 | T-5.2 | Agent-node heartbeat + 30s not-responding detection | FR-DEGRADE-01 | 2 | 3 | 5 | 3.17 | Stopping a simulated node's heartbeat for 31 seconds flips its status to not_responding and notifies | T-5.1 |
-| T-5.3 | Resolve Negotiation Conflict (severity/richness/reported-first tiebreak) | FR-COORD-01, FR-COORD-03 | 3 | 5 | 8 | 5.17 | 5 hand-crafted conflicting-proposal pairs each resolve to the documented winner | T-5.1, T-4.2 |
+| T-5.3 | Resolve Negotiation Conflict (severity/richness/reported-first tiebreak) | FR-COORD-01, FR-COORD-03 | 2 | 3 | 4 | 3.00 | 5 hand-crafted conflicting-proposal pairs each resolve to the documented winner | T-5.1, T-4.2 |
 | T-5.4 | Partial-view reconciliation (newer-timestamp-wins) | FR-COORD-02 | 2 | 4 | 6 | 4.00 | Two agents given different-timestamped data for one incident converge on the newer record after reconciliation runs | T-5.3 |
 
 ### WP-6 — Approval, Audit & Override  ·  requirements FR-AGENT-03, FR-AUDIT-01, FR-AUDIT-02, FR-INFER-04, FR-RES-02, NFR-SEC-02  ·  owner: me
@@ -89,7 +89,7 @@ Plannable effort (available − buffer) = **`_` h**
 | Task | Name | Reqs | O | M | P | E | Done when | Depends on |
 |---|---|---|---:|---:|---:|---:|---|---|
 | T-6.1 | Log Decision (append-only proposal/override log) | FR-AUDIT-01, FR-AUDIT-02, FR-INFER-04 | 2 | 3 | 5 | 3.17 | An UPDATE or DELETE against a logged row is rejected by the database layer itself | T-1.1 |
-| T-6.2 | Decide Proposal auto-path + ADR 0006 batch stand-in policy | FR-AGENT-03, NFR-SEC-02 | 2 | 4 | 6 | 4.00 | The 5 confidence/severity cases from NFR-SEC-02's own worked example each route to the documented outcome | T-6.1, T-4.2 |
+| T-6.2 | Decide Proposal auto-path + ADR 0006 batch stand-in policy | FR-AGENT-03, NFR-SEC-02 | 2 | 3 | 4 | 3.00 | The 5 confidence/severity cases from NFR-SEC-02's own worked example each route to the documented outcome | T-6.1, T-4.2 |
 | T-6.3 | Override Assignment (reason-required + follow-up window) | FR-RES-02 | 2 | 3 | 5 | 3.17 | An override submitted with an empty reason is rejected; one with a reason logs elapsed-time-since-escalation correctly | T-6.1 |
 
 ### WP-7 — Dispatcher Web UI  ·  requirements FR-AUTH-01, NFR-ACC-01, NFR-ACC-02, NFR-USE-01  ·  owner: me
@@ -97,9 +97,9 @@ Plannable effort (available − buffer) = **`_` h**
 | Task | Name | Reqs | O | M | P | E | Done when | Depends on |
 |---|---|---|---:|---:|---:|---:|---|---|
 | T-7.1 | Pending-proposals list view + polling fallback | NFR-USE-01 | 3 | 4 | 7 | 4.33 | A seeded escalated proposal appears in the UI within 10 seconds of being created | T-6.2 |
-| T-7.2 | Approve/modify/reject/override controls (keyboard-only) | NFR-ACC-01 | 2 | 4 | 6 | 4.00 | Completing all four actions on one seeded proposal with the mouse unplugged succeeds with visible focus at every step | T-7.1 |
+| T-7.2 | Approve/modify/reject/override controls (keyboard-only) | NFR-ACC-01 | 2 | 3 | 4 | 3.00 | Completing all four actions on one seeded proposal with the mouse unplugged succeeds with visible focus at every step | T-7.1 |
 | T-7.3 | Severity rendered as text alongside color | NFR-ACC-02 | 1 | 2 | 3 | 2.00 | Viewing the UI in grayscale all 5 severity levels are still correctly identifiable by text label | T-7.1 |
-| T-7.4 | Dispatcher login/session + role enforcement | FR-AUTH-01 | 2 | 4 | 6 | 4.00 | An observer-role session attempting an override is blocked and the attempt is logged | T-6.1 |
+| T-7.4 | Dispatcher login/session + role enforcement | FR-AUTH-01 | 2 | 3 | 4 | 3.00 | An observer-role session attempting an override is blocked and the attempt is logged | T-6.1 |
 
 ### WP-8 — Notifications  ·  requirements FR-ALERT-01, FR-ALERT-02  ·  owner: me
 
@@ -113,7 +113,7 @@ Plannable effort (available − buffer) = **`_` h**
 |---|---|---|---:|---:|---:|---:|---|---|
 | T-9.1 | Team-size config loader + scenario_runs orchestration | - | 2 | 4 | 6 | 4.00 | Launching one batch run with a given team_size_config produces exactly the right number of unit/agent_node rows | T-5.1, T-3.4 |
 | T-9.2 | Five-measure effectiveness score + naive-baseline comparison | - | 2 | 4 | 6 | 4.00 | Scoring one completed run produces all five sub-measures plus one combined score and a comparable baseline score from logged data only | T-9.1, T-6.1 |
-| T-9.3 | Disruption injectors (road closure, unit failure, incident surge) | - | 3 | 5 | 8 | 5.17 | Injecting each disruption type mid-run visibly changes at least one in-flight proposal or reservation | T-9.1, T-5.3 |
+| T-9.3 | Disruption injectors (road closure, unit failure, incident surge) | - | 2 | 3 | 4 | 3.00 | Injecting each disruption type mid-run visibly changes at least one in-flight proposal or reservation | T-9.1, T-5.3 |
 
 ### WP-10 — Report & Visualization  ·  requirements FR-MAP-01 (plus PROJECT.md Report generation)  ·  owner: me
 
