@@ -43,17 +43,20 @@ Plannable effort (available − buffer) = **`_` h**
 
 | Task | Name | Reqs | O | M | P | E | Done when | Depends on |
 |---|---|---|---:|---:|---:|---:|---|---|
-| T-1.1 | Thin Python data-access module over the 8 tables | - | _ | _ | _ | _ | A unit test inserts and reads back one row per table with no raw SQL in calling code | — |
-| T-1.2 | Purge Job as a real runnable script | NFR-PRIV-01 | _ | _ | _ | _ | Running it against a seeded DB with now_override deletes exactly the expired rows and leaves scenario_runs/dispatcher_accounts untouched | T-1.1 |
-| T-1.3 | Synthetic seed-data generator for data/synthetic/ | NFR-SEC-03 | _ | _ | _ | _ | Running the generator produces N reports all tagged synthetic:true and a check script validates all of them | T-1.1 |
+| T-1.1 | Thin Python data-access module over the 8 tables | - | 2 | 3 | 5 | 3.17 | A unit test inserts and reads back one row per table with no raw SQL in calling code | — |
+| T-1.2 | Purge Job as a real runnable script | NFR-PRIV-01 | 2 | 4 | 6 | 4.00 | Running it against a seeded DB with now_override deletes exactly the expired rows and leaves scenario_runs/dispatcher_accounts untouched | T-1.1 |
+| T-1.3 | Synthetic seed-data generator for data/synthetic/ | NFR-SEC-03 | 3 | 5 | 8 | 5.17 | Running the generator produces N reports all tagged synthetic:true and a check script validates all of them | T-1.1 |
 
 ### WP-2 — LLM Client  ·  requirements FR-AGENT-01, FR-DEGRADE-02, FR-INFER-01, FR-INFER-02, FR-INFER-03  ·  owner: me
 
 | Task | Name | Reqs | O | M | P | E | Done when | Depends on |
 |---|---|---|---:|---:|---:|---:|---|---|
-| T-2.1 | LLM Generate interface + startup hardware check | FR-INFER-01, FR-INFER-02, FR-INFER-03 | _ | _ | _ | _ | A call against a running Ollama instance with llama3.2:3b returns a schema-valid object for one hand-written test prompt; the hardware check exits cleanly before model load on underspec hardware | T-1.1 |
-| T-2.2 | Hand-rolled output-schema validator + one retry | FR-AGENT-01 | _ | _ | _ | _ | Feeding a deliberately malformed JSON string triggers exactly one retry then a defined error | T-2.1 |
-| T-2.3 | FR-DEGRADE-02 fallback chain (smaller model to rules-based to manual) | FR-DEGRADE-02 | _ | _ | _ | _ | Forcing a MODEL_UNAVAILABLE error on the primary model produces a flagged non-LLM proposal via the rules-based path | T-2.2 |
+| T-2.1a | LLM Generate interface (Ollama connection, prompt in, response out) | FR-INFER-01, FR-INFER-02 | 3 | 5 | 7.5 | 5.08 | A call against a running Ollama instance with llama3.2:3b returns a schema-valid object for one hand-written test prompt | T-1.1 |
+| T-2.1b | Startup hardware capability check | FR-INFER-03 | 1 | 1 | 2 | 1.17 | The check exits cleanly with a clear message before any model load attempt on underspec hardware | — |
+| T-2.2 | Hand-rolled output-schema validator + one retry | FR-AGENT-01 | 1 | 2 | 3 | 2.00 | Feeding a deliberately malformed JSON string triggers exactly one retry then a defined error | T-2.1a |
+| T-2.3 | FR-DEGRADE-02 fallback chain (smaller model to rules-based to manual) | FR-DEGRADE-02 | 3 | 5 | 8 | 5.17 | Forcing a MODEL_UNAVAILABLE error on the primary model produces a flagged non-LLM proposal via the rules-based path | T-2.2 |
+
+*T-2.1 was split into T-2.1a/T-2.1b on 2026-10-06 — the original bundled estimate (4/7/11, E=7.17h) broke the 1–6h task-size rule, per §1.*
 
 ### WP-3 — Intake & Scenario Reader  ·  requirements FR-INTAKE-01, FR-INTAKE-02, FR-INTAKE-03, FR-SIM-01, NFR-REL-03  ·  owner: me
 
@@ -62,13 +65,13 @@ Plannable effort (available − buffer) = **`_` h**
 | T-3.1 | Submit Incident Report (validation + field errors) | FR-INTAKE-01, FR-INTAKE-02 | _ | _ | _ | _ | 5 hand-written malformed reports each return the correct named-field error | T-1.1 |
 | T-3.2 | Offline queue + reconnection drain in timestamp order | FR-INTAKE-01, NFR-REL-03 | _ | _ | _ | _ | Simulating a network-down flag queues 10 reports; flipping it delivers all 10 in timestamp order | T-3.1 |
 | T-3.3 | Duplicate-report detection and merge | FR-INTAKE-03 | _ | _ | _ | _ | Two reports within 1 block/10 minutes with a matching address merge into one incident record | T-3.1 |
-| T-3.4 | Scenario Reader (Play Scenario interface) | FR-SIM-01 | _ | _ | _ | _ | Replaying one prewritten scenario file produces the exact same ordered sequence of report submissions on two separate runs | T-2.1, T-3.1 |
+| T-3.4 | Scenario Reader (Play Scenario interface) | FR-SIM-01 | _ | _ | _ | _ | Replaying one prewritten scenario file produces the exact same ordered sequence of report submissions on two separate runs | T-2.1a, T-3.1 |
 
 ### WP-4 — Resource Agents & Classification  ·  requirements FR-AGENT-01, FR-AGENT-02, FR-AGENT-04  ·  owner: me
 
 | Task | Name | Reqs | O | M | P | E | Done when | Depends on |
 |---|---|---|---:|---:|---:|---:|---|---|
-| T-4.1 | Classify & Propose for one resource-agent role | FR-AGENT-01, FR-AGENT-02 | _ | _ | _ | _ | 10 seeded reports each receive a severity tag and a proposal with a confidence score within the target latency | T-2.1, T-3.1 |
+| T-4.1 | Classify & Propose for one resource-agent role | FR-AGENT-01, FR-AGENT-02 | _ | _ | _ | _ | 10 seeded reports each receive a severity tag and a proposal with a confidence score within the target latency | T-2.1a, T-3.1 |
 | T-4.2 | Extend Classify & Propose to the remaining three roles | FR-AGENT-01, FR-AGENT-02 | _ | _ | _ | _ | All four role types independently classify and propose against role-appropriate seeded reports | T-4.1 |
 | T-4.3 | ~60s reasoning timeout + non-LLM fallback trigger | FR-AGENT-04 | _ | _ | _ | _ | Artificially delaying a model response past 60s triggers the documented fallback and logs a TIMEOUT error | T-2.3, T-4.1 |
 
@@ -132,7 +135,7 @@ Plannable effort (available − buffer) = **`_` h**
 
 | Task | Name | Reqs | O | M | P | E | Done when | Depends on |
 |---|---|---|---:|---:|---:|---:|---|---|
-| T-12.1 | README clean-machine test | NFR-MNT-01 | _ | _ | _ | _ | A clean clone reaches a running app in under 5 minutes using only the README | T-1.1,T-2.1,T-3.1,T-4.1,T-5.1,T-6.1,T-7.1,T-8.1,T-9.1,T-10.1,T-11.1 |
+| T-12.1 | README clean-machine test | NFR-MNT-01 | _ | _ | _ | _ | A clean clone reaches a running app in under 5 minutes using only the README | T-1.1,T-2.1a,T-2.1b,T-3.1,T-4.1,T-5.1,T-6.1,T-7.1,T-8.1,T-9.1,T-10.1,T-11.1 |
 | T-12.2 | Automate the secret scan in CI | NFR-SEC-04 | _ | _ | _ | _ | A CI run on a commit containing a fake API key fails the build | — |
 | T-12.3 | Author 3-5 pre-written demo scenarios | - | _ | _ | _ | _ | Each scenario file passes the structural check and produces a non-empty run | T-11.4 |
 | T-12.4 | Record the post-run visualization into a short demo clip | - | _ | _ | _ | _ | One scenario's run produces a viewable short clip with no live network dependency at playback time | T-10.2 |
