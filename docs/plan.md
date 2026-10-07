@@ -96,10 +96,10 @@ Plannable effort (available − buffer) = **`_` h**
 
 | Task | Name | Reqs | O | M | P | E | Done when | Depends on |
 |---|---|---|---:|---:|---:|---:|---|---|
-| T-7.1 | Pending-proposals list view + polling fallback | NFR-USE-01 | _ | _ | _ | _ | A seeded escalated proposal appears in the UI within 10 seconds of being created | T-6.2 |
-| T-7.2 | Approve/modify/reject/override controls (keyboard-only) | NFR-ACC-01 | _ | _ | _ | _ | Completing all four actions on one seeded proposal with the mouse unplugged succeeds with visible focus at every step | T-7.1 |
-| T-7.3 | Severity rendered as text alongside color | NFR-ACC-02 | _ | _ | _ | _ | Viewing the UI in grayscale all 5 severity levels are still correctly identifiable by text label | T-7.1 |
-| T-7.4 | Dispatcher login/session + role enforcement | FR-AUTH-01 | _ | _ | _ | _ | An observer-role session attempting an override is blocked and the attempt is logged | T-6.1 |
+| T-7.1 | Pending-proposals list view + polling fallback | NFR-USE-01 | 3 | 4 | 7 | 4.33 | A seeded escalated proposal appears in the UI within 10 seconds of being created | T-6.2 |
+| T-7.2 | Approve/modify/reject/override controls (keyboard-only) | NFR-ACC-01 | 2 | 4 | 6 | 4.00 | Completing all four actions on one seeded proposal with the mouse unplugged succeeds with visible focus at every step | T-7.1 |
+| T-7.3 | Severity rendered as text alongside color | NFR-ACC-02 | 1 | 2 | 3 | 2.00 | Viewing the UI in grayscale all 5 severity levels are still correctly identifiable by text label | T-7.1 |
+| T-7.4 | Dispatcher login/session + role enforcement | FR-AUTH-01 | 2 | 4 | 6 | 4.00 | An observer-role session attempting an override is blocked and the attempt is logged | T-6.1 |
 
 ### WP-8 — Notifications  ·  requirements FR-ALERT-01, FR-ALERT-02  ·  owner: me
 
