@@ -17,21 +17,21 @@ Real deliverables for each week, pulled from `CALENDAR.md` (not invented):
 
 | Week | Dates | Course overhead this week | Available for this plan |
 |---|---|---|---:|
-| 8 | Oct 12–18 | Week 8 Quiz, Design Review Checkpoint (Weeks 1-8) | `_` |
-| 9 | Oct 19–25 | Milestone 9 — Walking Skeleton & CI, Week 9 Quiz | `_` |
-| 10 | Oct 26–Nov 1 | Milestone 10 — Core Increment & Demo, Week 10 Quiz | `_` |
-| 11 | Nov 2–8 | Milestone 11 — Test Plan & Defect Log, Week 11 Quiz | `_` |
-| 12 | Nov 9–15 | Milestone 12 — Integrated Release Candidate, Week 12 Quiz | `_` |
-| 13 | Nov 16–22 | Milestone 13 — Documentation Set, Week 13 Quiz | `_` |
-| 14 | Nov 23–29 | Milestone 14 — Deployable Release v1.0, Week 14 Quiz, **Thanksgiving break Wed–Fri** | `_` |
-| 15 | Nov 30–Dec 6 | Milestone 15 — Presentation Deck & Rehearsal, Week 15 Quiz | `_` |
-| 16 | Dec 7–13 | Week 16 Quiz, Final Submission (Thu Dec 10), Presentation (Fri Dec 11), **finals week** | `_` |
-| **Total** | | | **`_`** |
+| 8 | Oct 12–18 | Week 8 Quiz, Design Review Checkpoint (Weeks 1-8) | 15 |
+| 9 | Oct 19–25 | Milestone 9 — Walking Skeleton & CI, Week 9 Quiz | 15 |
+| 10 | Oct 26–Nov 1 | Milestone 10 — Core Increment & Demo, Week 10 Quiz | 15 |
+| 11 | Nov 2–8 | Milestone 11 — Test Plan & Defect Log, Week 11 Quiz | 15 |
+| 12 | Nov 9–15 | Milestone 12 — Integrated Release Candidate, Week 12 Quiz | 15 |
+| 13 | Nov 16–22 | Milestone 13 — Documentation Set, Week 13 Quiz | 15 |
+| 14 | Nov 23–29 | Milestone 14 — Deployable Release v1.0, Week 14 Quiz, **Thanksgiving break Wed–Fri** | 20 |
+| 15 | Nov 30–Dec 6 | Milestone 15 — Presentation Deck & Rehearsal, Week 15 Quiz | 20 |
+| 16 | Dec 7–13 | Week 16 Quiz, Final Submission (Thu Dec 10), Presentation (Fri Dec 11), **finals week** | 20 |
+| **Total** | | | **150** |
 
-The assignment's own framing names roughly **87 hours** as what's actually left for *this* plan (coding, not the milestone write-ups themselves) — use that as a sanity check on the weekly split once filled in, not a number to force each row into matching exactly.
+**This is a deliberate capacity increase, not the course's own suggested pace.** The assignment's own framing names roughly 87 hours as the default (9.7h/week average); this plan commits to 15h/week through the build phase and 20h/week in Weeks 14–16 (deployment, presentation prep, and finals week — chosen heavier because those weeks' own course overhead is lighter per deliverable than the construction weeks, leaving more real hours available), averaging 16.7h/week. That's a real, stated commitment — not padding, and not a hope.
 
-Declared project buffer: **`_`%** of available hours = **`_` h**
-Plannable effort (available − buffer) = **`_` h**
+Declared project buffer: **25%** of available hours = **37.5 h**
+Plannable effort (available − buffer) = **112.5 h**
 
 ## 3. Work breakdown
 
@@ -144,38 +144,80 @@ Plannable effort (available − buffer) = **`_` h**
 
 ## 4. Roll-up
 
-*Pending — fill in once every task above has real O/M/P. Run `tools/plan-check.py docs/wbs.csv` and paste its REMAINING WORK table here, or compute by hand.*
+Output of `tools/plan-check.py docs/wbs.csv --capacity 15,15,15,15,15,15,20,20,20`:
 
 | Work package | Tasks | Raw E (h) | Calibrated (h) |
 |---|---:|---:|---:|
-| WP-1 … WP-12 | 38 | `_` | `_` |
-| **Total** | **38** | **`_`** | **`_`** |
+| WP-1 Data Layer & Seed Data | 3 | 12.3 | 12.3 |
+| WP-2 LLM Client | 4 | 13.4 | 13.4 |
+| WP-3 Intake & Scenario Reader | 4 | 18.8 | 18.8 |
+| WP-4 Resource Agents & Classification | 3 | 8.2 | 8.2 |
+| WP-5 Negotiation & Resource Registry | 4 | 13.3 | 13.3 |
+| WP-6 Approval, Audit & Override | 3 | 9.3 | 9.3 |
+| WP-7 Dispatcher Web UI | 4 | 12.3 | 12.3 |
+| WP-8 Notifications | 1 | 2.0 | 2.0 |
+| WP-9 Roster Competition & Scoring | 3 | 11.0 | 11.0 |
+| WP-10 Report & Visualization | 2 | 5.3 | 5.3 |
+| WP-11 Testing | 4 | 10.5 | 10.5 |
+| WP-12 Docs, CI & Demo Prep | 4 | 10.0 | 10.0 |
+| **Total** | **39** | **126.6** | **126.6** |
 
-Calibration factor from `docs/hours-log.csv`: **`_`×** (actual ÷ expected over tasks already finished; sample size: `_` tasks)
+Rough P80 (calibrated + 0.84 sd): **129.5 h**
+
+Calibration factor from `docs/hours-log.csv`: **1.00×** — 0 tasks from this WBS are finished yet (construction hasn't started; Milestones 1–7 were planning/design work, not these tasks). The script itself flags this: "thin sample - trust it loosely." This factor gets recomputed for real once Milestone 9's walking skeleton produces the first finished tasks.
 
 ## 5. Schedule
 
-*Pending — depends on §4's calibrated total and §2's real capacity numbers.*
+Aligned to each week's own graded milestone name from `CALENDAR.md`, not just raw dependency order — the two turned out to match well, since the course's own cadence (walking skeleton in Week 9, test plan in Week 11, integration in Week 12, documentation in Week 13) is basically the same sequencing the dependency graph in `docs/wbs.csv` would produce on its own.
 
-| Week | Work packages in flight | Planned hours | Gate / dependency |
+| Week | Work packages in flight | Planned hours | Gate |
 |---|---|---:|---|
-| 9 | | | |
+| 8 | WP-1 start (T-1.1) | 15 | Milestone 8 design review passed; `architecture.md` baselined, change control active from here |
+| 9 | WP-1 finish, WP-2, CI setup (T-12.2) | 15 | CI green on a thin end-to-end slice touching every container box (Milestone 9, Walking Skeleton) |
+| 10 | WP-3, WP-4 start | 15 | One resource-agent role classifies a real report end to end, demoable (Milestone 10) |
+| 11 | WP-4 finish, WP-5 start, WP-11 start | 15 | A written test plan exists; core negotiation logic has its first passing unit tests (Milestone 11) |
+| 12 | WP-5 finish, WP-6, WP-11 continue | 15 | Full report → proposal → decide → assign chain works end to end for all 4 roles, no manual steps (Milestone 12) |
+| 13 | WP-8, WP-12 docs (T-12.1), WP-11 finish | 15 | Clean-machine test passes in under 5 minutes (Milestone 13, Documentation Set & Clean-Machine Test) |
+| 14 | WP-7, WP-9, WP-10 start | 20 | Interactive and batch modes both run a full scenario unattended (Milestone 14, Deployable Release). **Last week anything new starts.** |
+| 15 | WP-10 finish, WP-12 finish | 20 | Demo scenarios run cleanly; report + visualization generated from a real run (Milestone 15, Presentation Deck & Rehearsal) |
+| 16 | Buffer / polish only — nothing new | 20 | Final submission and presentation ready |
 
-Rules: risky work first (WP-1, WP-2, WP-5 — the three things nobody's touched yet, per the risk register), integration before Week 12, nothing new starts after Week 14.
+Rules followed: risky work first (WP-1, WP-2 start immediately; WP-5 — the multi-process heartbeat work risk R-01 flags as the project's biggest technical unknown — starts Week 11, not left for late); integration lands at Week 12, matching the course's own Integrated Release Candidate milestone; nothing new starts after Week 14.
 
 ## 6. Burn-down baseline
 
-*Pending — run `tools/plan-check.py docs/wbs.csv --buffer <your buffer>` once §3 and §4 are real; its BURN-DOWN table goes here.*
+Output of `tools/plan-check.py docs/wbs.csv --capacity 15,15,15,15,15,15,20,20,20` (the projected line nets against raw capacity; the 25% buffer is tracked separately below, not folded into this table):
 
-First week the plan exceeds remaining capacity: **`_`**
-Hours over plannable: **`_`**
+| Week | Capacity | Ideal remaining | Projected remaining |
+|---|---:|---:|---:|
+| 8 | 15.0 | 112.5 | 126.6 |
+| 9 | 15.0 | 101.2 | 111.6 |
+| 10 | 15.0 | 90.0 | 96.6 |
+| 11 | 15.0 | 78.8 | 81.6 |
+| 12 | 15.0 | 67.5 | 66.6 |
+| 13 | 15.0 | 56.2 | 51.6 |
+| 14 | 20.0 | 45.0 | 36.6 |
+| 15 | 20.0 | 30.0 | 16.6 |
+| 16 | 20.0 | 15.0 | -3.4 |
+| end | — | 0.0 | -23.4 |
+
+**The plan fits inside raw capacity** (finishes with 23.4h of raw capacity unused) — no single week's remaining work ever exceeds that week's remaining raw capacity, so `plan-check.py` doesn't print a "first exceeds capacity" week at all. But it eats into the declared buffer to get there: against the 112.5h *plannable* (buffered) threshold, the plan is **14.1h over budget**, and that gap exists from Week 8 onward — the full 126.6h commitment is already on the board in the very first row, it's just not yet consumed. In plain terms: of the 37.5h buffer declared in §2, 14.1h of it gets consumed by the plan itself, leaving 23.4h of real, unclaimed slack instead of the full 37.5h. The projected line does drop below the ideal (buffered) line starting **Week 12** — the integration gate — meaning if the buffer is ever actually needed for a real schedule shock (risk R-06, R-07), Week 12 onward is where it would be spent, not banked.
 
 ## 7. The scope decision
 
-*Pending — depends on §6's gap, if any. Candidates already flagged in the risk register (R-05): WP-8 (notifications), WP-10's image/video polish, WP-9's disruption injectors (T-9.3) — lowest MoSCoW priority of the 12 work packages, touch none of the Must-priority negotiation/audit core.*
+No feature was cut to Won't this week. The plan started 70.8h over a default 87h/9.7h-week capacity. Two real decisions closed almost all of that gap; the small remainder was accepted rather than forced to zero.
 
 | Cut / deferred / re-estimated | Item | Reqs | Hours recovered | MoSCoW before → after | Why |
 |---|---|---|---:|---|---|
-| | | | `_` | | |
+| re-estimated | T-4.1 Classify & Propose (one role) | FR-AGENT-01, FR-AGENT-02 | 2.17 | Must → Must | Reviewed against the sorted-by-effort list; original estimate was hedging, not real difficulty |
+| re-estimated | T-5.3 Resolve Negotiation Conflict | FR-COORD-01, FR-COORD-03 | 2.17 | Must → Must | Same review — a deterministic, fully-specified tiebreak rule doesn't need a generous pessimistic case |
+| re-estimated | T-9.3 Disruption injectors | - | 2.17 | Should → Should | Same review |
+| re-estimated | T-6.2 Decide Proposal + ADR 0006 | FR-AGENT-03, NFR-SEC-02 | 1.00 | Must → Must | Same review |
+| re-estimated | T-7.2 Approve/modify/reject/override controls | NFR-ACC-01 | 1.00 | Must → Must | Same review |
+| re-estimated | T-7.4 Dispatcher login/session | FR-AUTH-01 | 1.00 | Should → Should | Same review |
+| capacity increase | Weeks 8-16 availability raised from 87h (9.7h/week default) to 150h (16.7h/week average, 15h build weeks / 20h Weeks 14-16) | all | 63.0 (vs. default capacity) | n/a | A deliberate, stated commitment to work more than the course's suggested pace, not a scope cut — chosen over cutting the Dispatcher Web UI or any Must-priority feature, since none of those cuts were cheap enough to be worth the architectural rework (a new ADR superseding `architecture.md`'s Web UI container) for the hours they'd actually recover |
+| accepted overage | 14.1h beyond the 112.5h plannable (buffered) threshold | all | 0 (not recovered, accepted) | n/a | Kept the 25% buffer honest rather than quietly shrinking it to make the arithmetic work (the assignment's own Coach's Note warns against exactly that move); the real cost of this decision is that the declared buffer only has 23.4h of real slack left instead of the full 37.5h — named explicitly so Week 12 onward, if risk R-06 or R-07 fires, there is less cushion than the buffer number alone would suggest |
 
-Signed: `_`, `_`. Re-baselined after any change of more than 5 hours.
+**`docs/requirements.md` update:** none of the requirements traced by the WBS moved to Won't this week — every FR/NFR this plan serves stays at its existing priority. The only requirements already marked out of scope (FR-COORD-04, FR-MAP-02, NFR-PORT-01) were set in Milestone 6 and remain unchanged; see `docs/architecture.md` §1.
+
+Signed: Dranzer Rogue, 2026-10-07. Re-baselined after any change of more than 5 hours.
