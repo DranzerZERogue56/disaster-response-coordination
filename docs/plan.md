@@ -221,3 +221,59 @@ No feature was cut to Won't this week. The plan started 70.8h over a default 87h
 **`docs/requirements.md` update:** none of the requirements traced by the WBS moved to Won't this week — every FR/NFR this plan serves stays at its existing priority. The only requirements already marked out of scope (FR-COORD-04, FR-MAP-02, NFR-PORT-01) were set in Milestone 6 and remain unchanged; see `docs/architecture.md` §1.
 
 Signed: Dranzer Rogue, 2026-10-07. Re-baselined after any change of more than 5 hours.
+
+---
+
+## Medium Tier (extra credit)
+
+Four items, each computed from numbers already on the record (the scored WBS and risk register), not new duration judgment calls.
+
+### A dependency graph and critical path
+
+Diagram: [`docs/diagrams/wp-dependencies.dot`](diagrams/wp-dependencies.dot) + [`wp-dependencies.png`](diagrams/wp-dependencies.png) — finish-to-start dependencies at the work-package level, computed directly from `docs/wbs.csv`'s `depends_on` column (not hand-drawn).
+
+**Critical path (longest E-weighted chain): WP-1 → WP-2 → WP-3 → WP-4 → WP-5 → WP-9 → WP-11 → WP-12, 97.58h.**
+
+**What this means for a solo builder — and where the standard definition misleads here:** in a team setting, the critical path is the one chain that sets the project's minimum completion date, because non-critical work happens in parallel on someone else's hours and absorbs delay for free. There is no second person here. Every hour on WP-6, WP-7, WP-8, and WP-10 — the four work packages *not* on this chain — still has to be spent by the same one developer, so total calendar time is bounded by the **full 126.6h**, not the 97.58h critical path. The critical-path number is still useful, just not for the reason a textbook says: it shows which work packages have **zero slack and the most fan-out**. WP-1 (data layer) and WP-2 (LLM client) sit at the root with the most downstream dependents — a slip there propagates to nearly everything else, including work packages not formally "on" the critical path. WP-8 (Notifications, 2.0h, nothing depends on it) can slip freely with no ripple at all. The real scheduling lesson from this graph isn't "protect the critical path," it's "protect the root" — which is exactly why `docs/plan.md` §5 schedules WP-1 and WP-2 first.
+
+### A P50 / P80 range for the whole plan
+
+Computed from the PERT standard deviation of every task (`sd = (P − O) / 6`), summed as variance (`sd²`) across all 39 tasks, per `docs/wbs.csv`:
+
+| | Hours |
+|---|---:|
+| P50 (the calibrated total itself) | 126.58 |
+| Total variance (Σ sd²) | 12.03 |
+| √variance (sd of the sum) | 3.47 |
+| **P80 (P50 + 0.84·sd)** | **129.50** |
+
+The P50-to-P80 spread is only 2.91h — narrow, because most task spreads in this plan are tight (most `P/O` ratios sit well under 4, by design, after the re-estimation pass). **The honest caveat, stated and not glossed over:** this roll-up assumes every task's uncertainty is independent. It isn't. If the real risk is R-01 (Mesa's first-ever multi-process configuration) going wrong, that doesn't cost one task 2-5 extra hours in isolation — it correlates across T-5.2, T-9.1, and T-11.x all at once, since they all sit downstream of the same wrong assumption. The real uncertainty in this plan is dominated by a handful of correlated architectural unknowns (R-01, R-02, R-04), not by 39 independent coin flips, so P80 here is a **floor** on the real uncertainty, not a ceiling — the quantified risk reserve below is a better estimate of what a single bad assumption could actually cost.
+
+### Quantified risk reserve
+
+Top 5 risks by exposure (`docs/risk-register.md`), reserve = probability × impact-hours. Likelihood converted to probability on a standard 5-point scale (L1=10%, L2=30%, L3=50%, L4=70%, L5=90%); impact converted to its band midpoint (I1=1h, I2=3.5h, I3=8.5h, I4=18.5h, I5=30h) — both conventions stated here so the arithmetic is checkable, not asserted:
+
+| Risk | L (prob.) | I (midpoint) | Reserve |
+|---|---|---|---:|
+| R-05 (became an issue) | 5 (90%) | 2 (3.5h) | 3.15h |
+| R-07 (optimism bias) | 3 (50%) | 3 (8.5h) | 4.25h |
+| R-01 (Mesa multi-process) | 4 (70%) | 2 (3.5h) | 2.45h |
+| R-04 (GPU hardware) | 4 (70%) | 2 (3.5h) | 2.45h |
+| R-06 (solo-dev schedule) | 4 (70%) | 2 (3.5h) | 2.45h |
+| **Total quantified reserve** | | | **14.75h** |
+
+This is a separate number from the 25% schedule buffer (§2) — the schedule buffer absorbs general estimation looseness across all 39 tasks, while this reserve is specifically sized against the five named, scored things most likely to actually go wrong. Note that this reserve (14.75h) is close to the 14.1h residual buffer erosion already recorded in §7 — not a coincidence, since R-05 (the risk that already fired) is itself partly responsible for both numbers.
+
+### Plan-on-a-page
+
+**Disaster Response Coordination — Milestone 7 at a glance (2026-10-07)**
+
+- **Scope:** 12 work packages, 39 tasks, 126.6h raw (P50) / 129.5h (P80)
+- **Capacity:** 150h, Weeks 8-16 (15h build weeks, 20h Weeks 14-16) — a stated increase over the course's 87h default
+- **Buffer:** 25% (37.5h declared; 23.4h real after the 14.1h accepted overage)
+- **Critical path:** WP-1 → WP-2 → WP-3 → WP-4 → WP-5 → WP-9 → WP-11 → WP-12, 97.58h — protect the root (WP-1/WP-2), not just the chain
+- **First week the plan touches its buffer:** Week 12 (the integration gate)
+- **Top 5 risks (exposure):** R-05 scope, already fired (10) · R-07 optimism bias (9) · R-01 Mesa multi-process (8) · R-04 GPU hardware (8) · R-06 solo-dev schedule (8)
+- **Quantified reserve against those five:** 14.75h
+- **Scope cut this week:** none to Won't — 9.5h recovered by re-estimation, 63h recovered by a real capacity increase, 14.1h accepted as a named cost
+- **Ship confidence:** amber — fits raw capacity, but the buffer is thinner than declared and the plan has never been tested against real completed work (calibration factor is still 1.00×, 0 samples)

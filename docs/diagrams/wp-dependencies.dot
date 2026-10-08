@@ -1,0 +1,47 @@
+// Work-package dependency graph (finish-to-start) - Milestone 7 Medium Tier
+// Version: v0.1   Date: 2026-10-07
+// Red = the critical path (longest E-weighted chain, work-package level): 97.58h
+digraph wp_deps {
+    rankdir=LR;
+    fontname="Helvetica";
+    node [fontname="Helvetica", shape=box, style=filled, fillcolor="#eef2f7"];
+    edge [fontname="Helvetica", fontsize=10];
+
+    "WP-1" [label="WP-1\nData Layer\n12.3h", fillcolor="#ffd6d6"];
+    "WP-2" [label="WP-2\nLLM Client\n13.4h", fillcolor="#ffd6d6"];
+    "WP-3" [label="WP-3\nIntake & Scenario Reader\n18.8h", fillcolor="#ffd6d6"];
+    "WP-4" [label="WP-4\nResource Agents\n8.2h", fillcolor="#ffd6d6"];
+    "WP-5" [label="WP-5\nNegotiation & Registry\n13.3h", fillcolor="#ffd6d6"];
+    "WP-6" [label="WP-6\nApproval, Audit & Override\n9.3h"];
+    "WP-7" [label="WP-7\nDispatcher Web UI\n12.3h"];
+    "WP-8" [label="WP-8\nNotifications\n2.0h"];
+    "WP-9" [label="WP-9\nRoster Competition\n11.0h", fillcolor="#ffd6d6"];
+    "WP-10" [label="WP-10\nReport & Visualization\n5.3h"];
+    "WP-11" [label="WP-11\nTesting\n10.5h", fillcolor="#ffd6d6"];
+    "WP-12" [label="WP-12\nDocs, CI & Demo Prep\n10.0h", fillcolor="#ffd6d6"];
+
+    "WP-1" -> "WP-2" [color="#cc0000", penwidth=2];
+    "WP-1" -> "WP-3";
+    "WP-2" -> "WP-3" [color="#cc0000", penwidth=2];
+    "WP-2" -> "WP-4";
+    "WP-3" -> "WP-4" [color="#cc0000", penwidth=2];
+    "WP-1" -> "WP-5";
+    "WP-4" -> "WP-5" [color="#cc0000", penwidth=2];
+    "WP-1" -> "WP-6";
+    "WP-4" -> "WP-6";
+    "WP-6" -> "WP-7";
+    "WP-6" -> "WP-8";
+    "WP-3" -> "WP-9";
+    "WP-5" -> "WP-9" [color="#cc0000", penwidth=2];
+    "WP-6" -> "WP-9";
+    "WP-9" -> "WP-10";
+    "WP-3" -> "WP-11";
+    "WP-5" -> "WP-11";
+    "WP-9" -> "WP-11" [color="#cc0000", penwidth=2];
+    "WP-1" -> "WP-12"; "WP-2" -> "WP-12"; "WP-3" -> "WP-12"; "WP-4" -> "WP-12";
+    "WP-5" -> "WP-12"; "WP-6" -> "WP-12"; "WP-7" -> "WP-12"; "WP-8" -> "WP-12";
+    "WP-9" -> "WP-12"; "WP-10" -> "WP-12";
+    "WP-11" -> "WP-12" [color="#cc0000", penwidth=2];
+
+    note [shape=note, fillcolor="#f8f9fa", label="Red = critical path, 97.58h:\nWP-1 -> WP-2 -> WP-3 -> WP-4 -> WP-5\n-> WP-9 -> WP-11 -> WP-12\n\nFor a solo builder this is NOT the whole\nstory: with no parallelism, total calendar\ntime is still bounded by the FULL 126.6h\nsum, not the 97.58h chain. What the\ncritical path actually shows is which WPs\nhave zero slack - WP-1/2/3 sit at the root\nand have the most fan-out, so a slip there\npropagates to nearly everything downstream,\nwhile WP-8 (2.0h, nothing depends on it)\ncan slip with almost no ripple effect."];
+}
