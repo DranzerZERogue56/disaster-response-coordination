@@ -89,9 +89,10 @@ of detail that belongs in the technical specification (Week 6).
 
 ### FR-INTAKE-03 — Duplicate report detection
 
-**Priority:** Should
+**Priority:** Won't (this release) — was Should
 **Requirement:** The system shall flag a new report as a possible duplicate of an existing incident, when the new report is within 1 block and 10 minutes of an open incident and the address matches or the event description corroborates the same event, so two field units reporting the same fire dont turn into two separate response chains.
 **Rationale:** not critical for a first release but it would look bad in a demo if the same incident spawned two conflicting resource assignments
+**Scope decision:** Deferred in Milestone 7's scope decision (`docs/plan.md` §7, 2026-10-10) to close a 14.1h capacity gap — T-3.3 recovers 4.17h. Revisit at the Week 8 design review if the schedule has margin; the underlying `incident_reports` table already supports it (`duplicate_of_id`, `docs/architecture.md` §6), so this is cheap to pick back up later.
 **Acceptance criteria:**
 - Given two reports are submitted within 1 block and 10 minutes of each other, when their addresses match or their event descriptions describe the same kind of event (e.g., "building on fire" and "burning house" both describing a structure fire), then the system tags them as the same incident and combines both reports' data to improve accuracy.
 - Given two reports are submitted within 1 block and 10 minutes of each other but their addresses are different, when the system checks them, then it does not merge them and keeps them as separate incidents — the address field is what the system uses to make that distinction.
@@ -300,9 +301,10 @@ of detail that belongs in the technical specification (Week 6).
 
 ### FR-INFER-03 — Hardware capability check
 
-**Priority:** Should
+**Priority:** Won't (this release) — was Should
 **Requirement:** The system shall verify that the host machine meets minimum requirements (24gb vram, 48gb system ram), on startup, before loading any model, and it should tell the user clearly if it doesnt meet spec instead of just failing weird later.
 **Rationale:** saves me a debugging headache later and its an easy one to write
+**Scope decision:** Deferred in Milestone 7's scope decision (`docs/plan.md` §7, 2026-10-10) to close a 14.1h capacity gap — T-2.1b recovers 1.17h. A failed model load still surfaces an error via FR-DEGRADE-02's fallback chain in the meantime, just not a clean preflight message. Revisit at the Week 8 design review.
 **Acceptance criteria:**
 - `[ TODO — Given..., when..., then... ]`
 - `[ TODO — Given <failure case>..., when..., then... ]`
@@ -348,9 +350,10 @@ of detail that belongs in the technical specification (Week 6).
 
 ### FR-MAP-01 — Zone boundary display
 
-**Priority:** Should
+**Priority:** Won't (this release) — was Should
 **Requirement:** The system shall display the boundary of an active incident zone, on the operator dashboard, updated whenever the zone gets redefined.
 **Rationale:** more of a UI nicety than core to the reasoning claim, so it can slip first if time gets tight
+**Scope decision:** Deferred in Milestone 7's scope decision (`docs/plan.md` §7, 2026-10-10) to close a 14.1h capacity gap — T-10.2 and its cascaded demo-clip task T-12.4 together recover 4.17h. The author's own rationale above already flagged this as the first thing to slip; Milestone 7 is where that flag was acted on. Revisit at the Week 8 design review.
 **Acceptance criteria:**
 - `[ TODO — Given..., when..., then... ]`
 - `[ TODO — Given <failure case>..., when..., then... ]`
@@ -533,6 +536,7 @@ Every data element the system touches. All stored data lives in a SQLite databas
 | `[ TODO — YYYY-MM-DD ]` | 1.0 | Initial specification | Milestone 3 |
 | `[ TODO — YYYY-MM-DD ]` | 1.1 | Non-functional requirements, constraints, assumptions, dependencies, and obligations added | Milestone 4 |
 | 2026-09-30 | 1.2 | DEP-02 and the two model-candidate obligation rows updated from the placeholder Phi-3.5-mini/Qwen2.5-7B pair to the actual Milestone 5 decision (`llama3.2:3b`, ADR 0001) | Milestone 6 prep — keep requirements consistent with the resolved tech evaluation |
+| 2026-10-10 | 1.3 | FR-INTAKE-03, FR-INFER-03, and FR-MAP-01 moved from Should to Won't (this release), each with a scope-decision note | Milestone 7 scope decision (`docs/plan.md` §7) — closed a 14.1h capacity-over-budget gap by deferring 3 Should-priority requirements instead of further inflating the capacity commitment |
 
 ## 10. Constraints
 
