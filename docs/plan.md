@@ -1,8 +1,9 @@
 # Work Breakdown, Schedule & Burn-Down — Disaster Response Coordination
 
-Version: v0.1 (draft)   Date: 2026-10-06   Status: estimates pending
+Version: v1.0   Date: 2026-10-10   Status: baselined — fits plannable capacity with 0.8h to spare
 
-**Machine-checkable source:** [`docs/wbs.csv`](wbs.csv) — the tables below are generated from it, not typed by hand twice, so they can't drift apart. Run `tools/plan-check.py docs/wbs.csv` once every task has real O/M/P hours.
+**Machine-checkable source:** [`docs/wbs.csv`](wbs.csv) — the tables below are generated from it, not typed by hand twice, so they can't drift apart. Verify with:
+`tools/plan-check.py docs/wbs.csv --capacity 15,15,15,15,15,15,20,20,20 --exclude T-2.1b,T-3.3,T-10.2,T-12.4,T-11.2,T-11.3`
 
 ## 1. Rules this plan obeys
 
@@ -144,25 +145,27 @@ Plannable effort (available − buffer) = **112.5 h**
 
 ## 4. Roll-up
 
-Output of `tools/plan-check.py docs/wbs.csv --capacity 15,15,15,15,15,15,20,20,20`:
+Output of `tools/plan-check.py docs/wbs.csv --capacity 15,15,15,15,15,15,20,20,20 --exclude T-2.1b,T-3.3,T-10.2,T-12.4,T-11.2,T-11.3` — 6 tasks deferred this week (§7) are excluded from the active total, same mechanism the assignment's own Hints section names ("model the cut before you make it"). All 39 tasks are still in `docs/wbs.csv`, marked `status=deferred`, not deleted.
 
-| Work package | Tasks | Raw E (h) | Calibrated (h) |
+| Work package | Active tasks | Raw E (h) | Calibrated (h) |
 |---|---:|---:|---:|
 | WP-1 Data Layer & Seed Data | 3 | 12.3 | 12.3 |
-| WP-2 LLM Client | 4 | 13.4 | 13.4 |
-| WP-3 Intake & Scenario Reader | 4 | 18.8 | 18.8 |
+| WP-2 LLM Client | 3 | 12.2 | 12.2 |
+| WP-3 Intake & Scenario Reader | 3 | 14.7 | 14.7 |
 | WP-4 Resource Agents & Classification | 3 | 8.2 | 8.2 |
 | WP-5 Negotiation & Resource Registry | 4 | 13.3 | 13.3 |
 | WP-6 Approval, Audit & Override | 3 | 9.3 | 9.3 |
 | WP-7 Dispatcher Web UI | 4 | 12.3 | 12.3 |
 | WP-8 Notifications | 1 | 2.0 | 2.0 |
 | WP-9 Roster Competition & Scoring | 3 | 11.0 | 11.0 |
-| WP-10 Report & Visualization | 2 | 5.3 | 5.3 |
-| WP-11 Testing | 4 | 10.5 | 10.5 |
-| WP-12 Docs, CI & Demo Prep | 4 | 10.0 | 10.0 |
-| **Total** | **39** | **126.6** | **126.6** |
+| WP-10 Report & Visualization | 1 | 3.2 | 3.2 |
+| WP-11 Testing | 2 | 5.2 | 5.2 |
+| WP-12 Docs, CI & Demo Prep | 3 | 8.0 | 8.0 |
+| **Total (active)** | **33** | **111.8** | **111.8** |
+| Deferred (6 tasks, §7) | 6 | 14.85 | — |
+| **Full WBS** | **39** | **126.6** | — |
 
-Rough P80 (calibrated + 0.84 sd): **129.5 h**
+Rough P80 on the active total (calibrated + 0.84 sd): **114.5 h**
 
 Calibration factor from `docs/hours-log.csv`: **1.00×** — 0 tasks from this WBS are finished yet (construction hasn't started; Milestones 1–7 were planning/design work, not these tasks). The script itself flags this: "thin sample - trust it loosely." This factor gets recomputed for real once Milestone 9's walking skeleton produces the first finished tasks.
 
@@ -186,26 +189,26 @@ Rules followed: risky work first (WP-1, WP-2 start immediately; WP-5 — the mul
 
 ## 6. Burn-down baseline
 
-Output of `tools/plan-check.py docs/wbs.csv --capacity 15,15,15,15,15,15,20,20,20` (the projected line nets against raw capacity; the 25% buffer is tracked separately below, not folded into this table):
+Output of `tools/plan-check.py docs/wbs.csv --capacity 15,15,15,15,15,15,20,20,20 --exclude T-2.1b,T-3.3,T-10.2,T-12.4,T-11.2,T-11.3`:
 
 | Week | Capacity | Ideal remaining | Projected remaining |
 |---|---:|---:|---:|
-| 8 | 15.0 | 112.5 | 126.6 |
-| 9 | 15.0 | 101.2 | 111.6 |
-| 10 | 15.0 | 90.0 | 96.6 |
-| 11 | 15.0 | 78.8 | 81.6 |
-| 12 | 15.0 | 67.5 | 66.6 |
-| 13 | 15.0 | 56.2 | 51.6 |
-| 14 | 20.0 | 45.0 | 36.6 |
-| 15 | 20.0 | 30.0 | 16.6 |
-| 16 | 20.0 | 15.0 | -3.4 |
-| end | — | 0.0 | -23.4 |
+| 8 | 15.0 | 112.5 | 111.8 |
+| 9 | 15.0 | 101.2 | 96.8 |
+| 10 | 15.0 | 90.0 | 81.8 |
+| 11 | 15.0 | 78.8 | 66.8 |
+| 12 | 15.0 | 67.5 | 51.8 |
+| 13 | 15.0 | 56.2 | 36.8 |
+| 14 | 20.0 | 45.0 | 21.8 |
+| 15 | 20.0 | 30.0 | 1.8 |
+| 16 | 20.0 | 15.0 | -18.2 |
+| end | — | 0.0 | -38.2 |
 
-**The plan fits inside raw capacity** (finishes with 23.4h of raw capacity unused) — no single week's remaining work ever exceeds that week's remaining raw capacity, so `plan-check.py` doesn't print a "first exceeds capacity" week at all. But it eats into the declared buffer to get there: against the 112.5h *plannable* (buffered) threshold, the plan is **14.1h over budget**, and that gap exists from Week 8 onward — the full 126.6h commitment is already on the board in the very first row, it's just not yet consumed. In plain terms: of the 37.5h buffer declared in §2, 14.1h of it gets consumed by the plan itself, leaving 23.4h of real, unclaimed slack instead of the full 37.5h. The projected line does drop below the ideal (buffered) line starting **Week 12** — the integration gate — meaning if the buffer is ever actually needed for a real schedule shock (risk R-06, R-07), Week 12 onward is where it would be spent, not banked.
+**VERDICT: fits, with 0.8h to spare** against the 112.5h plannable (buffered) threshold — not just inside raw capacity this time, inside the buffered one. The projected line stays at or under the ideal line every week from Week 8 onward (111.8 ≤ 112.5 from the very first row), so the declared 37.5h buffer is never touched by the base plan itself — the full buffer is available if risk R-06 or R-07 actually fires, which was not true of the earlier 150h-capacity-only version of this plan (that version ate 14.1h of the buffer before Week 8 even started). This is the direct result of §7's deferral decision, made after the capacity increase alone wasn't enough.
 
 ## 7. The scope decision
 
-No feature was cut to Won't this week. The plan started 70.8h over a default 87h/9.7h-week capacity. Two real decisions closed almost all of that gap; the small remainder was accepted rather than forced to zero.
+The plan started 70.8h over a default 87h/9.7h-week capacity. Three decisions closed the gap completely: a re-estimation pass, a real capacity increase, and — once those two together still left 14.1h unclosed — six tasks actually deferred to Won't-this-release or pushed past Week 16.
 
 | Cut / deferred / re-estimated | Item | Reqs | Hours recovered | MoSCoW before → after | Why |
 |---|---|---|---:|---|---|
@@ -215,12 +218,19 @@ No feature was cut to Won't this week. The plan started 70.8h over a default 87h
 | re-estimated | T-6.2 Decide Proposal + ADR 0006 | FR-AGENT-03, NFR-SEC-02 | 1.00 | Must → Must | Same review |
 | re-estimated | T-7.2 Approve/modify/reject/override controls | NFR-ACC-01 | 1.00 | Must → Must | Same review |
 | re-estimated | T-7.4 Dispatcher login/session | FR-AUTH-01 | 1.00 | Should → Should | Same review |
-| capacity increase | Weeks 8-16 availability raised from 87h (9.7h/week default) to 150h (16.7h/week average, 15h build weeks / 20h Weeks 14-16) | all | 63.0 (vs. default capacity) | n/a | A deliberate, stated commitment to work more than the course's suggested pace, not a scope cut — chosen over cutting the Dispatcher Web UI or any Must-priority feature, since none of those cuts were cheap enough to be worth the architectural rework (a new ADR superseding `architecture.md`'s Web UI container) for the hours they'd actually recover |
-| accepted overage | 14.1h beyond the 112.5h plannable (buffered) threshold | all | 0 (not recovered, accepted) | n/a | Kept the 25% buffer honest rather than quietly shrinking it to make the arithmetic work (the assignment's own Coach's Note warns against exactly that move); the real cost of this decision is that the declared buffer only has 23.4h of real slack left instead of the full 37.5h — named explicitly so Week 12 onward, if risk R-06 or R-07 fires, there is less cushion than the buffer number alone would suggest |
+| capacity increase | Weeks 8-16 availability raised from 87h (9.7h/week default) to 150h (16.7h/week average, 15h build weeks / 20h Weeks 14-16) | all | 63.0 (vs. default capacity) | n/a | A deliberate, stated commitment to work more than the course's suggested pace — chosen over cutting the Dispatcher Web UI or any Must-priority feature, since neither was cheap enough to be worth it for the hours it would have recovered |
+| **deferred** | **T-2.1b** Startup hardware capability check | **FR-INFER-03** | **1.17** | **Should → Won't** | A failed model load still surfaces an error via FR-DEGRADE-02's fallback chain; losing the clean preflight message is a real but small cost |
+| **deferred** | **T-3.3** Duplicate-report detection and merge | **FR-INTAKE-03** | **4.17** | **Should → Won't** | The `incident_reports` schema already supports it (`duplicate_of_id`); cheap to pick back up, costly to build and test properly this week |
+| **deferred** | **T-10.2** + **T-12.4** Zone-display image + its demo clip | **FR-MAP-01** | **4.17** | **Should → Won't** | Already named in the requirement's own Week-4 rationale as "the first thing to slip if time gets tight" — this is that slip, acted on rather than just predicted |
+| **deferred** | **T-11.2** Scenario-replay regression test | FR-SIM-01 (stays Must — the *feature* is unaffected, only this extra test) | **2.17** | n/a (test coverage, not the requirement) | FR-SIM-01 is still built by T-3.4 this week; this specific regression test moves to Milestone 11 (Test Plan week), where it belongs anyway |
+| **deferred** | **T-11.3** Property/fuzz test (no double-booking) | FR-RES-03 (stays Must — the *feature* is unaffected, only this extra test) | **3.17** | n/a (test coverage, not the requirement) | FR-RES-03's core guarantee already has real evidence behind it — Spike SP-02, 20/20 trials, zero double-bookings — so this automated test is confirmatory, not load-bearing, and can wait for Milestone 11 |
+| ~~accepted overage~~ | ~~14.1h beyond plannable~~ | | | | **Superseded below — closed, not accepted.** |
 
-**`docs/requirements.md` update:** none of the requirements traced by the WBS moved to Won't this week — every FR/NFR this plan serves stays at its existing priority. The only requirements already marked out of scope (FR-COORD-04, FR-MAP-02, NFR-PORT-01) were set in Milestone 6 and remain unchanged; see `docs/architecture.md` §1.
+**Result: the plan now fits.** 111.8h raw against 112.5h plannable (25% buffer, 150h capacity) — 0.8h to spare, not a 14.1h overage. See §4 and §6 for the recomputed roll-up and burn-down.
 
-Signed: Dranzer Rogue, 2026-10-07. Re-baselined after any change of more than 5 hours.
+**`docs/requirements.md` update:** FR-INTAKE-03, FR-INFER-03, and FR-MAP-01 moved from Should to Won't (this release), v1.2 → v1.3, each with a scope-decision note pointing back here. T-11.2 and T-11.3's underlying requirements (FR-SIM-01, FR-RES-03) are **not** touched — they stay Must and are still built this plan, just verified by fewer automated tests until Milestone 11. The requirements already marked out of scope in Milestone 6 (FR-COORD-04, FR-MAP-02, NFR-PORT-01) remain unchanged; see `docs/architecture.md` §1.
+
+Signed: Dranzer Rogue, 2026-10-07 (re-baselined 2026-10-10 to close the residual gap). Re-baselined after any change of more than 5 hours.
 
 ---
 
@@ -232,22 +242,22 @@ Four items, each computed from numbers already on the record (the scored WBS and
 
 Diagram: [`docs/diagrams/wp-dependencies.dot`](diagrams/wp-dependencies.dot) + [`wp-dependencies.png`](diagrams/wp-dependencies.png) — finish-to-start dependencies at the work-package level, computed directly from `docs/wbs.csv`'s `depends_on` column (not hand-drawn).
 
-**Critical path (longest E-weighted chain): WP-1 → WP-2 → WP-3 → WP-4 → WP-5 → WP-9 → WP-11 → WP-12, 97.58h.**
+**Critical path (longest E-weighted chain, active tasks only): WP-1 → WP-2 → WP-3 → WP-4 → WP-5 → WP-9 → WP-10 → WP-12, 82.92h.** (Recomputed 2026-10-10 after §7's deferral decision — shorter than the original 97.58h mainly because WP-11's deferred tasks, T-11.2/T-11.3, no longer compete for the critical slot into WP-12; WP-10's remaining task carries that edge instead.)
 
-**What this means for a solo builder — and where the standard definition misleads here:** in a team setting, the critical path is the one chain that sets the project's minimum completion date, because non-critical work happens in parallel on someone else's hours and absorbs delay for free. There is no second person here. Every hour on WP-6, WP-7, WP-8, and WP-10 — the four work packages *not* on this chain — still has to be spent by the same one developer, so total calendar time is bounded by the **full 126.6h**, not the 97.58h critical path. The critical-path number is still useful, just not for the reason a textbook says: it shows which work packages have **zero slack and the most fan-out**. WP-1 (data layer) and WP-2 (LLM client) sit at the root with the most downstream dependents — a slip there propagates to nearly everything else, including work packages not formally "on" the critical path. WP-8 (Notifications, 2.0h, nothing depends on it) can slip freely with no ripple at all. The real scheduling lesson from this graph isn't "protect the critical path," it's "protect the root" — which is exactly why `docs/plan.md` §5 schedules WP-1 and WP-2 first.
+**What this means for a solo builder — and where the standard definition misleads here:** in a team setting, the critical path is the one chain that sets the project's minimum completion date, because non-critical work happens in parallel on someone else's hours and absorbs delay for free. There is no second person here. Every hour on WP-6, WP-7, WP-8, and WP-11 — the work packages *not* on this chain — still has to be spent by the same one developer, so total calendar time is bounded by the **full active 111.8h**, not the 82.92h critical path. The critical-path number is still useful, just not for the reason a textbook says: it shows which work packages have **zero slack and the most fan-out**. WP-1 (data layer) and WP-2 (LLM client) sit at the root with the most downstream dependents — a slip there propagates to nearly everything else, including work packages not formally "on" the critical path. WP-8 (Notifications, 2.0h, nothing depends on it) can slip freely with no ripple at all. The real scheduling lesson from this graph isn't "protect the critical path," it's "protect the root" — which is exactly why `docs/plan.md` §5 schedules WP-1 and WP-2 first.
 
 ### A P50 / P80 range for the whole plan
 
-Computed from the PERT standard deviation of every task (`sd = (P − O) / 6`), summed as variance (`sd²`) across all 39 tasks, per `docs/wbs.csv`:
+Computed from the PERT standard deviation of every task (`sd = (P − O) / 6`), summed as variance (`sd²`) across the 33 active tasks (deferred tasks excluded, same as §4), per `docs/wbs.csv`:
 
 | | Hours |
 |---|---:|
-| P50 (the calibrated total itself) | 126.58 |
-| Total variance (Σ sd²) | 12.03 |
-| √variance (sd of the sum) | 3.47 |
-| **P80 (P50 + 0.84·sd)** | **129.50** |
+| P50 (the calibrated active total itself) | 111.75 |
+| Total variance (Σ sd²) | 10.45 |
+| √variance (sd of the sum) | 3.23 |
+| **P80 (P50 + 0.84·sd)** | **114.47** |
 
-The P50-to-P80 spread is only 2.91h — narrow, because most task spreads in this plan are tight (most `P/O` ratios sit well under 4, by design, after the re-estimation pass). **The honest caveat, stated and not glossed over:** this roll-up assumes every task's uncertainty is independent. It isn't. If the real risk is R-01 (Mesa's first-ever multi-process configuration) going wrong, that doesn't cost one task 2-5 extra hours in isolation — it correlates across T-5.2, T-9.1, and T-11.x all at once, since they all sit downstream of the same wrong assumption. The real uncertainty in this plan is dominated by a handful of correlated architectural unknowns (R-01, R-02, R-04), not by 39 independent coin flips, so P80 here is a **floor** on the real uncertainty, not a ceiling — the quantified risk reserve below is a better estimate of what a single bad assumption could actually cost.
+The P50-to-P80 spread is only 2.72h — narrow, because most task spreads in this plan are tight (most `P/O` ratios sit well under 4, by design, after the re-estimation pass). **The honest caveat, stated and not glossed over:** this roll-up assumes every task's uncertainty is independent. It isn't. If the real risk is R-01 (Mesa's first-ever multi-process configuration) going wrong, that doesn't cost one task 2-5 extra hours in isolation — it correlates across T-5.2, T-9.1, and T-11.x all at once, since they all sit downstream of the same wrong assumption. The real uncertainty in this plan is dominated by a handful of correlated architectural unknowns (R-01, R-02, R-04), not by 39 independent coin flips, so P80 here is a **floor** on the real uncertainty, not a ceiling — the quantified risk reserve below is a better estimate of what a single bad assumption could actually cost.
 
 ### Quantified risk reserve
 
@@ -255,25 +265,25 @@ Top 5 risks by exposure (`docs/risk-register.md`), reserve = probability × impa
 
 | Risk | L (prob.) | I (midpoint) | Reserve |
 |---|---|---|---:|
-| R-05 (became an issue) | 5 (90%) | 2 (3.5h) | 3.15h |
+| R-05 (became an issue, resolved 2026-10-10) | 5 (90%) | 2 (3.5h) | 3.15h |
 | R-07 (optimism bias) | 3 (50%) | 3 (8.5h) | 4.25h |
 | R-01 (Mesa multi-process) | 4 (70%) | 2 (3.5h) | 2.45h |
 | R-04 (GPU hardware) | 4 (70%) | 2 (3.5h) | 2.45h |
 | R-06 (solo-dev schedule) | 4 (70%) | 2 (3.5h) | 2.45h |
 | **Total quantified reserve** | | | **14.75h** |
 
-This is a separate number from the 25% schedule buffer (§2) — the schedule buffer absorbs general estimation looseness across all 39 tasks, while this reserve is specifically sized against the five named, scored things most likely to actually go wrong. Note that this reserve (14.75h) is close to the 14.1h residual buffer erosion already recorded in §7 — not a coincidence, since R-05 (the risk that already fired) is itself partly responsible for both numbers.
+This is a separate number from the 25% schedule buffer (§2) — the schedule buffer absorbs general estimation looseness across the active tasks, while this reserve is specifically sized against the five named, scored things most likely to actually go wrong. R-05 stays in the top five even though it's now retired for this milestone (§7 closed it): the underlying pattern — a WBS outgrowing capacity — is exactly the kind of thing that recurs in Milestone 9 once real construction tasks get added, so its exposure score still earns its place in the reserve rather than being dropped for looking resolved today.
 
 ### Plan-on-a-page
 
-**Disaster Response Coordination — Milestone 7 at a glance (2026-10-07)**
+**Disaster Response Coordination — Milestone 7 at a glance (2026-10-10, final)**
 
-- **Scope:** 12 work packages, 39 tasks, 126.6h raw (P50) / 129.5h (P80)
+- **Scope:** 12 work packages, 39 tasks total — 33 active, 6 deferred. Active: 111.75h raw (P50) / 114.47h (P80)
 - **Capacity:** 150h, Weeks 8-16 (15h build weeks, 20h Weeks 14-16) — a stated increase over the course's 87h default
-- **Buffer:** 25% (37.5h declared; 23.4h real after the 14.1h accepted overage)
-- **Critical path:** WP-1 → WP-2 → WP-3 → WP-4 → WP-5 → WP-9 → WP-11 → WP-12, 97.58h — protect the root (WP-1/WP-2), not just the chain
-- **First week the plan touches its buffer:** Week 12 (the integration gate)
-- **Top 5 risks (exposure):** R-05 scope, already fired (10) · R-07 optimism bias (9) · R-01 Mesa multi-process (8) · R-04 GPU hardware (8) · R-06 solo-dev schedule (8)
-- **Quantified reserve against those five:** 14.75h
-- **Scope cut this week:** none to Won't — 9.5h recovered by re-estimation, 63h recovered by a real capacity increase, 14.1h accepted as a named cost
-- **Ship confidence:** amber — fits raw capacity, but the buffer is thinner than declared and the plan has never been tested against real completed work (calibration factor is still 1.00×, 0 samples)
+- **Buffer:** 25% (37.5h declared, fully intact — the plan fits inside the buffered threshold, not just raw capacity)
+- **Critical path:** WP-1 → WP-2 → WP-3 → WP-4 → WP-5 → WP-9 → WP-10 → WP-12, 82.92h — protect the root (WP-1/WP-2), not just the chain
+- **Verdict:** fits, with 0.8h to spare against the 112.5h plannable threshold
+- **Top 5 risks (exposure):** R-05 scope, fired and resolved (10) · R-07 optimism bias (9) · R-01 Mesa multi-process (8) · R-04 GPU hardware (8) · R-06 solo-dev schedule (8)
+- **Quantified reserve against those five:** 14.75h — now fully inside the untouched 37.5h buffer, not competing with it
+- **Scope decision:** 9.5h recovered by re-estimation, 63h by a real capacity increase, 14.85h by deferring 6 tasks (3 requirements moved Should → Won't: FR-INTAKE-03, FR-INFER-03, FR-MAP-01; 2 tasks deferred test coverage on Must features already backed by real evidence)
+- **Ship confidence:** green for this plan's internal arithmetic — it fits, the buffer is untouched, every number traces to a real decision. Still amber on execution risk: the plan has never been tested against real completed work (calibration factor is 1.00×, 0 samples) — that's Milestone 9's job, not this week's

@@ -18,9 +18,9 @@ Review this every Monday. A register written once is a document; reviewed weekly
 · scope · L 5 · I 2 · **E 10**
 · **Trigger:** the calibrated plan total (§4 of `docs/plan.md`) exceeds plannable capacity.
 · **Owner:** me.
-· **Response:** mitigate — applied this week: 6 tasks re-estimated after a second look (9.5h recovered), capacity raised from the course's default 87h to a real, stated 150h commitment (63h recovered). Combined, this closed the original 70.8h gap to 14.1h.
-· **Contingency:** the residual 14.1h is accepted as a named cost against the declared 25% buffer (`docs/plan.md` §6/§7) rather than closed by quietly shrinking the buffer — `docs/requirements.md` was reviewed and no item needed to move to Won't this week.
-· **Status:** **became an issue on 2026-10-07.** Mitigated, not fully resolved — 14.1h residual open. Revisit if Milestone 9's first real tasks add further scope on top of this.
+· **Response:** mitigate, then avoid — applied in two passes: (1) 2026-10-07: 6 tasks re-estimated after a second look (9.5h recovered), capacity raised from the course's default 87h to a real, stated 150h commitment (63h recovered), closing the original 70.8h gap to a 14.1h residual, accepted at the time. (2) 2026-10-10: revisited for full marks — 6 tasks deferred to Won't-this-release or pushed to Milestone 11 (14.85h recovered, `docs/plan.md` §7), closing the residual gap completely. Plan now fits with 0.8h to spare.
+· **Contingency:** no longer needed for this instance — the gap is closed, not accepted. `docs/requirements.md` v1.3 records the three Won't changes (FR-INTAKE-03, FR-INFER-03, FR-MAP-01).
+· **Status:** **became an issue on 2026-10-07; resolved on 2026-10-10.** Retired for this milestone's WBS. Re-opens if Milestone 9's first real tasks add scope on top of this plan without a matching deferral or capacity adjustment — the same pattern, not a new risk.
 
 **R-07** — Because this is the first time estimation has been done at this project's scale, optimism bias may produce systematically low estimates across many tasks rather than one or two outliers.
 · schedule/personal · L 3 · I 3 · **E 9**
