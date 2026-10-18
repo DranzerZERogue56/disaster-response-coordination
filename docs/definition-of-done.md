@@ -1,6 +1,6 @@
-# Definition of Done — Template
+# Definition of Done — Disaster Response Coordination
 
-Copy this into your repository as `docs/definition-of-done.md` and link it from `README.md`.
+Baselined 2026-10-18 alongside `docs/requirements.md` v1.3 (see `docs/baseline.md`). Changes to the checklist itself go through `docs/change-requests/` per the threshold rule (item 5: "changes the definition of done").
 
 ## What this is
 
@@ -40,7 +40,7 @@ An item is Done when all of the following are true:
 This is an MVP being built to prove the concept, so three template items came off the list. Each one is something I would skip every time right now:
 
 - **"The branch is merged only after the pipeline is green on the merge commit."** CI does not exist until Milestone 9, and I am a solo developer committing straight to `main` during the MVP. Revisit when CI is running.
-- **"Any behavior change a stranger would need to know is reflected in `README.md`, `CHANGELOG.md`, or `docs/runbook.md`."** The MVP has no changelog or runbook yet; the README and `docs/requirements.md` are the only living documents. Revisit at the documentation milestone (Week 13).
+- **"Any behavior change a stranger would need to know is reflected in `README.md`, `CHANGELOG.md`, or `docs/runbook.md`."** Still cut for per-item Done checks: `docs/runbook.md` doesn't exist yet (Week 13, the documentation milestone). **Update, 2026-10-18 (DR-001, this week's design review):** `CHANGELOG.md` itself does now exist as of this week's baseline, but it serves a narrower purpose than this cut item implies — it tracks *specification* changes via `docs/change-requests/` (`docs/baseline.md`'s change-control process), not general behavior changes per work item. The full per-item changelog habit this bullet describes is still deferred to Week 13.
 - **"Time spent is written to the hours log the same day."** My hours log is updated in weekly batches, so I would skip this every time. In its place I added a weekly version as the last checklist item: the week's hours are logged before that week's milestone is submitted.
 
 Nine items remain (eight kept from the template, plus the weekly hours-log item). Each one is answerable yes or no by someone who is not me.

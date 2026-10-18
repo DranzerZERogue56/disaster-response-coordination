@@ -1,4 +1,6 @@
-# Risk Register (draft)
+# Risk Register (draft, superseded)
+
+**Superseded 2026-10-18 (DR-010, Week 8 design review) by [`docs/risk-register.md`](docs/risk-register.md).** That file is the formal, scored, current risk register — likelihood, impact, exposure, triggers, owners, and responses for 10 risks, reviewed and updated through Milestone 7. This file is kept only as a historical record of the early draft; don't treat anything below as current.
 
 Early draft of top risks, captured while scaling the concept in
 `PROJECT.md`. This is a head start for the formal Risk Register due at

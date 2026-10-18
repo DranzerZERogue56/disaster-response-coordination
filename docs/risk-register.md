@@ -86,8 +86,16 @@ Review this every Monday. A register written once is a document; reviewed weekly
 · **Contingency:** swap to `mistral:7b` (Apache-2.0, already scored as ADR 0001's documented runner-up) if the review requires it.
 · **Status:** open.
 
+**R-10** — Because the Dispatcher Web UI (WP-7) is the first Flask/HTML/JS code of the project, and Milestone 7's own estimation session already flagged it as likely to need scaffolding time beyond the view itself, implementing T-7.1 through T-7.4 may take meaningfully longer than their estimates assume.
+· technical/novelty · L `_` · I `_` · E `_`
+· **Trigger:** T-7.1 (the first task in WP-7) passes its own estimate's pessimistic bound (7h) without a working page.
+· **Owner:** me.
+· **Response:** mitigate — scaffold the minimal Flask app (routing, one template, static files wired up) as an explicit first sub-step of T-7.1 before building the actual pending-proposals view, so the framework-learning cost is isolated and visible rather than hidden inside the first feature.
+· **Contingency:** if Flask itself is the blocker, a plainer approach (a single Python `http.server` handler rendering raw HTML, no framework) satisfies the same interfaces in §5 with no new dependency — slower to extend, faster to get running once.
+· **Status:** open. **Found 2026-10-18, Week 8 design review (DR-005)** — a real gap: this exact concern was named in conversation during Milestone 7's estimation pass but never actually written into the risk register at the time.
+
 ---
 
-Categories represented: technical/novelty (R-01, R-02), dependency (R-03, R-04), scope (R-05), schedule/personal (R-06, R-07), data/legal (R-08, R-09) — all five, not just the two the rubric requires.
+Categories represented: technical/novelty (R-01, R-02, R-10), dependency (R-03, R-04), scope (R-05), schedule/personal (R-06, R-07), data/legal (R-08, R-09) — all five, not just the two the rubric requires.
 
-**Top five by exposure (work these first):** R-05 (10), R-07 (9), R-01 (8), R-04 (8), R-06 (8).
+**Top five by exposure (work these first):** R-05 (10), R-07 (9), R-01 (8), R-04 (8), R-06 (8). R-10 needs scoring (see DR-005 in `docs/review/review-defect-log.csv`).

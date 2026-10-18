@@ -37,9 +37,17 @@ the schedule slips.
 
 - [`PROJECT.md`](PROJECT.md) — architecture, tech stack, evaluation plan, team-size competition, report generation
 - [`CALENDAR.md`](CALENDAR.md) — full 16-week schedule with weekly deliverables
-- [`RISKS.md`](RISKS.md) — draft risk register
+- [`RISKS.md`](RISKS.md) — early draft risk register, **superseded by [`docs/risk-register.md`](docs/risk-register.md)**
 - [`HARDWARE.md`](HARDWARE.md) — local GPU server build plan, phased by readiness week
 - [`docs/charter.md`](docs/charter.md) — project charter (purpose, constraints, non-goals, risks, cut order)
+- [`docs/requirements.md`](docs/requirements.md) — requirements specification, baselined Week 8
+- [`docs/architecture.md`](docs/architecture.md) — technical specification
+- [`docs/plan.md`](docs/plan.md) — work breakdown, schedule, burn-down, scope decision
+- [`docs/risk-register.md`](docs/risk-register.md) — the current, scored risk register (10 risks)
+- [`docs/baseline.md`](docs/baseline.md) — the Week 8 specification baseline and what's still open
+- [`docs/review/`](docs/review/) — the Week 8 design review checklist and defect log
+- [`docs/change-requests/`](docs/change-requests/) — change control, for anything touching the baseline from here
+- [`CHANGELOG.md`](CHANGELOG.md) — specification changes since the baseline
 - [`docs/ai-usage.md`](docs/ai-usage.md) — AI usage policy and dated log
 - [`docs/hours-log.csv`](docs/hours-log.csv) — logged work sessions
 - [`docs/definition-of-done.md`](docs/definition-of-done.md) — the checklist every work item must pass before it counts as Done
