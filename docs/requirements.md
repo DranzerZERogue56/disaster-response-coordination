@@ -562,11 +562,11 @@ Things you are treating as true but have NOT verified.
 
 | ID | Assumption | Owner | Verify by | If it is false |
 |---|---|---|---|---|
-| ASM-01 | The GPU server (or a set of smaller PCs running smaller models) is available by Week 9 | me | ~~2026-10-14~~ **OVERDUE as of this review (2026-10-18) — DR-008, unresolved.** New verify-by: 2026-10-21 (before Milestone 9 start) | Fall back to the dev laptop with the smaller "lower level" models; scenarios shrink |
+| ASM-01 | The GPU server (or a set of smaller PCs running smaller models) is available by Week 9 | me | ~~2026-10-14~~ **Resolved false, 2026-10-18 (DR-006).** Confirmed: still running on the dev laptop only; hardware not yet acquired. New verify-by: 2026-10-21 (before Milestone 9 start) | **Fallback invoked:** fall back to the dev laptop with the smaller "lower level" models; scenarios shrink. Ties directly to risk R-04 (`docs/risk-register.md`), already tracking this exact dependency |
 | ASM-02 | A smaller local model can classify a report within the 5 s target (NFR-PERF-01) | me | 2026-10-25 (end of Week 9, first real model calls) | Raise the threshold, or use the rules-based fallback for classification |
 | ASM-03 | The model's confidence score is meaningful enough that a threshold of 75 separates safe from unsafe auto-dispatch | me | 2026-11-01 (end of Week 10, after real negotiation runs) | Escalate more proposals to humans; recalibrate the threshold |
 | ASM-04 | Decision-trail evidence for the defense can be captured (recording or export) within the 24-hour purge window | me | 2026-11-29 (Week 14, before presentation rehearsal) | Extend retention for the defense week, or record the demo run |
-| ASM-05 | An active dispatcher will be reachable to review the synthetic-scenario demo and give feedback | me | ~~2026-10-04~~ **Resolved false, 2026-10-18 (DR-009).** No new dispatcher contact was recorded past the two already on file (`docs/elicitation-notes.md`) | **Fallback invoked:** the two dispatcher conversations already on record (Discord, 2026-09-09; Reddit, 2026-09-13) stand as the only evidence for this release. Stated here, plainly, rather than left silent |
+| ASM-05 | An active dispatcher will be reachable to review the synthetic-scenario demo and give feedback | me | ~~2026-10-04~~ **Resolved false, 2026-10-18 (DR-007).** No new dispatcher contact was recorded past the two already on file (`docs/elicitation-notes.md`) | **Fallback invoked:** the two dispatcher conversations already on record (Discord, 2026-09-09; Reddit, 2026-09-13) stand as the only evidence for this release. Stated here, plainly, rather than left silent |
 
 ## 12. Dependencies
 

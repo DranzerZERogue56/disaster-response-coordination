@@ -21,10 +21,12 @@
 
 ## Open items carried past the baseline
 
-| Id | Description | Disposition | Due |
+Both items below were carried forward out of this baseline's own review, then closed the same day once the author supplied the missing answers.
+
+| Id | Description | Disposition | Closed |
 |---|---|---|---|
-| DR-005 | R-10 (Flask/Web UI novelty risk) needs a Likelihood/Impact score from the author | Open — scoring is the author's call, not drafted here | Week 9, before WP-7 starts |
-| DR-006 | ASM-01 (GPU hardware availability) verify-by date was already overdue at review time; needs the author's real answer about hardware status | Open | 2026-10-21, before Milestone 9 construction starts |
+| DR-005 | R-10 (Flask/Web UI novelty risk) needed a Likelihood/Impact score from the author | Resolved — scored L4/I2, E8 by the author | 2026-10-18 |
+| DR-006 | ASM-01 (GPU hardware availability) verify-by date was already overdue at review time; needed the author's real answer about hardware status | Resolved — still on the dev laptop only, fallback invoked (smaller models, shrunk scenarios), ties to R-04 | 2026-10-18 |
 
 ## What this means from today
 

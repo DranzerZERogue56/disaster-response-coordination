@@ -36,7 +36,7 @@ Run 2026-10-18, Week 8 (the halfway checkpoint). Self-review plus an AI pass —
 ## Area 4 — Risks owned
 
 - [x] The register itself is current, not a stale duplicate. — **Found this week, DR-010**: `RISKS.md` (the Milestone-1-era draft) was still linked from `README.md` as if current, explicitly self-labeled "to be formalized at Milestone 7" with no note that it had been. Marked superseded, pointing at `docs/risk-register.md`.
-- [partial] Every risk in the register has a likelihood, an impact, a trigger, an owner, and a response. — 9 of 10 risks fully scored; **R-10 (new this week, DR-005) still needs its L/I score from the author**, same as every other risk in this register — not something an assistant assigns.
+- [x] Every risk in the register has a likelihood, an impact, a trigger, an owner, and a response. — All 10 risks fully scored, including R-10 (new this week, DR-005), scored L4/I2 by the author 2026-10-18.
 - [x] The response is an action, not an attitude. — Every risk's response names a concrete task or a specific fallback (e.g. R-01: "timebox a 2-hour spike... before committing further hours").
 - [partial] Every technology you have never used before appears as a risk. — Mesa (R-01), GPU/local model (R-04), llama3.2:3b calibration (R-03) covered. **Flask/the Web UI was missing — DR-005, fixed this week as R-10.**
 - [x] Every free tier, trial, credit, or borrowed access appears as a risk with an expiry date. — N/A, defensibly: every dependency in this project is either free-forever open source (Ollama, Mesa, SQLite, Python) or local hardware with no trial/credit structure (CON-03 rules out paid APIs by design). Stated here rather than silently skipped.
@@ -73,7 +73,7 @@ Run 2026-10-18, Week 8 (the halfway checkpoint). Self-review plus an AI pass —
 
 1. **Every Critical and Major defect has a written disposition.** DR-001 (Critical, fixed) through DR-011 (Minor, accepted) — all 11 dispositioned in `docs/review/review-defect-log.csv`.
 2. **Every rejected finding has a written reason.** DR-008 — rejected with reasoning (correct location, already resolved).
-3. **Rework on Majors is verified, and the verification is recorded.** DR-001, DR-004, DR-005, DR-007 all marked `verified` in the defect log, except DR-005 (R-10 still needs its L/I score — not yet fully verified) and DR-006 (ASM-01, genuinely open, needs the author's real answer about hardware).
+3. **Rework on Majors is verified, and the verification is recorded.** DR-001, DR-004, DR-005, DR-006, DR-007 all marked `verified` in the defect log — the last two closed 2026-10-18 once the author supplied R-10's score and ASM-01's real hardware status.
 4. **The review report is written, dated, and committed.** This document.
 
-**Baseline declared 2026-10-18 with two open items carried forward** (DR-005's risk score, DR-006/ASM-01's overdue hardware check) — see `docs/baseline.md`.
+**Baseline declared 2026-10-18.** The two items originally carried forward (DR-005's risk score, DR-006/ASM-01's overdue hardware check) were both closed the same day — see `docs/baseline.md`.

@@ -87,7 +87,7 @@ Review this every Monday. A register written once is a document; reviewed weekly
 · **Status:** open.
 
 **R-10** — Because the Dispatcher Web UI (WP-7) is the first Flask/HTML/JS code of the project, and Milestone 7's own estimation session already flagged it as likely to need scaffolding time beyond the view itself, implementing T-7.1 through T-7.4 may take meaningfully longer than their estimates assume.
-· technical/novelty · L `_` · I `_` · E `_`
+· technical/novelty · L 4 · I 2 · **E 8**
 · **Trigger:** T-7.1 (the first task in WP-7) passes its own estimate's pessimistic bound (7h) without a working page.
 · **Owner:** me.
 · **Response:** mitigate — scaffold the minimal Flask app (routing, one template, static files wired up) as an explicit first sub-step of T-7.1 before building the actual pending-proposals view, so the framework-learning cost is isolated and visible rather than hidden inside the first feature.
@@ -98,4 +98,4 @@ Review this every Monday. A register written once is a document; reviewed weekly
 
 Categories represented: technical/novelty (R-01, R-02, R-10), dependency (R-03, R-04), scope (R-05), schedule/personal (R-06, R-07), data/legal (R-08, R-09) — all five, not just the two the rubric requires.
 
-**Top five by exposure (work these first):** R-05 (10), R-07 (9), R-01 (8), R-04 (8), R-06 (8). R-10 needs scoring (see DR-005 in `docs/review/review-defect-log.csv`).
+**Top exposures (work these first):** R-05 (10), R-07 (9), then a four-way tie at 8 — R-01, R-04, R-06, R-10 (scored 2026-10-18). Stated honestly as a tie rather than arbitrarily picking which four of the six count as "top five": all four earn real attention early, not just the first three alphabetically.
