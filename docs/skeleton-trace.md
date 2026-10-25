@@ -60,6 +60,26 @@ rubric's `ryebread` example uses.
 | Dispatcher auth (FR-AUTH-01) | This week's slice is unauthenticated intake only (per the Submit Incident Report contract itself: "intake is unauthenticated"); no session-gated route exists yet | Milestone 10, when `Decide Proposal`'s interactive path is built |
 | Offline queue (FR-INTAKE-01's queued path) | See FR-INTAKE-01 row above | Milestone 10 |
 
+## Secrets audit
+
+Full history scanned for common secret shapes (API keys, AWS access keys, private key headers, bearer tokens, `password =` literals), excluding the known-safe `password_hash`/`password_salt` column names in `migrations/0001-initial.sql`:
+
+```
+$ git log -p --all | grep -inE "(api[_-]?key|secret[_-]?key|password\s*=|AKIA[0-9A-Z]{16}|-----BEGIN (RSA|OPENSSH|PGP) PRIVATE KEY-----|token\s*=\s*['\"][A-Za-z0-9_\-]{10,}|ghp_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,})" \
+  | grep -v "password_hash\|password_salt"
+# 0 hits
+$ git log --all --diff-filter=A --name-only | grep -x "\.env"
+# no match — .env was never added to history
+```
+
+Consistent with the architecture (ADR 0001, CON-03): everything in this system is local-only, so there is no API key or network credential anywhere in the repository to leak in the first place. `.env.example` lists the one variable the app reads (`DB_PATH`); real `.env` is gitignored.
+
+**Rotation plan** (for the day this stops being true — e.g. a future cloud-GPU exception under R-04):
+1. Revoke the leaked credential at its issuing source immediately, before touching git history.
+2. Rewrite history to remove it (`git filter-repo` or BFG), then force-push and have every clone re-fetch.
+3. Issue a new credential, store it only in `.env` (gitignored) or CI secrets — never in a tracked file.
+4. Add the specific pattern that leaked to this audit's regex so the same shape can't slip through silently again.
+
 ## Acceptance record
 
 - [x] One real request travels every hop named in this slice; the only stubs are the ones named above, and each is labeled, not silently skipped.
