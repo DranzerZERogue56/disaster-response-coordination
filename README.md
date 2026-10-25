@@ -73,6 +73,7 @@ cut order if the schedule slips.
 - [`docs/hours-log.csv`](docs/hours-log.csv) — logged work sessions
 - [`docs/definition-of-done.md`](docs/definition-of-done.md) — the checklist every work item must pass before it counts as Done
 - [`docs/skeleton-trace.md`](docs/skeleton-trace.md) — Week 9 walking-skeleton hop table, traceability, and acceptance record
+- [`docs/skeleton-memo.md`](docs/skeleton-memo.md) — Week 9 Hard-tier memo: stubs, re-estimate, build-failure policy, AI accounting
 - `docs/adr/` — architecture decision records (Week 5+)
 - `docs/` (site root) — static GitHub Pages progress dashboard, live at
   https://dranzerzerogue56.github.io/disaster-response-coordination/
