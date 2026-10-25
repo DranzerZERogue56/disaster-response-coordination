@@ -1,0 +1,11 @@
+<!doctype html>
+<title>Incident Reports — walking skeleton</title>
+<h1>Incident Reports</h1>
+<p>Submit Incident Report &rarr; Intake Gateway &rarr; SQLite <code>incident_reports</code> &rarr; this page.</p>
+<ul>
+{% for r in reports %}
+  <li>#{{ r.id }} &mdash; {{ r.location }} &mdash; {{ r.severity_raw }} &mdash; reported by {{ r.reporting_unit }} ({{ r.status }})</li>
+{% else %}
+  <li>No reports yet.</li>
+{% endfor %}
+</ul>

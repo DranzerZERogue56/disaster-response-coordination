@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+source script/common.sh
+mkdir -p "$(dirname "$DB_PATH")"
+if [ ! -f "$DB_PATH" ]; then
+  "$PYTHON" tools/migrate.py "$DB_PATH"
+fi
+"$PYTHON" -m flask --app src.web_ui.app run --host 127.0.0.1 --port 8080

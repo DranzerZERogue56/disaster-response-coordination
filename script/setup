@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# One-command bootstrap for a fresh clone. Success looks like:
+# "setup complete" printed last, with no errors above it, and
+# data/dev.sqlite created with every migration applied.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+python3 -m venv .venv
+if [ -f .venv/bin/python ]; then PY=.venv/bin/python; else PY=.venv/Scripts/python.exe; fi
+
+"$PY" -m pip install --upgrade pip -q
+"$PY" -m pip install -r requirements.txt -q
+
+mkdir -p data
+DB_PATH="${DB_PATH:-data/dev.sqlite}"
+"$PY" tools/migrate.py "$DB_PATH"
+
+echo "setup complete"

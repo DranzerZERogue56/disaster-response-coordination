@@ -19,19 +19,40 @@ could keep on file. Full architecture and design: [`PROJECT.md`](PROJECT.md).
 Solo capstone project, one semester, 240 hours total, graded per a
 weekly-deliverable course schedule (see [`CALENDAR.md`](CALENDAR.md)).
 
+## Run it
+
+Prerequisite: Python 3.11 (pinned in `.python-version`).
+
+```
+./script/setup     # creates .venv, installs pinned deps, applies migrations
+./script/start     # runs the walking skeleton on http://127.0.0.1:8080
+```
+
+**What success looks like:** `./script/setup` ends by printing `setup
+complete` with no errors above it. After `./script/start`, `curl
+localhost:8080/healthz` returns `{"status": "ok"}`, and
+`curl localhost:8080/reports` renders a (possibly empty) list of incident
+reports. Posting to `/reports` (see `docs/skeleton-trace.md` for the exact
+command) adds a real row to `data/dev.sqlite` and it appears on that page
+immediately.
+
+Other verbs: `./script/lint`, `./script/test`, `./script/build`,
+`./script/smoke` — the same four stages CI runs on every push.
+
 ## Current status
 
 Concept and scope locked (Week 1), then pivoted in Week 2 away from an
 earlier version that set out to prove one negotiation style beats
 classical optimization with a live real-time map as the demo centerpiece
 — this version instead focuses on trying different team sizes against a
-scenario and producing a usable written plan, no live map. Week 1's
-Project Charter & Engineering System milestone is still in progress —
-charter content, AI-usage log, hours log, and project board are not yet
-filled in. No application code yet — Phase 1 (Weeks 1–8) is
-planning/design deliverables only; construction starts Week 9. See
-`docs/charter.md` for capacity, non-goals, and the ranked cut order if
-the schedule slips.
+scenario and producing a usable written plan, no live map. Weeks 1-8
+(planning/design) are complete and baselined (`docs/baseline.md`).
+Construction started Week 9: a real walking skeleton exists —
+`POST /reports` -> Intake Gateway -> SQLite `incident_reports` -> a
+rendered page, with CI running install/lint/test/build/smoke on every
+push (see `docs/skeleton-trace.md` for what's real and what's still
+stubbed). See `docs/charter.md` for capacity, non-goals, and the ranked
+cut order if the schedule slips.
 
 ## How to navigate the docs
 
@@ -51,16 +72,17 @@ the schedule slips.
 - [`docs/ai-usage.md`](docs/ai-usage.md) — AI usage policy and dated log
 - [`docs/hours-log.csv`](docs/hours-log.csv) — logged work sessions
 - [`docs/definition-of-done.md`](docs/definition-of-done.md) — the checklist every work item must pass before it counts as Done
+- [`docs/skeleton-trace.md`](docs/skeleton-trace.md) — Week 9 walking-skeleton hop table, traceability, and acceptance record
 - `docs/adr/` — architecture decision records (Week 5+)
 - `docs/` (site root) — static GitHub Pages progress dashboard, live at
   https://dranzerzerogue56.github.io/disaster-response-coordination/
 
 ## What's intentionally not here yet
 
-- No application code — `src/` and `tests/` are empty scaffolding until
-  Week 9 (Mesa scenario engine, contract-net negotiation, etc.)
-- No CI — `.github/workflows/` is empty scaffolding
-- No architecture decision records — `docs/adr/` is empty until Week 5
+- Most application code — Week 9 built only the one walking-skeleton
+  vertical slice (incident intake). Mesa, the negotiation engine,
+  classification, and the dispatcher web console's real decision flow
+  start in Milestone 10 (see `docs/skeleton-trace.md`'s stub list)
 - No finalized license — see `LICENSE` for the deferral status
 - No LLM integration — Ollama backend work starts Week 9+
 - No scenario reader or report generator yet — both new pieces from the

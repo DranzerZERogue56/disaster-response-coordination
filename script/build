@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# "Build" for a Python app: byte-compile everything (fails the build on a
+# syntax error) and confirm the app module imports cleanly end to end.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+source script/common.sh
+"$PYTHON" -m compileall -q src tests
+"$PYTHON" -c "from src.web_ui.app import create_app; create_app()"
+echo "build ok"

@@ -27,3 +27,6 @@ build/
 
 # Logs
 *.log
+
+# Local SQLite database (created by script/setup; never committed)
+data/*.sqlite
