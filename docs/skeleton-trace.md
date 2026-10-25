@@ -86,7 +86,7 @@ Picked from the menu, the items that fit this project without contradicting its 
 
 - **A build matrix.** CI now runs the full install→secrets→lint→test→build→smoke pipeline against Python 3.11 *and* 3.12 (`.github/workflows/ci.yml`'s `strategy.matrix`), not just the one version pinned in `.python-version`. Catches anything that's only working by accident of the local interpreter.
 - **Automate the secrets check.** `tools/secrets_scan.py` (run as `script/secrets-check`) reuses the one-time full-history audit's regex, but against every tracked file, on every CI run — verified it actually fails the build against a planted fake `sk-...` key before removing the test file.
-- **Cache and time it.** `actions/setup-python`'s `cache: pip` enabled. Before: ~19s per run (the first three CI runs this week, no cache). After: see the timed run below — recorded, not assumed.
+- **Cache and time it.** `actions/setup-python`'s `cache: pip` enabled. Before: 19-20s per run, no cache (runs `40229830808`/`40229958214`). After, cache warm (run `40230550139` rerun): 11s (Python 3.11) / 12s (Python 3.12) — roughly 40% faster, measured from GitHub's own run timing, not assumed.
 - **Branch protection.** `main` now requires the CI check to pass before a merge can land, enforced in GitHub's ruleset settings rather than left as a habit to remember at 1 a.m.
 
 ## Acceptance record
