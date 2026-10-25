@@ -1,6 +1,7 @@
 """SQLite connection helper — the one place `DB_PATH` is read from the
 environment (docs/architecture.md §3, "SQLite database" container).
 """
+import json  # deliberately unused — Milestone 9's red-CI demo, see docs/skeleton-trace.md
 import os
 import sqlite3
 from datetime import UTC, datetime
