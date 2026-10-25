@@ -80,10 +80,19 @@ Consistent with the architecture (ADR 0001, CON-03): everything in this system i
 3. Issue a new credential, store it only in `.env` (gitignored) or CI secrets — never in a tracked file.
 4. Add the specific pattern that leaked to this audit's regex so the same shape can't slip through silently again.
 
+## Medium tier (extra credit)
+
+Picked from the menu, the items that fit this project without contradicting its own architecture decisions (deploying was skipped — ADR 0001/CON-03 deliberately keep this system local-only with no hosted service; standing up a public deploy stage this week would cut against that decision rather than extend it):
+
+- **A build matrix.** CI now runs the full install→secrets→lint→test→build→smoke pipeline against Python 3.11 *and* 3.12 (`.github/workflows/ci.yml`'s `strategy.matrix`), not just the one version pinned in `.python-version`. Catches anything that's only working by accident of the local interpreter.
+- **Automate the secrets check.** `tools/secrets_scan.py` (run as `script/secrets-check`) reuses the one-time full-history audit's regex, but against every tracked file, on every CI run — verified it actually fails the build against a planted fake `sk-...` key before removing the test file.
+- **Cache and time it.** `actions/setup-python`'s `cache: pip` enabled. Before: ~19s per run (the first three CI runs this week, no cache). After: see the timed run below — recorded, not assumed.
+- **Branch protection.** `main` now requires the CI check to pass before a merge can land, enforced in GitHub's ruleset settings rather than left as a habit to remember at 1 a.m.
+
 ## Acceptance record
 
 - [x] One real request travels every hop named in this slice; the only stubs are the ones named above, and each is labeled, not silently skipped.
 - [x] `script/smoke` passes against a real database and **fails** (verified, exit 1 path exercised) when the data store is unavailable — `tools/smoke_check.py`.
-- [x] CI runs install → lint → test → build → smoke on every push and PR into `main` (`.github/workflows/ci.yml`).
+- [x] CI runs install → secrets → lint → test → build → smoke on every push and PR into `main`, across two Python versions (`.github/workflows/ci.yml`).
 - [x] Bootstrap is reproducible: `.python-version` pinned, `requirements.txt` pinned exactly, `script/setup` is one command, `README.md`'s `## Run it` states what success looks like.
-- [x] Secrets hygiene: no credentials in this slice (no API keys — Ollama is local-only per ADR 0001), `.env.example` lists the one variable the app reads (`DB_PATH`), `.gitignore` already excludes `.env` and `data/*.sqlite`.
+- [x] Secrets hygiene: no credentials in this slice (no API keys — Ollama is local-only per ADR 0001), `.env.example` lists the one variable the app reads (`DB_PATH`), `.gitignore` already excludes `.env` and `data/*.sqlite`, and the secrets check above runs this same audit automatically on every push.
