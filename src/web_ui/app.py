@@ -13,6 +13,7 @@ from flask import Flask, jsonify, render_template, request
 from src.classify_propose.model import get_model
 from src.classify_propose.service import ClassifyError, classify_and_propose
 from src.db import connect, ensure_scenario_run
+from src.decide_proposal.service import decide_auto
 from src.intake_gateway.service import ValidationError, list_reports, submit_report
 from src.unit_registry.service import RegistryError, reserve_for_proposal
 
@@ -62,6 +63,11 @@ def create_app():
             if result["proposal"]:
                 try:
                     result["reservation"] = reserve_for_proposal(
+                        conn, result["proposal"]["proposal_id"]
+                    )
+                    # Slice 3: auto-approve if the safety rule allows it;
+                    # otherwise it waits for a human (slice 4).
+                    result["decision"] = decide_auto(
                         conn, result["proposal"]["proposal_id"]
                     )
                 except RegistryError as exc:

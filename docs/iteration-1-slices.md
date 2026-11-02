@@ -34,3 +34,16 @@ wired in. Switching is one setting (`CLASSIFY_MODEL`), no code changes.
 | Commit | `fdee37b` |
 | Not done | Marking the unit `assigned` on approval (slice 3, FR-RES-01). No background timer: expired reservations are freed the next time anything asks to reserve, not at the exact minute. A rejected proposal does not yet call `release_unit` (no rejection path exists until slices 3-4). Severity tiebreak (Milestone 12) |
 | Ben's confidence | 95 / 100, Green, 2026-11-01. Rated after opening `src/unit_registry/service.py` |
+
+## Slice 3: Decide Proposal auto-path
+
+| Item | Evidence |
+|---|---|
+| Requirements | FR-AGENT-03 (auto only at confidence 75 or more and not high severity), NFR-SEC-02 (no dispatch without a human below 75 or at Severe/Critical), FR-RES-01 (approved proposal turns the reserved unit into an assigned one) |
+| Where it lives | `src/decide_proposal/service.py` (`needs_human`, `decide_auto`), `src/unit_registry/service.py::assign_unit`, called from `POST /reports` after the reservation. Own module, like slice 2. Decide Proposal never writes to the units table; the registry does |
+| Acceptance criteria | AC-1 confidence 75+ and not Severe/Critical: `final_status='approved'`, `decided_by='auto'`, `decided_at` set, unit goes `reserved` to `assigned`. AC-2 anything else is left untouched (no decision, unit stays reserved) for a human. AC-3 a second call returns the existing decision unchanged. AC-4 if the reservation was lost, `UNIT_NO_LONGER_AVAILABLE` is raised and the proposal stays undecided |
+| Tests | `tests/test_decide_proposal.py`: the safety rule table (74 Moderate held; 75 and 90 Moderate auto; 95 Severe and 95 Critical held, plus 0, 100 and 100-Severe edges), the same five cases end to end against the database, idempotent second call, lost reservation, assign refuses another proposal's reservation, unknown proposal. Route test now checks A is auto-approved and C (Severe) is held. All pass locally |
+| Handled failure path | `UNIT_NO_LONGER_AVAILABLE` (route returns 409). Held proposals are not errors |
+| Commit | see git log ("Slice 3") |
+| Not done | The human decision itself (slice 4). The real FR-RES-01 follow-up when the unit is lost (secondary path to a responder) is just the error for now. Batch-mode stand-in policy (60 threshold) is not built |
+| Ben's confidence | ____ / 100, colour: ____ |

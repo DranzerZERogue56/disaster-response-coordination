@@ -22,7 +22,7 @@
 --      "severity_raw":"something happened, not sure how bad, no one's answering",
 --      "timestamp_reported":"2026-11-01T12:05:00+00:00","reporting_unit":"field-unit-7"}
 --
---   Report C, failure path (needs a Medical unit after Report A took one):
+--   Report C, failure path (A and B already hold both Medical units, so C gets the 409):
 --     {"location":"900 Elm Ave",
 --      "severity_raw":"man collapsed, chest pain, not breathing well",
 --      "timestamp_reported":"2026-11-01T12:10:00+00:00","reporting_unit":"field-unit-3"}

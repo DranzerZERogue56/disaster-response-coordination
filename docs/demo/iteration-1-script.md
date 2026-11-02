@@ -14,7 +14,7 @@ Run on seeded data (`seed/iteration-1.sql` or equivalent, committed). Five slice
 - One `Medical` agent node, two `Medical` units (`unit-med-1`, `unit-med-2`) — deliberately only two, so the failure-path beat can exhaust them
 - Report A — happy path: location "4th & Main St", severity_raw "person fell, visible leg injury, conscious and talking," reporting_unit "field-unit-7"
 - Report B — escalation path: location "near the old warehouse on 2nd", severity_raw "something happened, not sure how bad, no one's answering", description empty — deliberately vague, aimed at a sub-75 confidence classification
-- Report C — failure path: a second Medical-needing report submitted after Report A has already reserved `unit-med-1`, with only `unit-med-2` free
+- Report C — failure path: a Medical-needing report submitted after Reports A and B hold both Medical units, so reserve() finds nothing free (HTTP 409)
 
 <!-- MODEL SWAP: to demo on Ollama instead of the fake model, (1) set CLASSIFY_MODEL=ollama once that model class exists, and (2) in the 1:00 beat below, replace "fake-rules (the rules-based stand-in; Ollama is not wired in yet and the script says so out loud)" with "phi4-mini:latest (ADR 0001 amendment -- the dev-laptop fallback model, not the GPU-server target)". No code or seed changes needed. -->
 
@@ -32,7 +32,7 @@ Run on seeded data (`seed/iteration-1.sql` or equivalent, committed). Five slice
       stand-in; Ollama is not wired in yet and the script says so out loud).
 1:20  Confidence >= 75 -> Decide Proposal's auto-path fires. Show
       agent_proposals.final_status = 'approved', decided_by = 'auto', and the
-      unit's status flip to 'reserved' in the units table.
+      unit's status go from 'reserved' to 'assigned' in the units table.
 1:45  Notify Responder fires. Show the new row in notifications -- sent_at set,
       acknowledged_at still null (FR-ALERT-02 is Should-priority, not built yet).
 2:10  Submit Report B (the vague one). Point out the lower confidence score in
@@ -42,13 +42,14 @@ Run on seeded data (`seed/iteration-1.sql` or equivalent, committed). Five slice
 2:50  As the (stubbed) dispatcher: call Decide Proposal with decision=approve.
       Show final_status flip to 'approved', decided_by set to the dispatcher's
       id, not 'auto' -- the audit trail tells the two paths apart.
-3:15  Submit Report C, needing a Medical unit. unit-med-1 is already reserved
-      from Report A; only unit-med-2 is free.
-3:35  FAILURE PATH: force a second, simultaneous Medical request so a reserve()
-      call hits UNIT_ALREADY_RESERVED on both of this run's Medical units. Show
-      the 409 in the response and the retry-with-next-best-unit behavior
-      (FR-COORD-01) when one is actually available; show the plain error when
-      none are.
+3:15  Submit Report C. Report A's unit is assigned and Report B's unit is
+      held for the dispatcher (or assigned, after the 2:50 approval), so both
+      Medical units are taken.
+3:35  FAILURE PATH: the response is HTTP 409 UNIT_ALREADY_RESERVED, listing both
+      units it tried (the recommended one, then the alternative). The report
+      and proposal rows stay in place, nothing is dispatched. The retry
+      (next-best unit when one is free) is shown by the test suite at 4:10,
+      not live.
 4:10  Terminal: run the test suite. Point at the tests covering slices 1-5.
 4:35  "Not done yet this iteration: the offline queue (T-3.2), real dispatcher
       login replacing today's stubbed identity (T-7.4), and the Scenario Reader

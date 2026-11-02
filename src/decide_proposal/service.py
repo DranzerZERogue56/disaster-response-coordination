@@ -1,0 +1,69 @@
+"""Decide Proposal, auto-path (docs/architecture.md §5) — Milestone 10, slice 3.
+
+Serves FR-AGENT-03 and NFR-SEC-02: a proposal proceeds on its own only when
+confidence is 75 or more AND the incident is not Severe or Critical.
+Anything else is left untouched for a human (slice 4). Marking the unit
+'assigned' is the Unit Registry's job (FR-RES-01), so this module never
+writes to the units table.
+"""
+from datetime import UTC, datetime
+
+from src.unit_registry.service import assign_unit
+
+CONFIDENCE_THRESHOLD = 75
+HIGH_SEVERITIES = ("Severe", "Critical")
+
+
+def needs_human(confidence, severity):
+    """The safety rule. Kept as its own function so it is tested on its own."""
+    return confidence < CONFIDENCE_THRESHOLD or severity in HIGH_SEVERITIES
+
+
+def decide_auto(conn, proposal_id, now=None):
+    """Approve the proposal automatically if the rule allows it.
+
+    Returns {"proposal_id", "final_status", "decided_by", "decided_at"} when
+    decided, or {"proposal_id", "final_status": None, "held_for_human": True}
+    when the rule says a person must decide. A second call on a decided
+    proposal returns the existing decision unchanged. If the reserved unit
+    was lost in the meantime, RegistryError UNIT_NO_LONGER_AVAILABLE is
+    raised and the proposal stays undecided.
+    """
+    row = conn.execute(
+        """
+        SELECT p.confidence, p.recommended_unit_id, p.final_status, p.decided_by,
+               p.decided_at, r.severity
+        FROM agent_proposals p JOIN incident_reports r ON r.id = p.report_id
+        WHERE p.id = ?
+        """,
+        (proposal_id,),
+    ).fetchone()
+    if row is None:
+        raise LookupError(f"No proposal with id {proposal_id}")
+
+    if row["final_status"] is not None:
+        return {
+            "proposal_id": proposal_id,
+            "final_status": row["final_status"],
+            "decided_by": row["decided_by"],
+            "decided_at": row["decided_at"],
+            "already_decided": True,
+        }
+
+    if needs_human(row["confidence"], row["severity"]):
+        return {"proposal_id": proposal_id, "final_status": None, "held_for_human": True}
+
+    assign_unit(conn, row["recommended_unit_id"], proposal_id)
+    decided_at = (now or datetime.now(UTC)).isoformat()
+    conn.execute(
+        "UPDATE agent_proposals SET final_status = 'approved', decided_by = 'auto', "
+        "decided_at = ? WHERE id = ?",
+        (decided_at, proposal_id),
+    )
+    conn.commit()
+    return {
+        "proposal_id": proposal_id,
+        "final_status": "approved",
+        "decided_by": "auto",
+        "decided_at": decided_at,
+    }

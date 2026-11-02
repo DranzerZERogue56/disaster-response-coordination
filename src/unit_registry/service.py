@@ -5,8 +5,8 @@ else can claim it) and the 4-minute release rule (NFR-REL-02). Kept apart
 from Classify & Propose on purpose: if reservation breaks, this is the one
 file to look at. The route calls it directly after a proposal is written.
 
-Not here yet: marking a unit 'assigned' on approval (slice 3, FR-RES-01),
-and the severity tiebreak between two competing proposals (Milestone 12,
+Slice 3 added assign_unit (FR-RES-01): reserved -> assigned on approval.
+Not here yet: the severity tiebreak between two competing proposals (Milestone 12,
 FR-COORD-01).
 """
 import json
@@ -16,7 +16,8 @@ RESERVATION_MINUTES = 4
 
 
 class RegistryError(Exception):
-    """code is UNIT_ALREADY_RESERVED, UNIT_UNAVAILABLE, UNIT_NOT_FOUND or PROPOSAL_NOT_FOUND."""
+    """code is UNIT_ALREADY_RESERVED, UNIT_UNAVAILABLE, UNIT_NOT_FOUND,
+    UNIT_NO_LONGER_AVAILABLE or PROPOSAL_NOT_FOUND."""
 
     def __init__(self, code, message, tried=()):
         self.code = code
@@ -85,6 +86,27 @@ def reserve(conn, unit_id, proposal_id, now=None):
             "UNIT_ALREADY_RESERVED", f"Unit {unit_id} is already {row['status']}", [unit_id]
         )
     raise RegistryError("UNIT_UNAVAILABLE", f"Unit {unit_id} is {row['status']}", [unit_id])
+
+
+def assign_unit(conn, unit_id, proposal_id):
+    """Turn this proposal's reservation into an assignment (FR-RES-01).
+
+    Only works if the unit is still reserved by this same proposal. If the
+    window expired and someone else took it, raise UNIT_NO_LONGER_AVAILABLE
+    and change nothing.
+    """
+    cur = conn.execute(
+        "UPDATE units SET status = 'assigned', released_expected_by = NULL "
+        "WHERE id = ? AND status = 'reserved' AND reserved_by_proposal_id = ?",
+        (unit_id, proposal_id),
+    )
+    if cur.rowcount != 1:
+        raise RegistryError(
+            "UNIT_NO_LONGER_AVAILABLE",
+            f"Unit {unit_id} is no longer reserved for proposal {proposal_id}",
+            [unit_id],
+        )
+    conn.commit()
 
 
 def reserve_for_proposal(conn, proposal_id, now=None):

@@ -168,10 +168,12 @@ def test_route_reserves_then_retries_then_returns_409_when_none_left(client):
     a = post(client, "person fell, visible leg injury, conscious and talking")
     assert a.status_code == 201
     assert a.get_json()["reservation"]["unit_id"] == 1
+    assert a.get_json()["decision"]["final_status"] == "approved"  # Serious, 95: auto
 
     c = post(client, "man collapsed, chest pain, not breathing well")
     assert c.status_code == 201
     assert c.get_json()["reservation"]["unit_id"] == 2
+    assert c.get_json()["decision"]["held_for_human"] is True  # Severe: never auto
 
     d = post(client, "another fall with injury")
     assert d.status_code == 409
