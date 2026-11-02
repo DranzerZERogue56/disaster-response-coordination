@@ -114,4 +114,6 @@ def test_migration_runner_applies_the_triggers_on_a_fresh_database(tmp_path):
         "units_assigned_requires_approved_on_insert",
         "units_assigned_requires_approved_on_update",
         "proposals_stay_approved_while_unit_assigned",
+        "override_follow_ups_no_edit",
+        "dispatcher_overrides_no_edit",
     }

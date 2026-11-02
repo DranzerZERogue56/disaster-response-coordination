@@ -5,7 +5,9 @@ with a different unit at any time, but only with a reason, and the override
 is logged: who, when, why, the agent's original choice, and how long the human
 took after the AI asked for approval. After the override takes effect the
 dispatcher may keep adding to the same log entry (follow-up), with no time
-limit and without blocking the override itself.
+limit and without blocking the override itself. Follow-ups are separate
+append-only rows (CR-002), so the log can be added to but never rewritten. Follow-ups are separate
+append-only rows (CR-002), so the log can be added to but never rewritten.
 
 Unit status changes belong to the Unit Registry (`reassign`); this module
 logs the decision. Everything happens in one transaction, so a failed
@@ -108,22 +110,31 @@ def override_assignment(conn, proposal_id, new_unit_id, reason, dispatcher_id, n
 
 
 def add_follow_up(conn, override_id, text, dispatcher_id, now=None):
-    """Add to the same log entry. No time limit; never touches the assignment."""
+    """Add a follow-up to this override's log entry. No time limit; never
+    touches the assignment; never edits an earlier follow-up (each is its own
+    row in the append-only override_follow_ups table, CR-002)."""
     _check_dispatcher(conn, dispatcher_id)
     if not text or not str(text).strip():
         raise OverrideError("FOLLOW_UP_REQUIRED", "A follow-up needs some text")
-    row = conn.execute(
-        "SELECT follow_up_explanation FROM dispatcher_overrides WHERE id = ?", (override_id,)
+    exists = conn.execute(
+        "SELECT 1 FROM dispatcher_overrides WHERE id = ?", (override_id,)
     ).fetchone()
-    if row is None:
+    if exists is None:
         raise OverrideError("OVERRIDE_NOT_FOUND", f"No override with id {override_id}")
 
-    stamp = (now or datetime.now(UTC)).isoformat()
-    entry = f"[{stamp}] {str(text).strip()}"
-    combined = entry if not row["follow_up_explanation"] else row["follow_up_explanation"] + "\n" + entry
     conn.execute(
-        "UPDATE dispatcher_overrides SET follow_up_explanation = ? WHERE id = ?",
-        (combined, override_id),
+        "INSERT INTO override_follow_ups (override_id, dispatcher_account_id, text, added_at) "
+        "VALUES (?, ?, ?, ?)",
+        (override_id, dispatcher_id, str(text).strip(), (now or datetime.now(UTC)).isoformat()),
     )
     conn.commit()
-    return {"override_id": override_id, "follow_up_explanation": combined}
+    return {"override_id": override_id, "follow_ups": list_follow_ups(conn, override_id)}
+
+
+def list_follow_ups(conn, override_id):
+    rows = conn.execute(
+        "SELECT id, dispatcher_account_id, text, added_at FROM override_follow_ups "
+        "WHERE override_id = ? ORDER BY id",
+        (override_id,),
+    ).fetchall()
+    return [dict(r) for r in rows]

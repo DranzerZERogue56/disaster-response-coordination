@@ -272,7 +272,7 @@ Purpose        One row per dispatcher override of an assignment, at any point in
 | follow_up_explanation | TEXT | NULL | Added later, in the no-time-pressure window — the one documented exception to "never update a row" in this schema |
 | ai_escalated_at | TEXT | NULL | When the AI requested human approval, if this override followed an escalation |
 | overridden_at | TEXT | NOT NULL | |
-Invariants     I1: `reason` is non-empty (app-layer check, not a bare NOT NULL, since an empty string would pass NOT NULL). I2: `ai_escalated_at ≤ overridden_at` whenever `ai_escalated_at` is not NULL.
+Invariants     I1: `reason` is non-empty (app-layer check, not a bare NOT NULL, since an empty string would pass NOT NULL). I2: `ai_escalated_at ≤ overridden_at` whenever `ai_escalated_at` is not NULL. I-append-only (added by CR-002, migration 0003): follow-ups live in `override_follow_ups`, one row each; neither that table nor `dispatcher_overrides` can be edited, only added to.
 Relationships  Many dispatcher_overrides → one agent_proposals; many → one dispatcher_accounts; many → one units (twice: new_unit_id and original_agent_choice_unit_id).
 Volume         Expected minority of finalized proposals — estimated low hundreds across the semester's testing, same 24h purge
 Lifecycle      Created once at override; `follow_up_explanation` may be added exactly once afterward; purged 24h with the rest of the audit trail

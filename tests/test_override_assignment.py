@@ -10,6 +10,7 @@ from src.decide_proposal.service import decide_auto, decide_human, stub_dispatch
 from src.override_assignment.service import (
     OverrideError,
     add_follow_up,
+    list_follow_ups,
     override_assignment,
 )
 from src.unit_registry.service import RegistryError, reserve
@@ -184,9 +185,26 @@ def test_follow_up_is_added_to_the_same_entry_without_touching_the_assignment(co
 
     (row,) = overrides(conn)  # still one entry
     assert row["reason"] == "short reason"
-    assert "road closed on 4th" in row["follow_up_explanation"]
-    assert "low on supplies" in row["follow_up_explanation"]
+    texts = [f["text"] for f in list_follow_ups(conn, oid)]
+    assert texts == ["Longer explanation: road closed on 4th.", "Also: unit 1 was low on supplies."]
+    stamps = [f["added_at"] for f in list_follow_ups(conn, oid)]
+    assert stamps == [(T0 + timedelta(hours=3)).isoformat(), (T0 + timedelta(days=2)).isoformat()]
     assert (unit_status(conn, 1), unit_status(conn, 2)) == ("available", "assigned")
+
+
+def test_the_override_log_and_its_follow_ups_cannot_be_edited(conn):
+    pid = auto_assigned(conn)
+    dispatcher = stub_dispatcher_id(conn)
+    oid = override_assignment(conn, pid, 2, "original reason", dispatcher)["override_id"]
+    add_follow_up(conn, oid, "first follow-up", dispatcher)
+
+    with pytest.raises(sqlite3.IntegrityError, match="append-only"):
+        conn.execute("UPDATE dispatcher_overrides SET reason = 'rewritten' WHERE id = ?", (oid,))
+    with pytest.raises(sqlite3.IntegrityError, match="append-only"):
+        conn.execute("UPDATE override_follow_ups SET text = 'rewritten' WHERE override_id = ?", (oid,))
+
+    assert overrides(conn)[0]["reason"] == "original reason"
+    assert list_follow_ups(conn, oid)[0]["text"] == "first follow-up"
 
 
 def test_follow_up_errors(conn):
@@ -240,7 +258,8 @@ def test_override_through_the_routes(client):
     assert body["notification"]["unit_id"] == 2  # the unit that now holds it is told
 
     follow = tc.post(f"/overrides/{body['override_id']}/follow-up", json={"text": "more detail"})
-    assert follow.status_code == 200 and "more detail" in follow.get_json()["follow_up_explanation"]
+    assert follow.status_code == 200
+    assert [f["text"] for f in follow.get_json()["follow_ups"]] == ["more detail"]
     assert tc.post("/overrides/999/follow-up", json={"text": "x"}).status_code == 404
 
     c = sqlite3.connect(db)
