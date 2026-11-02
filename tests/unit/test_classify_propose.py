@@ -7,8 +7,6 @@ import pytest
 from src.classify_propose.model import FakeModel
 from src.classify_propose.service import ClassifyError, classify_and_propose
 
-MIGRATION_PATH = "migrations/0001-initial.sql"
-
 
 @pytest.fixture
 def conn(tmp_path):
@@ -129,3 +127,4 @@ def test_unknown_report_id(conn):
     with pytest.raises(ClassifyError) as exc:
         classify_and_propose(conn, 999, FakeModel())
     assert exc.value.code == "REPORT_NOT_FOUND"
+

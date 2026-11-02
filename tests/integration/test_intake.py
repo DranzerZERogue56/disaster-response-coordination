@@ -3,8 +3,6 @@ import sqlite3
 
 import pytest
 
-MIGRATION_PATH = "migrations/0001-initial.sql"
-
 
 @pytest.fixture
 def client(tmp_path, monkeypatch):
@@ -55,3 +53,4 @@ def test_submit_report_missing_field_rejected(client):
     resp = client.post("/reports", json={"location": "123 Test St"})
     assert resp.status_code == 400
     assert resp.get_json()["error"]["code"] == "FIELD_MISSING"
+

@@ -1,5 +1,7 @@
 """CR-001 / migration 0002: the database itself refuses an assigned unit whose
 proposal is not approved, whoever tries to write it."""
+
+
 import glob
 import sqlite3
 import subprocess
@@ -117,3 +119,4 @@ def test_migration_runner_applies_the_triggers_on_a_fresh_database(tmp_path):
         "override_follow_ups_no_edit",
         "dispatcher_overrides_no_edit",
     }
+

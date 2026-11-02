@@ -29,3 +29,4 @@ def test_the_written_report_is_honest_about_the_fake_model():
     text = render(measure(FakeModel()))
     assert "NFR-PERF-01" in text
     assert "not met until the same command is run with the real model" in text
+

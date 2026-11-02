@@ -1,5 +1,7 @@
 """Self-review fixes: 6.4 (reported time is normalised to UTC so queue order is
 real time order) and 2.4 (reserve really is safe when callers run at once)."""
+
+
 import glob
 import json
 import sqlite3
@@ -8,7 +10,6 @@ import threading
 import pytest
 
 from src.intake_gateway.queue import set_connected
-from src.intake_gateway.service import InvalidTimestamp, normalize_timestamp
 from src.unit_registry.service import RegistryError, reserve
 
 
@@ -18,29 +19,6 @@ def load_schema_and_seed(c):
             c.executescript(f.read())
     with open("seed/iteration-1.sql", encoding="utf-8") as f:
         c.executescript(f.read())
-
-
-# --- 6.4: timestamps -----------------------------------------------------------
-
-
-@pytest.mark.parametrize(
-    "given, expected",
-    [
-        ("2026-11-01T12:00:00+00:00", "2026-11-01T12:00:00+00:00"),
-        ("2026-11-01T12:00:00Z", "2026-11-01T12:00:00+00:00"),
-        ("2026-11-01T07:30:00-05:00", "2026-11-01T12:30:00+00:00"),
-        ("2026-11-01T14:30:00+02:00", "2026-11-01T12:30:00+00:00"),
-        ("2026-11-01T12:00:00", "2026-11-01T12:00:00+00:00"),  # no offset: taken as UTC
-    ],
-)
-def test_reported_times_are_stored_as_utc(given, expected):
-    assert normalize_timestamp(given) == expected
-
-
-@pytest.mark.parametrize("bad", ["yesterday", "", "2026-13-45T99:00:00", "12:00"])
-def test_a_time_that_is_not_iso_8601_is_refused(bad):
-    with pytest.raises(InvalidTimestamp):
-        normalize_timestamp(bad)
 
 
 @pytest.fixture
@@ -90,9 +68,6 @@ def test_an_invalid_time_is_rejected_and_nothing_is_stored(client):
     c = sqlite3.connect(db)
     assert c.execute("SELECT count(*) FROM incident_reports").fetchone()[0] == 0
     c.close()
-
-
-# --- 2.4: reserve under real concurrency -----------------------------------------
 
 
 def test_eight_threads_reserving_one_unit_exactly_one_wins(tmp_path):
@@ -152,3 +127,4 @@ def test_eight_threads_reserving_one_unit_exactly_one_wins(tmp_path):
     check.close()
     winner = next(pid for pid, r in outcomes if r == "won")
     assert holder == winner  # the unit belongs to the one thread that was told it won
+

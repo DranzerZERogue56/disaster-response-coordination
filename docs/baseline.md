@@ -17,7 +17,7 @@
 | Work breakdown and schedule | `docs/plan.md` | v1.0 | approved with rework (gap closed 2026-10-10) |
 | Risk register | `docs/risk-register.md` | current | approved with rework (DR-005, R-10 added) |
 | Definition of done | `docs/definition-of-done.md` | current | approved with rework (DR-003, DR-004) |
-| Traceability matrix | `docs/traceability.csv` | current | approved with rework (DR-001) |
+| Traceability matrix | `docs/requirements-traceability.csv` (renamed from `docs/traceability.csv` in Milestone 11) | current | approved with rework (DR-001) |
 
 ## Open items carried past the baseline
 

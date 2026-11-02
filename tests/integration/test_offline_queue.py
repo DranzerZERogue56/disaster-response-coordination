@@ -1,4 +1,6 @@
 """Slice 6: the offline queue (FR-INTAKE-01, NFR-REL-03)."""
+
+
 import glob
 import sqlite3
 
@@ -170,3 +172,4 @@ def test_release_queued_is_safe_to_repeat(client):
     assert release_queued(c, rid) is False
     assert drain_queue(c, lambda conn, report_id: report_id) == []
     c.close()
+

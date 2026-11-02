@@ -54,7 +54,6 @@ def unit_status(conn, unit_id=1):
     return conn.execute("SELECT status FROM units WHERE id = ?", (unit_id,)).fetchone()[0]
 
 
-# NFR-SEC-02's own five cases, plus the edges around them.
 @pytest.mark.parametrize(
     "confidence, severity, held",
     [
@@ -145,3 +144,4 @@ def test_assign_unit_refuses_another_proposals_reservation(conn):
 def test_unknown_proposal(conn):
     with pytest.raises(LookupError):
         decide_auto(conn, 999)
+
