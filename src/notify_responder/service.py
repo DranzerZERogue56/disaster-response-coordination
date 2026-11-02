@@ -36,7 +36,7 @@ def notify_responder(conn, proposal_id, unit_id, now=None):
     ).fetchone()
     if (
         row is None
-        or row["final_status"] != "approved"
+        or row["final_status"] not in ("approved", "modified")
         or row["unit_status"] != "assigned"
         or row["reserved_by_proposal_id"] != proposal_id
     ):
@@ -58,7 +58,9 @@ def notify_for_decision(conn, decision):
     """Convenience for the routes: notify the unit behind a fresh approval.
     Returns None when there is nothing to notify (held, rejected, or a
     repeat of an earlier decision)."""
-    if decision.get("final_status") != "approved" or decision.get("already_decided"):
+    if decision.get("final_status") not in ("approved", "modified") or decision.get(
+        "already_decided"
+    ):
         return None
     unit_id = conn.execute(
         "SELECT recommended_unit_id FROM agent_proposals WHERE id = ?",

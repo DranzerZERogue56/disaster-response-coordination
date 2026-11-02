@@ -4,6 +4,7 @@ green when the data store is reachable, and it actually fails — not
 silently passes — when the data store is not (architecture.md's own
 "each stage able to fail the build" requirement, Milestone 9).
 """
+import glob
 import importlib
 import os
 import sqlite3
@@ -18,8 +19,9 @@ def run_with_real_db():
         db_path = os.path.join(tmp, "smoke.sqlite")
         os.environ["DB_PATH"] = db_path
         conn = sqlite3.connect(db_path)
-        with open("migrations/0001-initial.sql", encoding="utf-8") as f:
-            conn.executescript(f.read())
+        for path in sorted(glob.glob("migrations/*.sql")):
+            with open(path, encoding="utf-8") as f:
+                conn.executescript(f.read())
         conn.close()
 
         import src.web_ui.app as app_module

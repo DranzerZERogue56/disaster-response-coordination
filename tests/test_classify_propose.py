@@ -1,3 +1,4 @@
+import glob
 import json
 import sqlite3
 
@@ -14,8 +15,9 @@ def conn(tmp_path):
     """A fresh database with one scenario run, one Medical node, two Medical units."""
     c = sqlite3.connect(tmp_path / "test.sqlite")
     c.row_factory = sqlite3.Row
-    with open(MIGRATION_PATH, encoding="utf-8") as f:
-        c.executescript(f.read())
+    for path in sorted(glob.glob("migrations/*.sql")):
+        with open(path, encoding="utf-8") as f:
+            c.executescript(f.read())
     c.execute(
         "INSERT INTO scenario_runs (mode, scenario_file, team_size_config, started_at) "
         "VALUES ('interactive', 'test', '{}', '2026-11-01T00:00:00+00:00')"

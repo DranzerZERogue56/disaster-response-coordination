@@ -1,3 +1,4 @@
+import glob
 import json
 import sqlite3
 from datetime import UTC, datetime, timedelta
@@ -16,8 +17,9 @@ T0 = datetime(2026, 11, 1, 12, 0, tzinfo=UTC)
 
 
 def load_schema_and_seed(c):
-    with open("migrations/0001-initial.sql", encoding="utf-8") as f:
-        c.executescript(f.read())
+    for path in sorted(glob.glob("migrations/*.sql")):
+        with open(path, encoding="utf-8") as f:
+            c.executescript(f.read())
     with open("seed/iteration-1.sql", encoding="utf-8") as f:
         c.executescript(f.read())
 

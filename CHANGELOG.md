@@ -4,7 +4,7 @@ Baseline declared 2026-10-18 (`docs/baseline.md`). No change requests have been 
 
 | CR | Date | Change | Requirements | Hours | Decision |
 |---|---|---|---|---:|---|
-| — | — | (none yet) | — | — | — |
+| CR-001 | 2026-11-01 | Database triggers: a unit is `assigned` only while its proposal is `approved`/`modified` (migration 0002) | FR-AGENT-03, NFR-SEC-02, FR-RES-01 | +0.5 | approved |
 
 ### The threshold rule — when a change needs a CR
 

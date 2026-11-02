@@ -73,12 +73,14 @@ def decide_auto(conn, proposal_id, now=None):
     # One transaction: the unit becomes "assigned" and the proposal becomes
     # "approved" together or not at all (self-review 3.2).
     try:
-        assign_unit(conn, row["recommended_unit_id"], proposal_id, commit=False)
+        # Approve first, then assign: migration 0002 refuses to assign a unit
+        # whose proposal is not yet approved.
         conn.execute(
             "UPDATE agent_proposals SET final_status = 'approved', decided_by = 'auto', "
             "decided_at = ? WHERE id = ?",
             (decided_at, proposal_id),
         )
+        assign_unit(conn, row["recommended_unit_id"], proposal_id, commit=False)
         conn.commit()
     except Exception:
         conn.rollback()
@@ -160,15 +162,15 @@ def decide_human(conn, proposal_id, decision, dispatcher_id, now=None):
     # One transaction, same rule as the auto-path: unit change and decision
     # are saved together or not at all.
     try:
-        if decision == "approve":
-            assign_unit(conn, row["recommended_unit_id"], proposal_id, commit=False)
-        else:
-            release_for_proposal(conn, proposal_id, commit=False)
         conn.execute(
             "UPDATE agent_proposals SET final_status = ?, decided_by = ?, decided_at = ? "
             "WHERE id = ?",
             (final_status, str(dispatcher_id), decided_at, proposal_id),
         )
+        if decision == "approve":
+            assign_unit(conn, row["recommended_unit_id"], proposal_id, commit=False)
+        else:
+            release_for_proposal(conn, proposal_id, commit=False)
         conn.commit()
     except Exception:
         conn.rollback()

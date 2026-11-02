@@ -1,3 +1,4 @@
+import glob
 import sqlite3
 from datetime import UTC, datetime, timedelta
 
@@ -18,8 +19,9 @@ T0 = datetime(2026, 11, 1, 12, 0, tzinfo=UTC)
 def conn(tmp_path):
     c = sqlite3.connect(tmp_path / "test.sqlite")
     c.row_factory = sqlite3.Row
-    with open("migrations/0001-initial.sql", encoding="utf-8") as f:
-        c.executescript(f.read())
+    for path in sorted(glob.glob("migrations/*.sql")):
+        with open(path, encoding="utf-8") as f:
+            c.executescript(f.read())
     with open("seed/iteration-1.sql", encoding="utf-8") as f:
         c.executescript(f.read())
     yield c

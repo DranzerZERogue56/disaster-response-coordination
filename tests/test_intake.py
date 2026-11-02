@@ -1,3 +1,4 @@
+import glob
 import sqlite3
 
 import pytest
@@ -11,8 +12,9 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setenv("DB_PATH", str(db_path))
 
     conn = sqlite3.connect(db_path)
-    with open(MIGRATION_PATH, encoding="utf-8") as f:
-        conn.executescript(f.read())
+    for path in sorted(glob.glob("migrations/*.sql")):
+        with open(path, encoding="utf-8") as f:
+            conn.executescript(f.read())
     conn.close()
 
     from src.web_ui.app import create_app
