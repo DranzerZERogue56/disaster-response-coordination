@@ -206,6 +206,19 @@ Output of `tools/plan-check.py docs/wbs.csv --capacity 15,15,15,15,15,15,20,20,2
 
 **VERDICT: fits, with 0.8h to spare** against the 112.5h plannable (buffered) threshold — not just inside raw capacity this time, inside the buffered one. The projected line stays at or under the ideal line every week from Week 8 onward (111.8 ≤ 112.5 from the very first row), so the declared 37.5h buffer is never touched by the base plan itself — the full buffer is available if risk R-06 or R-07 actually fires, which was not true of the earlier 150h-capacity-only version of this plan (that version ate 14.1h of the buffer before Week 8 even started). This is the direct result of §7's deferral decision, made after the capacity increase alone wasn't enough.
 
+### 6.1 Week 10 update (2026-11-01): what closed, what moved
+
+Board of record: `docs/wbs.csv` (status column) plus the GitHub issues for the deferred and not-yet-started items. Slice evidence: `docs/iteration-1-slices.md`.
+
+| Task | Status now | Why it is not "done" yet |
+|---|---|---|
+| T-4.1 Classify & Propose (one role) | in_progress | Built and tested on the **fake model**. Its done-when needs 10 seeded reports classified within the latency target on a real model; only 3 demo reports exist and latency is unmeasured |
+| T-5.1 Unit Registry | in_progress | reserve, release and assign are built and tested. No `get_status`, and not yet checked against Spike SP-02's assertions |
+| T-6.2 Decide Proposal auto-path | in_progress | The five NFR-SEC-02 cases route correctly (tested). The ADR 0006 batch stand-in policy is not built |
+| T-8.1 Notify Responder | in_progress | One notification row per finalized assignment, `acknowledged_at` empty. Setting `acknowledged_at` by hand is not tested |
+
+Moved and added (not in the original WBS, discovered while building): the human approve/reject decision (slice 4, FR-AGENT-03) and `script/seed`. Both are small; they are reported here rather than hidden. Nothing was cut this week. No task is marked `done` because `tools/plan-check.py` calibrates on `done` rows with `actual_hours`, and Ben's hours for Week 10 are not logged yet; the four rows above flip to `done`, with hours, once they are and each done-when is met. New defects found by the self-review (`docs/reviews/iteration-1-self-review.md`) are scheduled for Milestones 11 and 12. The plan still fits (plan-check verdict unchanged: 0.8 h to spare).
+
 ## 7. The scope decision
 
 The plan started 70.8h over a default 87h/9.7h-week capacity. Three decisions closed the gap completely: a re-estimation pass, a real capacity increase, and — once those two together still left 14.1h unclosed — six tasks actually deferred to Won't-this-release or pushed past Week 16.

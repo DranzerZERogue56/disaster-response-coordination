@@ -241,3 +241,69 @@ Format: `Checked N of M claims in the verification log; N-x held up as stated. T
 **What I asked for:** Milestone 9's walking skeleton and CI. This week's AI policy is Open. AI scaffolded the restructured repository, picked the thinnest real vertical slice (Submit Incident Report -> Intake Gateway -> SQLite `incident_reports` -> rendered page) against the components already named in `docs/architecture.md` §4/§5, wrote the Flask route, the service function, the test suite, the CI workflow, and `docs/skeleton-trace.md`.
 **What I kept/changed:** I did not supply any of the code myself this week - the AI policy is explicitly open for exactly this kind of scaffolding, and the assignment itself names "ask your assistant to review, not just to generate" as the better use. What I verified rather than trusted: I had AI prove the walking skeleton actually walks by independently querying the real `.sqlite` file after a POST, not just trusting a 200 response, and I watched the CI run live (green, then a deliberate red lint failure, then green again) rather than taking "it should pass" as sufficient. The 8 GitHub issues are drawn from `docs/wbs.csv`'s own already-estimated tasks (not invented), so their requirement ids and acceptance criteria are tasks I already approved the shape of in Milestone 7.
 **Why:** Amber, not Green - I have not yet sat down and compared every stub named in `docs/skeleton-trace.md` against `architecture.md`'s component list myself to confirm nothing real got silently labeled a stub (or vice versa). Not Red - every claim in `docs/skeleton-trace.md` is backed by something I watched run (a live query, a live CI log), not an assertion taken on faith.
+
+
+---
+
+> **Milestone 10 entries below (2026-11-01) were drafted by the assistant from the session, not written by Ben.** Where a line says "Ben to confirm", it states something only Ben knows. Zone is Ben's own stated rating for the slice, not the assistant's.
+
+**Date:** 2026-10-26
+**Zone:** [Ben to confirm]
+**Tool:** Claude Code
+**What I asked for:** Amend ADR 0001 to name `phi4-mini:latest` as the dev-laptop model, and draft `docs/demo/iteration-1-script.md` before any code (per the Fleet activity log, 2026-10-26 10:09 session).
+**What I kept/changed:** Both files were committed on 2026-11-01 (`e7bf938`, `d3e4b58`). The script's model wording was later changed to the fake model (`ebaf201`). [Ben to confirm what he edited in either file on 10-26.]
+**Why:** The script was written first so it names the behaviours the slices have to deliver.
+
+---
+
+**Date:** 2026-11-01
+**Zone:** Green, 90/100 (Ben's rating); Ben reported opening `service.py` and the tests before rating
+**Tool:** Claude Code (Claude Sonnet 5.5)
+**What I asked for:** Slice 1, Classify & Propose (FR-AGENT-01, FR-AGENT-02), behind a swappable model, using a fake model for now. Ben's design decisions: the model reports its own confidence and we tune if Report B does not land under 75; Ollama main with a small Python-side fallback later; the model is swappable; tests use a fake. Commit `bd53194`.
+**What I kept/changed:** The assistant wrote all of `src/classify_propose/model.py` and `service.py` (about 177 lines), the 6 tests (about 130 lines) and the route hook. Ben did not edit the code. Later, the assistant's own self-review found the code would create a second proposal if run twice on one report, and fixed it (`ALREADY_CLASSIFIED`, with a test).
+**Why:** [Ben to confirm: reason for delegating.] Verified by: 55/55 tests, a live rehearsal on a seeded database (Report A scored 95 Serious, Report B scored 40), and the secrets check. The fake model's keyword matching is crude and is not a real classifier; that is stated in the self-review (1.4).
+
+---
+
+**Date:** 2026-11-01
+**Zone:** Green, 95/100 (Ben's rating); Ben reported opening `src/unit_registry/service.py` before rating
+**Tool:** Claude Code (Claude Sonnet 5.5)
+**What I asked for:** Slice 2, Unit Registry reserve (FR-RES-03, NFR-REL-02). Ben's design decisions: its own module, not inside Classify & Propose; called directly when a proposal is made; an already-reserved unit always raises `UNIT_ALREADY_RESERVED`; retry the alternatives; build the 4-minute release now. Commit `fdee37b`.
+**What I kept/changed:** The assistant wrote `src/unit_registry/service.py` (about 164 lines with the later additions) and 10 tests (about 180 lines). Ben did not edit the code. One decision was the assistant's and not asked about: the route returns HTTP 409 when no unit can be reserved (raised with Ben afterwards, no objection recorded yet).
+**Why:** [Ben to confirm.] Verified by: the tests (including freeing at exactly 4:00 and not at 3:59), the live rehearsal, and Ben reading the service file. Known gaps from the self-review: no background timer (2.2), the concurrency claim is only tested one request after another (2.4).
+
+---
+
+**Date:** 2026-11-01
+**Zone:** Green, 94/100 (Ben's rating); Ben reported opening `src/decide_proposal/service.py` before rating
+**Tool:** Claude Code (Claude Sonnet 5.5)
+**What I asked for:** Slice 3, Decide Proposal auto-path (FR-AGENT-03, NFR-SEC-02, FR-RES-01). Ben's decisions: a separate module; `decided_by` is `'auto'`; the registry owns "assigned" through `assign_unit()`; return `UNIT_NO_LONGER_AVAILABLE` if the reservation was lost; test the safety rule. Commit `353b437`.
+**What I kept/changed:** The assistant wrote the module (about 90 lines of the 163-line file), `assign_unit`, and 17 tests. Ben did not edit the code. The assistant also corrected the demo script after finding Report C would already hit the 409 without an extra Report D.
+**Why:** [Ben to confirm.] Verified by: the NFR-SEC-02 table (74, 75, 90, 95 Severe, 95 Critical, plus edges) at both rule level and database level. Known gap: the unit assignment and the proposal update are two separate commits (self-review 3.2).
+
+---
+
+**Date:** 2026-11-01
+**Zone:** Green, 95/100 (Ben's rating)
+**Tool:** Claude Code (Claude Sonnet 5.5), with the `interview` skill for the questions
+**What I asked for:** Slice 4, the human decision on held proposals (FR-AGENT-03, NFR-SEC-02). Ben answered four interview questions: a seeded fictional dispatcher account supplies the identity; approve and reject only; reject frees the unit and stops; JSON routes only. Spec in `.plans/slice-4-human-decision-spec.md`. Commit `17c66b0`.
+**What I kept/changed:** The assistant wrote `decide_human`, `list_pending`, `stub_dispatcher_id`, `release_for_proposal`, two routes and 12 tests (about 205 lines of tests). Ben did not edit the code. [Ben to confirm which files he read before rating this slice.]
+**Why:** [Ben to confirm.] Verified by: tests and the live rehearsal (Report B listed as pending, approved, notified). The route has no login, which is an accepted, written gap (self-review 4.1).
+
+---
+
+**Date:** 2026-11-01
+**Zone:** Green, 95/100 (Ben's rating)
+**Tool:** Claude Code (Claude Sonnet 5.5)
+**What I asked for:** Slice 5, Notify Responder (FR-ALERT-01), after the instruction to keep going. No questions were asked first; the assistant chose that "notify" means writing a `notifications` row and that a failed notification never undoes an approval. Commit `4955704`.
+**What I kept/changed:** The assistant wrote `src/notify_responder/service.py` (67 lines), the route calls and 6 tests (about 150 lines). Ben did not edit the code. [Ben to confirm which files he read before rating this slice.] The assistant noticed FR-ALERT-01 still has "[X] seconds" and TODO acceptance criteria in the baselined requirements and recorded it as a defect (self-review 5.2).
+**Why:** [Ben to confirm.] Verified by: tests (nothing is notified for reserved, held, rejected or other proposals' units) and the live rehearsal.
+
+---
+
+**Date:** 2026-11-01
+**Zone:** [Ben to confirm]
+**Tool:** Claude Code (Claude Sonnet 5.5)
+**What I asked for:** The supporting material: `seed/iteration-1.sql`, `script/seed`, `docs/iteration-1-slices.md`, the draft `docs/reviews/iteration-1-self-review.md`, `docs/reviews/reviewer-questions.md`, the demo script edits, the `CLAUDE.md` summary in the canvas-HW tool, and this log's entries.
+**What I kept/changed:** All drafted by the assistant. The self-review is a draft that Ben has not corrected yet; its "four passes" are the assistant's own choice because the assignment does not define them. [Ben to confirm his corrections.] An outside reviewer (Ben's roommate) was given the 13 reviewer questions.
+**Why:** [Ben to confirm.] Proportion: of the roughly 1,400 lines of new source and test code in this iteration, the assistant wrote all of it; Ben's contribution is the design decisions above, the confidence ratings, reading the service files for slices 1-3, and the review. The assistant's own mistakes this session were: shell commands that failed on quoting and were redone, and stopping a test server by killing every `python.exe` process on the machine (no repository impact).

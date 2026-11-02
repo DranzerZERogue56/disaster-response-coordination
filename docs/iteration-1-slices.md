@@ -61,7 +61,7 @@ Spec: `.plans/slice-4-human-decision-spec.md`.
 | Handled failure path | `UNIT_NO_LONGER_AVAILABLE` (409), `PROPOSAL_NOT_FOUND` (404), `INVALID_DECISION` (400), `NOT_A_DISPATCHER` (403), `STUB_DISPATCHER_MISSING` (500) |
 | Commit | `17c66b0` |
 | Not done | Real login (FR-AUTH-01), modify and override with a reason (FR-RES-02), automatic re-proposal after reject, a browser UI, the 45 s decision target (NFR-USE-01). The caller cannot name the dispatcher; the route always uses the seeded stand-in |
-| Ben's confidence | ____ / 100, colour: ____ |
+| Ben's confidence | 95 / 100, Green, 2026-11-01 |
 
 ## Slice 5: Notify Responder
 
