@@ -101,6 +101,7 @@ Ben's request after finding 3.2: "if it's assigned it's approved", enforced by t
 | Rule | A unit cannot be inserted or updated to `assigned` unless its proposal is `approved` or `modified`; an approved proposal cannot be un-approved while a unit is assigned to it |
 | Tests | `tests/test_database_rule.py` (9): direct SQL against undecided, rejected and escalated proposals is refused, approved and modified allowed, insert path refused, un-approving refused until the unit is freed, `tools/migrate.py` installs the triggers. Every other test now loads all migrations, so the whole suite runs with the triggers on |
 | Not done | Reservations (`reserved` state) are still guarded by application code only |
+| Ben's confidence | 95 / 100, Green, 2026-11-01 |
 
 ## Slice 6: Offline queue (Medium tier, extra slice 1)
 
@@ -113,7 +114,7 @@ Ben's request after finding 3.2: "if it's assigned it's approved", enforced by t
 | Handled failure path | A drained report with no free unit reports `UNIT_ALREADY_RESERVED` in the reconnection response and stays `created`; invalid connectivity flag returns `INVALID_FLAG` (400) |
 | Commit | `65d343b` |
 | Not done | A maximum queue size (spec open question OQ-1). The switch is in memory, so it resets to connected on restart (the queue itself is in the database and survives). Timestamps are ordered as text, so mixed time zones could mis-order (self-review 6.4) |
-| Ben's confidence | ____ / 100, colour: ____ |
+| Ben's confidence | 85 / 100, Green, 2026-11-01 |
 
 ## Slice 7: Override Assignment (Medium tier, extra slice 2)
 
@@ -126,5 +127,5 @@ Ben's request after finding 3.2: "if it's assigned it's approved", enforced by t
 | Handled failure path | `REASON_REQUIRED` (400), `ASSIGNMENT_NOT_FOUND` (404), `NOT_A_DISPATCHER` (403), `UNIT_ALREADY_RESERVED` (409), `OVERRIDE_NOT_FOUND` (404), `FOLLOW_UP_REQUIRED` (400) |
 | Commit | `a16e311` |
 | Not done | Logging an observer's blocked attempt (needs real login, FR-AUTH-01). The log is not append-only yet (T-6.1), because the follow-up edits the same row as the spec asks. No warning when the new unit is a different type |
-| Ben's confidence | ____ / 100, colour: ____ |
+| Ben's confidence | 90 / 100, Green, 2026-11-01 |
 

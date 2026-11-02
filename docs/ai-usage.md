@@ -320,7 +320,7 @@ Format: `Checked N of M claims in the verification log; N-x held up as stated. T
 ---
 
 **Date:** 2026-11-01
-**Zone:** Green (Ben's decision, confirmed 2026-11-01); rating for the build: pending from Ben
+**Zone:** Green, 95/100 (Ben's rating, 2026-11-01)
 **Tool:** Claude Code (Claude Sonnet 5.5)
 **What I asked for:** Database-level enforcement of "if it's assigned it's approved" (self-review 3.2): migration `0002-assigned-requires-approved.sql` with three triggers, and a change request `docs/change-requests/CR-001-assigned-requires-approved.md` because it changes the data model. Ben's words: "I do want the database-level enforcement."
 **What I kept/changed:** The assistant wrote the migration, the CR, the changelog row, the architecture invariant note and 9 tests (`tests/test_database_rule.py`) that try to break the rule with direct SQL. One bug in the assistant's first version: the trigger did not fire for an undecided proposal (a NULL comparison), caught by the tests and fixed with `COALESCE`. The assistant allowed `modified` as well as `approved` because an override is an approval with a different unit; Ben did not specifically ask for that. Ben did not edit the code.
@@ -329,7 +329,7 @@ Format: `Checked N of M claims in the verification log; N-x held up as stated. T
 ---
 
 **Date:** 2026-11-01
-**Zone:** Green (Ben's decision on which slices, confirmed 2026-11-01); rating: pending from Ben
+**Zone:** Green, 85/100 (Ben's rating, 2026-11-01); Ben chose the slice from four options
 **Tool:** Claude Code (Claude Sonnet 5.5)
 **What I asked for:** Slice 6, the offline queue (FR-INTAKE-01, NFR-REL-03). Ben picked it from four options. Everything about how it works was the assistant's choice and is listed here so it can be challenged: the "network" is an in-memory switch (`POST /connectivity`); a queued report answers 202; malformed reports are still rejected offline; reconnecting drains oldest-first by `timestamp_reported`; one report failing to find a unit does not stop the rest; no maximum queue size. Commit `65d343b`.
 **What I kept/changed:** The assistant wrote `src/intake_gateway/queue.py`, the `queued` option in `submit_report`, the `/connectivity` routes, the shared `process_report` function (the live path and the drain path now use the same code), and 8 tests including NFR-REL-03's 10 reports with 0 lost. Ben did not edit the code.
@@ -338,7 +338,7 @@ Format: `Checked N of M claims in the verification log; N-x held up as stated. T
 ---
 
 **Date:** 2026-11-01
-**Zone:** Green (Ben's decision on which slices, confirmed 2026-11-01); rating: pending from Ben
+**Zone:** Green, 90/100 (Ben's rating, 2026-11-01); Ben chose the slice from four options
 **Tool:** Claude Code (Claude Sonnet 5.5)
 **What I asked for:** Slice 7, Override Assignment (FR-RES-02, FR-AUDIT-02). Ben picked it from four options. The assistant followed the architecture contract (required reason, every call its own log row, follow-up with no time limit) and chose: the proposal becomes `modified`; the old unit goes back to available; the new unit must be free; the elapsed time is only recorded for proposals a person decided; the new unit is notified. Commit `a16e311`.
 **What I kept/changed:** The assistant wrote `src/override_assignment/service.py`, `reassign` in the Unit Registry, two routes, and 13 tests. Ben did not edit the code.
