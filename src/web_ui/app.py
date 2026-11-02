@@ -25,6 +25,12 @@ from src.decide_proposal.service import (
     list_pending,
     stub_dispatcher_id,
 )
+from src.intake_gateway.queue import (
+    drain_queue,
+    is_connected,
+    queued_report_ids,
+    set_connected,
+)
 from src.intake_gateway.service import ValidationError, list_reports, submit_report
 from src.notify_responder.service import NotifyError, notify_for_decision
 from src.unit_registry.service import (
@@ -73,6 +79,67 @@ def reserve_and_decide(conn, proposal_id):
         return reservation, decide_auto(conn, proposal_id), True
     except RegistryError as second:
         raise UnitLostBeforeApproval(reservation, second) from second
+
+
+def process_report(conn, result):
+    """Everything that happens to a created report: classify, reserve, decide,
+    notify. Fills `result` in place and returns the HTTP status (201, or 409
+    when no unit could be reserved or the unit was lost)."""
+    # Architecture 5: creating a report triggers Classify & Propose.
+    # If it cannot classify, the report stays created for a human.
+    try:
+        result["proposal"] = classify_and_propose(conn, result["report_id"], get_model())
+    except ClassifyError as exc:
+        result["proposal"] = None
+        result["needs_human"] = {"code": exc.code, "message": str(exc)}
+    # Slice 2: reserve the proposed unit the moment it is proposed.
+    # Its own call (not inside classify) so it can fail on its own.
+    if result["proposal"]:
+        try:
+            (
+                result["reservation"],
+                result["decision"],
+                retried,
+            ) = reserve_and_decide(conn, result["proposal"]["proposal_id"])
+            if retried:
+                result["retried_after_unit_loss"] = True
+            # Slice 5: tell the unit once the assignment is final.
+            result["notification"] = try_notify(conn, result["decision"])
+        except UnitLostBeforeApproval as exc:
+            result["reservation"] = exc.reservation
+            result["error"] = {
+                "code": "UNIT_LOST_BEFORE_APPROVAL",
+                "message": "The unit was reserved, then lost before the "
+                "automatic approval could finish, twice. Nothing was "
+                f"dispatched. Underlying: {exc.cause}",
+                "underlying": exc.cause.code,
+            }
+            return 409
+        except RegistryError as exc:
+            result["reservation"] = None
+            result["error"] = {
+                "code": exc.code,
+                "message": str(exc),
+                "tried": exc.tried,
+            }
+            return 409
+    return 201
+
+
+def drain_one(conn, report_id):
+    """Process one report released from the offline queue; returns a short
+    summary so a reconnection response shows what happened to each."""
+    result = {"report_id": report_id, "status": "created"}
+    status = process_report(conn, result)
+    summary = {"report_id": report_id, "http_status": status}
+    if result.get("error"):
+        summary["error"] = result["error"]["code"]
+    elif result.get("decision"):
+        summary["final_status"] = result["decision"].get("final_status")
+        summary["held_for_human"] = bool(result["decision"].get("held_for_human"))
+    elif result.get("needs_human"):
+        summary["error"] = result["needs_human"]["code"]
+    return summary
 
 
 def start_sweeper(interval_seconds):
@@ -138,47 +205,13 @@ def create_app():
         try:
             run_id = ensure_scenario_run(conn)
             fields = request.get_json(silent=True) or request.form
-            result = submit_report(conn, run_id, fields)
-            # Architecture §5: creating a report triggers Classify & Propose.
-            # If it can't classify, the report stays 'created' for a human.
-            try:
-                result["proposal"] = classify_and_propose(
-                    conn, result["report_id"], get_model()
-                )
-            except ClassifyError as exc:
-                result["proposal"] = None
-                result["needs_human"] = {"code": exc.code, "message": str(exc)}
-            # Slice 2: reserve the proposed unit the moment it is proposed.
-            # Its own call (not inside classify) so it can fail on its own.
-            if result["proposal"]:
-                try:
-                    (
-                        result["reservation"],
-                        result["decision"],
-                        retried,
-                    ) = reserve_and_decide(conn, result["proposal"]["proposal_id"])
-                    if retried:
-                        result["retried_after_unit_loss"] = True
-                    # Slice 5: tell the unit once the assignment is final.
-                    result["notification"] = try_notify(conn, result["decision"])
-                except UnitLostBeforeApproval as exc:
-                    result["reservation"] = exc.reservation
-                    result["error"] = {
-                        "code": "UNIT_LOST_BEFORE_APPROVAL",
-                        "message": "The unit was reserved, then lost before the "
-                        "automatic approval could finish, twice. Nothing was "
-                        f"dispatched. Underlying: {exc.cause}",
-                        "underlying": exc.cause.code,
-                    }
-                    return jsonify(result), 409
-                except RegistryError as exc:
-                    result["reservation"] = None
-                    result["error"] = {
-                        "code": exc.code,
-                        "message": str(exc),
-                        "tried": exc.tried,
-                    }
-                    return jsonify(result), 409
+            result = submit_report(conn, run_id, fields, queued=not is_connected())
+            if result["status"] == "queued":
+                # Slice 6: offline. The report is saved and waits in the queue.
+                result["note"] = "offline: queued, will be processed on reconnection"
+                return jsonify(result), 202
+            status = process_report(conn, result)
+            return jsonify(result), status
         except ValidationError as exc:
             return (
                 jsonify(
@@ -194,7 +227,44 @@ def create_app():
             )
         finally:
             conn.close()
-        return jsonify(result), 201
+
+    @app.get("/connectivity")
+    def connectivity_status():
+        conn = connect()
+        try:
+            waiting = len(queued_report_ids(conn))
+        finally:
+            conn.close()
+        return jsonify({"connected": is_connected(), "queued_reports": waiting})
+
+    @app.post("/connectivity")
+    def connectivity_set():
+        """Simulated network (the design's connectivity flag). Going back
+        online drains the queue, oldest report first (FR-INTAKE-01)."""
+        body = request.get_json(silent=True) or {}
+        if not isinstance(body.get("connected"), bool):
+            return (
+                jsonify(
+                    {
+                        "error": {
+                            "code": "INVALID_FLAG",
+                            "message": 'send {"connected": true} or {"connected": false}',
+                        }
+                    }
+                ),
+                400,
+            )
+        set_connected(body["connected"])
+        drained = []
+        if body["connected"]:
+            conn = connect()
+            try:
+                drained = drain_queue(conn, drain_one)
+            finally:
+                conn.close()
+        return jsonify(
+            {"connected": is_connected(), "drained_count": len(drained), "drained": drained}
+        )
 
     @app.get("/proposals/pending")
     def proposals_pending():

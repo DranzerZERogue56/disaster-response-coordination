@@ -17,7 +17,7 @@ class ValidationError(Exception):
         super().__init__("FIELD_MISSING: " + ", ".join(missing))
 
 
-def submit_report(conn, scenario_run_id, fields):
+def submit_report(conn, scenario_run_id, fields, queued=False):
     missing = [f for f in REQUIRED_FIELDS if not fields.get(f)]
     if missing:
         raise ValidationError(missing)
@@ -28,7 +28,7 @@ def submit_report(conn, scenario_run_id, fields):
         INSERT INTO incident_reports
             (scenario_run_id, location, severity_raw, timestamp_reported,
              reporting_unit, description, status, received_at)
-        VALUES (?, ?, ?, ?, ?, ?, 'created', ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             scenario_run_id,
@@ -37,11 +37,16 @@ def submit_report(conn, scenario_run_id, fields):
             fields["timestamp_reported"],
             fields["reporting_unit"],
             fields.get("description"),
+            "queued" if queued else "created",
             received_at,
         ),
     )
     conn.commit()
-    return {"report_id": cur.lastrowid, "status": "created", "received_at": received_at}
+    return {
+        "report_id": cur.lastrowid,
+        "status": "queued" if queued else "created",
+        "received_at": received_at,
+    }
 
 
 def list_reports(conn, scenario_run_id):
