@@ -120,9 +120,36 @@ def test_second_decision_changes_nothing(conn):
     assert row(conn, "units", 1)["status"] == "assigned"
 
 
-def test_approve_after_reservation_expired_fails_and_leaves_it_undecided(conn):
+def test_a_held_proposal_whose_clock_runs_out_times_out_and_leaves_the_pending_list(conn):
+    pid, _ = held_proposal(conn)
+    assert [p["proposal_id"] for p in list_pending(conn)] == [pid]
+
+    release_expired(conn, now=T0 + timedelta(minutes=5))
+
+    timed_out = row(conn, "agent_proposals", pid)
+    assert (timed_out["final_status"], timed_out["decided_by"]) == ("rejected", "timeout")
+    assert row(conn, "units", 1)["status"] == "available"
+    assert list_pending(conn) == []
+
+
+def test_approving_a_timed_out_proposal_changes_nothing(conn):
     pid, _ = held_proposal(conn)
     release_expired(conn, now=T0 + timedelta(minutes=5))
+
+    result = decide_human(conn, pid, "approve", stub_dispatcher_id(conn))
+
+    assert result["already_decided"] is True and result["final_status"] == "rejected"
+    assert result["decided_by"] == "timeout"
+    assert row(conn, "units", 1)["status"] == "available"  # nothing was dispatched
+
+
+def test_approve_when_the_unit_was_lost_some_other_way_fails_and_stays_undecided(conn):
+    pid, _ = held_proposal(conn)
+    conn.execute(
+        "UPDATE units SET status = 'out_of_service', reserved_by_proposal_id = NULL, "
+        "reserved_at = NULL, released_expected_by = NULL WHERE id = 1"
+    )
+    conn.commit()
 
     with pytest.raises(RegistryError) as exc:
         decide_human(conn, pid, "approve", stub_dispatcher_id(conn))

@@ -32,22 +32,29 @@ def _now():
 def release_expired(conn, now=None):
     """Free every reserved unit whose 4-minute window has passed.
 
-    There is no background timer yet: this runs whenever a reservation is
-    requested, so a stale reservation is freed on the next request rather
-    than at the exact minute. Returns the freed unit ids.
+    A proposal still waiting for a person when its unit's clock runs out is
+    timed out: final_status 'rejected' with decided_by 'timeout' (FR-RES-03:
+    a proposal that times out frees its unit). That also takes it off the
+    pending list, so nobody is asked to approve something that can no longer
+    be dispatched. Returns the freed unit ids.
     """
-    now = (now or _now()).isoformat()
-    ids = [
-        r["id"]
-        for r in conn.execute(
-            "SELECT id FROM units WHERE status = 'reserved' AND released_expected_by <= ?",
-            (now,),
-        ).fetchall()
-    ]
-    for unit_id in ids:
-        _free(conn, unit_id)
+    now = now or _now()
+    stamp = now.isoformat()
+    expired = conn.execute(
+        "SELECT id, reserved_by_proposal_id FROM units "
+        "WHERE status = 'reserved' AND released_expected_by <= ?",
+        (stamp,),
+    ).fetchall()
+    for unit in expired:
+        _free(conn, unit["id"])
+        if unit["reserved_by_proposal_id"] is not None:
+            conn.execute(
+                "UPDATE agent_proposals SET final_status = 'rejected', decided_by = 'timeout', "
+                "decided_at = ? WHERE id = ? AND final_status IS NULL",
+                (stamp, unit["reserved_by_proposal_id"]),
+            )
     conn.commit()
-    return ids
+    return [u["id"] for u in expired]
 
 
 def release_unit(conn, unit_id):

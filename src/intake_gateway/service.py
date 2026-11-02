@@ -17,10 +17,28 @@ class ValidationError(Exception):
         super().__init__("FIELD_MISSING: " + ", ".join(missing))
 
 
+class InvalidTimestamp(Exception):
+    """timestamp_reported is not an ISO 8601 date and time."""
+
+
+def normalize_timestamp(value):
+    """Return the time as UTC ISO 8601, so ordering by the stored text is
+    ordering by time even when reporters send different offsets. A time with
+    no offset is taken to be UTC."""
+    try:
+        parsed = datetime.fromisoformat(str(value))
+    except ValueError as exc:
+        raise InvalidTimestamp(f"timestamp_reported {value!r} is not an ISO 8601 time") from exc
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC).isoformat()
+
+
 def submit_report(conn, scenario_run_id, fields, queued=False):
     missing = [f for f in REQUIRED_FIELDS if not fields.get(f)]
     if missing:
         raise ValidationError(missing)
+    reported = normalize_timestamp(fields["timestamp_reported"])
 
     received_at = datetime.now(UTC).isoformat()
     cur = conn.execute(
@@ -34,7 +52,7 @@ def submit_report(conn, scenario_run_id, fields, queued=False):
             scenario_run_id,
             fields["location"],
             fields["severity_raw"],
-            fields["timestamp_reported"],
+            reported,
             fields["reporting_unit"],
             fields.get("description"),
             "queued" if queued else "created",

@@ -1,6 +1,6 @@
 import glob
 import sqlite3
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 
 import pytest
 
@@ -8,7 +8,6 @@ from src.decide_proposal.service import decide_auto, needs_human
 from src.unit_registry.service import (
     RegistryError,
     assign_unit,
-    release_expired,
     reserve,
 )
 
@@ -111,7 +110,14 @@ def test_second_call_returns_the_existing_decision(conn):
 
 def test_lost_reservation_leaves_proposal_undecided(conn):
     pid = reserved_proposal(conn, 90, "Moderate")
-    release_expired(conn, now=T0 + timedelta(minutes=5))  # window passed, unit freed
+    # The unit vanishes some other way (an expired clock now times the whole
+    # proposal out, so this simulates the other causes: out of service, a
+    # manual edit, or a rejection racing the approval).
+    conn.execute(
+        "UPDATE units SET status = 'available', reserved_by_proposal_id = NULL, "
+        "reserved_at = NULL, released_expected_by = NULL WHERE id = 1"
+    )
+    conn.commit()
 
     with pytest.raises(RegistryError) as exc:
         decide_auto(conn, pid)

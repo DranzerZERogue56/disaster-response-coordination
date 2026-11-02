@@ -31,7 +31,12 @@ from src.intake_gateway.queue import (
     queued_report_ids,
     set_connected,
 )
-from src.intake_gateway.service import ValidationError, list_reports, submit_report
+from src.intake_gateway.service import (
+    InvalidTimestamp,
+    ValidationError,
+    list_reports,
+    submit_report,
+)
 from src.notify_responder.service import (
     NotifyError,
     notify_for_decision,
@@ -221,6 +226,11 @@ def create_app():
                 return jsonify(result), 202
             status = process_report(conn, result)
             return jsonify(result), status
+        except InvalidTimestamp as exc:
+            return (
+                jsonify({"error": {"code": "INVALID_TIMESTAMP", "message": str(exc)}}),
+                400,
+            )
         except ValidationError as exc:
             return (
                 jsonify(
