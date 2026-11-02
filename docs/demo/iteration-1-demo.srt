@@ -1,0 +1,235 @@
+1
+00:00:00,000 --> 00:00:05,950
+This is Milestone 10, iteration one, of my disaster response
+coordination capstone.
+
+2
+00:00:05,950 --> 00:00:08,387
+A note on how this video was made.
+
+3
+00:00:08,387 --> 00:00:18,495
+The voice you hear is a computer voice, and a script types
+and runs each command you see, against the real application
+and the real database.
+
+4
+00:00:18,495 --> 00:00:25,520
+I, Ben, reviewed this script before recording, and I will
+watch this recording before I submit it.
+
+5
+00:00:28,020 --> 00:00:30,289
+Here is what the software does.
+
+6
+00:00:30,289 --> 00:00:32,045
+A field report comes in.
+
+7
+00:00:32,045 --> 00:00:42,582
+An agent classifies how serious it is, reserves a real unit
+for it, and then either approves the assignment on its own,
+or sends it to a person.
+
+8
+00:00:42,582 --> 00:00:46,607
+Everything runs on the real database, with seeded data.
+
+9
+00:00:48,607 --> 00:00:58,635
+First, one command builds a fresh database and loads the
+seed: one Medical agent, exactly two Medical units, and a
+stand-in dispatcher.
+
+10
+00:01:01,135 --> 00:01:06,943
+Now I start the application in the background, with the
+reservation clock turned on.
+
+11
+00:01:09,443 --> 00:01:12,407
+A health check, to show it is up.
+
+12
+00:01:14,407 --> 00:01:15,030
+Report A.
+
+13
+00:01:15,030 --> 00:01:19,462
+Someone fell and has a leg injury, and is conscious and
+talking.
+
+14
+00:01:19,462 --> 00:01:26,109
+The response shows the severity, Serious, a confidence of
+ninety-five, and the recommended unit.
+
+15
+00:01:26,109 --> 00:01:36,703
+Because confidence is seventy-five or more and the severity
+is not Severe or Critical, the system approved it by itself,
+and a notification was recorded.
+
+16
+00:01:40,203 --> 00:01:41,596
+The database agrees.
+
+17
+00:01:41,596 --> 00:01:54,415
+The proposal row shows the confidence, the model, which is a
+rules-based stand-in called fake rules, because the real
+Ollama model is not wired in yet, and that it was decided by
+auto.
+
+18
+00:01:56,915 --> 00:02:01,324
+Unit one is now assigned, and unit two is still available.
+
+19
+00:02:03,324 --> 00:02:08,247
+A notification row was written when the assignment became
+final.
+
+20
+00:02:08,247 --> 00:02:09,401
+Sent at is set.
+
+21
+00:02:09,401 --> 00:02:14,170
+Acknowledged at is empty, because acknowledgment is not
+built.
+
+22
+00:02:14,170 --> 00:02:17,940
+To be clear, notify here means a database record.
+
+23
+00:02:17,940 --> 00:02:20,555
+No message leaves the machine yet.
+
+24
+00:02:23,055 --> 00:02:24,484
+Report B is vague.
+
+25
+00:02:24,484 --> 00:02:27,659
+Something happened, nobody is answering.
+
+26
+00:02:27,659 --> 00:02:34,486
+The confidence comes back at forty, under seventy-five, so
+the system does not decide.
+
+27
+00:02:34,486 --> 00:02:38,693
+The decision stays empty and it is held for a person.
+
+28
+00:02:42,193 --> 00:02:48,131
+While it waits, its unit is reserved, and anyone using the
+software can see the clock.
+
+29
+00:02:48,131 --> 00:02:54,207
+This shows exactly when each reserved unit will be freed,
+and how many seconds are left.
+
+30
+00:02:54,207 --> 00:03:00,214
+After four minutes without a decision, the unit is released
+and the proposal times out.
+
+31
+00:03:02,714 --> 00:03:04,837
+I want to say this out loud.
+
+32
+00:03:04,837 --> 00:03:06,504
+There is no login yet.
+
+33
+00:03:06,504 --> 00:03:14,692
+Anyone who can reach this address could press approve, and
+it always counts as the stand-in demo dispatcher.
+
+34
+00:03:14,692 --> 00:03:17,876
+Real login is planned before Milestone 12.
+
+35
+00:03:17,876 --> 00:03:21,136
+This is a known, accepted gap for the demo.
+
+36
+00:03:23,636 --> 00:03:27,134
+Here is the queue of proposals waiting for a person.
+
+37
+00:03:29,134 --> 00:03:31,793
+The dispatcher approves proposal two.
+
+38
+00:03:31,793 --> 00:03:41,492
+The decision is recorded against the dispatcher's id, not
+auto, so the audit trail tells the two paths apart, and the
+unit is notified.
+
+39
+00:03:44,992 --> 00:03:46,692
+Now the failure path.
+
+40
+00:03:46,692 --> 00:03:50,739
+Report C needs a Medical unit, but both are taken.
+
+41
+00:03:50,739 --> 00:03:52,844
+The system does not guess.
+
+42
+00:03:52,844 --> 00:04:00,129
+It answers with a four hundred and nine, unit already
+reserved, and nothing is dispatched.
+
+43
+00:04:03,629 --> 00:04:05,336
+Finally, the test suite.
+
+44
+00:04:05,336 --> 00:04:18,846
+It covers the safety rule, the reservations, the database
+rules, and the two extra slices, the offline queue and
+Override Assignment, which I am showing through their tests
+rather than live.
+
+45
+00:04:21,346 --> 00:04:22,579
+What is not done.
+
+46
+00:04:22,579 --> 00:04:27,655
+Real dispatcher login, the scenario reader, and the real
+Ollama model.
+
+47
+00:04:27,655 --> 00:04:37,227
+The classifier you saw is a rules-based stand-in, and the
+five second speed requirement is not met until the real
+model is measured.
+
+48
+00:04:37,227 --> 00:04:41,433
+Those are tracked, with Milestone 11 and 12 as the target.
+
+49
+00:04:43,933 --> 00:04:45,989
+That is iteration one.
+
+50
+00:04:45,989 --> 00:04:50,101
+The repository is tagged iteration dash one.
+
+51
+00:04:50,101 --> 00:04:51,036
+Thank you.

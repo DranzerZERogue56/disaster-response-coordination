@@ -1,0 +1,109 @@
+{
+  "title": "Milestone 10 - Iteration 1 demo (computer-voice narration)",
+  "note": "Edit the 'say' text and the 'run' commands freely. 'say' is read aloud by a computer voice; 'run' is typed into the terminal and really executed. Leave 'run' out for a talking-only step. 'pause' is extra seconds after the step.",
+  "steps": [
+    {
+      "id": "disclosure",
+      "say": "This is Milestone 10, iteration one, of my disaster response coordination capstone. A note on how this video was made. The voice you hear is a computer voice, and a script types and runs each command you see, against the real application and the real database. I, Ben, reviewed this script before recording, and I will watch this recording before I submit it.",
+      "pause": 1.0
+    },
+    {
+      "id": "intro",
+      "say": "Here is what the software does. A field report comes in. An agent classifies how serious it is, reserves a real unit for it, and then either approves the assignment on its own, or sends it to a person. Everything runs on the real database, with seeded data.",
+      "pause": 0.5
+    },
+    {
+      "id": "seed",
+      "say": "First, one command builds a fresh database and loads the seed: one Medical agent, exactly two Medical units, and a stand-in dispatcher.",
+      "run": "./script/seed --reset",
+      "pause": 1.0
+    },
+    {
+      "id": "start",
+      "say": "Now I start the application in the background, with the reservation clock turned on.",
+      "action": "start_server",
+      "pause": 1.0
+    },
+    {
+      "id": "health",
+      "say": "A health check, to show it is up.",
+      "run": "curl -s localhost:8080/healthz",
+      "pause": 0.5
+    },
+    {
+      "id": "report-a",
+      "say": "Report A. Someone fell and has a leg injury, and is conscious and talking. The response shows the severity, Serious, a confidence of ninety-five, and the recommended unit. Because confidence is seventy-five or more and the severity is not Severe or Critical, the system approved it by itself, and a notification was recorded.",
+      "run": "curl -s -X POST localhost:8080/reports -H \"Content-Type: application/json\" -d @seed/demo-report-a.json | python -m json.tool",
+      "pause": 2.0
+    },
+    {
+      "id": "proposal-row",
+      "say": "The database agrees. The proposal row shows the confidence, the model, which is a rules-based stand-in called fake rules, because the real Ollama model is not wired in yet, and that it was decided by auto.",
+      "run": "python tools/dbq.py \"SELECT id, confidence, model_identifier, final_status, decided_by FROM agent_proposals\"",
+      "pause": 1.0
+    },
+    {
+      "id": "unit-row",
+      "say": "Unit one is now assigned, and unit two is still available.",
+      "run": "python tools/dbq.py \"SELECT id, status FROM units\"",
+      "pause": 0.5
+    },
+    {
+      "id": "notify-row",
+      "say": "A notification row was written when the assignment became final. Sent at is set. Acknowledged at is empty, because acknowledgment is not built. To be clear, notify here means a database record. No message leaves the machine yet.",
+      "run": "python tools/dbq.py \"SELECT id, assignment_id, unit_id, sent_at, acknowledged_at FROM notifications\"",
+      "pause": 1.0
+    },
+    {
+      "id": "report-b",
+      "say": "Report B is vague. Something happened, nobody is answering. The confidence comes back at forty, under seventy-five, so the system does not decide. The decision stays empty and it is held for a person.",
+      "run": "curl -s -X POST localhost:8080/reports -H \"Content-Type: application/json\" -d @seed/demo-report-b.json | python -m json.tool",
+      "pause": 2.0
+    },
+    {
+      "id": "clock",
+      "say": "While it waits, its unit is reserved, and anyone using the software can see the clock. This shows exactly when each reserved unit will be freed, and how many seconds are left. After four minutes without a decision, the unit is released and the proposal times out.",
+      "run": "curl -s localhost:8080/units | python -m json.tool",
+      "pause": 1.0
+    },
+    {
+      "id": "no-login",
+      "say": "I want to say this out loud. There is no login yet. Anyone who can reach this address could press approve, and it always counts as the stand-in demo dispatcher. Real login is planned before Milestone 12. This is a known, accepted gap for the demo.",
+      "pause": 1.0
+    },
+    {
+      "id": "pending",
+      "say": "Here is the queue of proposals waiting for a person.",
+      "run": "curl -s localhost:8080/proposals/pending | python -m json.tool",
+      "pause": 0.5
+    },
+    {
+      "id": "approve",
+      "say": "The dispatcher approves proposal two. The decision is recorded against the dispatcher's id, not auto, so the audit trail tells the two paths apart, and the unit is notified.",
+      "run": "curl -s -X POST localhost:8080/proposals/2/decision -H \"Content-Type: application/json\" -d @seed/demo-approve.json | python -m json.tool",
+      "pause": 2.0
+    },
+    {
+      "id": "report-c",
+      "say": "Now the failure path. Report C needs a Medical unit, but both are taken. The system does not guess. It answers with a four hundred and nine, unit already reserved, and nothing is dispatched.",
+      "run": "curl -s -w \"\\nHTTP %{http_code}\\n\" -X POST localhost:8080/reports -H \"Content-Type: application/json\" -d @seed/demo-report-c.json",
+      "pause": 2.0
+    },
+    {
+      "id": "tests",
+      "say": "Finally, the test suite. It covers the safety rule, the reservations, the database rules, and the two extra slices, the offline queue and Override Assignment, which I am showing through their tests rather than live.",
+      "run": "./script/test",
+      "pause": 1.0
+    },
+    {
+      "id": "not-done",
+      "say": "What is not done. Real dispatcher login, the scenario reader, and the real Ollama model. The classifier you saw is a rules-based stand-in, and the five second speed requirement is not met until the real model is measured. Those are tracked, with Milestone 11 and 12 as the target.",
+      "pause": 1.0
+    },
+    {
+      "id": "close",
+      "say": "That is iteration one. The repository is tagged iteration dash one. Thank you.",
+      "pause": 1.5
+    }
+  ]
+}
