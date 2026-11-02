@@ -56,6 +56,22 @@ def release_unit(conn, unit_id):
     conn.commit()
 
 
+def release_for_proposal(conn, proposal_id):
+    """Free whatever unit this proposal is holding (a rejection calls this).
+    Only touches a unit still reserved by this exact proposal."""
+    ids = [
+        r["id"]
+        for r in conn.execute(
+            "SELECT id FROM units WHERE status = 'reserved' AND reserved_by_proposal_id = ?",
+            (proposal_id,),
+        ).fetchall()
+    ]
+    for unit_id in ids:
+        _free(conn, unit_id)
+    conn.commit()
+    return ids
+
+
 def _free(conn, unit_id):
     conn.execute(
         "UPDATE units SET status = 'available', reserved_by_proposal_id = NULL, "

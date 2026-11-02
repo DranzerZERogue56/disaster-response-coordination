@@ -39,7 +39,7 @@ Run on seeded data (`seed/iteration-1.sql` or equivalent, committed). Five slice
       the response.
 2:30  Confidence < 75 -> escalates instead of auto-deciding. Show the proposal
       sitting with final_status still NULL, decided_by still NULL -- pending.
-2:50  As the (stubbed) dispatcher: call Decide Proposal with decision=approve.
+2:50  curl localhost:8080/proposals/pending, then POST /proposals/2/decision with {"decision":"approve"} (the stubbed demo-dispatcher decides; no login yet).
       Show final_status flip to 'approved', decided_by set to the dispatcher's
       id, not 'auto' -- the audit trail tells the two paths apart.
 3:15  Submit Report C. Report A's unit is assigned and Report B's unit is

@@ -38,3 +38,11 @@ VALUES (1, 'Medical', 'alive', '2026-11-01T12:00:00+00:00');
 INSERT INTO units (scenario_run_id, unit_type, agent_node_id, status)
 VALUES (1, 'Medical', 1, 'available'),
        (1, 'Medical', 1, 'available');
+
+-- The stand-in dispatcher for the escalation path (slice 4). Fictional, and
+-- the hash/salt are placeholders: there is no login yet (FR-AUTH-01 is
+-- deferred), so nothing ever checks them.
+INSERT INTO dispatcher_accounts
+    (username, password_hash, password_salt, role, is_fictional_test_account, created_at)
+VALUES ('demo-dispatcher', 'not-a-real-hash', 'not-a-real-salt', 'dispatcher', 1,
+        '2026-11-01T12:00:00+00:00');

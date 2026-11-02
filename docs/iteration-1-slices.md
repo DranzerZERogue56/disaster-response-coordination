@@ -47,3 +47,18 @@ wired in. Switching is one setting (`CLASSIFY_MODEL`), no code changes.
 | Commit | `353b437` |
 | Not done | The human decision itself (slice 4). The real FR-RES-01 follow-up when the unit is lost (secondary path to a responder) is just the error for now. Batch-mode stand-in policy (60 threshold) is not built |
 | Ben's confidence | 94 / 100, Green, 2026-11-01 |
+
+## Slice 4: Decide Proposal escalation (human decision)
+
+Spec: `.plans/slice-4-human-decision-spec.md`.
+
+| Item | Evidence |
+|---|---|
+| Requirements | FR-AGENT-03 and NFR-SEC-02 (nothing is dispatched until a person decides, for held proposals) |
+| Where it lives | `src/decide_proposal/service.py` (`decide_human`, `list_pending`, `stub_dispatcher_id`), `src/unit_registry/service.py::release_for_proposal`, routes `GET /proposals/pending` and `POST /proposals/<id>/decision` in `src/web_ui/app.py`, stand-in account in `seed/iteration-1.sql` |
+| Acceptance criteria | AC-1 a held proposal is listed as pending, a decided one is not. AC-2 approve gives `approved`, `decided_by` is the dispatcher id (not `auto`), unit becomes `assigned`. AC-3 reject gives `rejected`, unit freed, report stays `classified`, no new proposal. AC-4 a second decision changes nothing. AC-5 approving after the reservation expired fails with `UNIT_NO_LONGER_AVAILABLE`, still undecided. AC-6 an observer account is refused |
+| Tests | `tests/test_human_decision.py`, 12 tests, including reject not freeing another proposal's unit and the full demo beat through the HTTP routes (vague report held, listed as pending, approved by the stand-in dispatcher). 48 of 48 pass locally |
+| Handled failure path | `UNIT_NO_LONGER_AVAILABLE` (409), `PROPOSAL_NOT_FOUND` (404), `INVALID_DECISION` (400), `NOT_A_DISPATCHER` (403), `STUB_DISPATCHER_MISSING` (500) |
+| Commit | see git log ("Slice 4") |
+| Not done | Real login (FR-AUTH-01), modify and override with a reason (FR-RES-02), automatic re-proposal after reject, a browser UI, the 45 s decision target (NFR-USE-01). The caller cannot name the dispatcher; the route always uses the seeded stand-in |
+| Ben's confidence | ____ / 100, colour: ____ |

@@ -13,7 +13,13 @@ from flask import Flask, jsonify, render_template, request
 from src.classify_propose.model import get_model
 from src.classify_propose.service import ClassifyError, classify_and_propose
 from src.db import connect, ensure_scenario_run
-from src.decide_proposal.service import decide_auto
+from src.decide_proposal.service import (
+    DecideError,
+    decide_auto,
+    decide_human,
+    list_pending,
+    stub_dispatcher_id,
+)
 from src.intake_gateway.service import ValidationError, list_reports, submit_report
 from src.unit_registry.service import RegistryError, reserve_for_proposal
 
@@ -94,6 +100,37 @@ def create_app():
         finally:
             conn.close()
         return jsonify(result), 201
+
+    @app.get("/proposals/pending")
+    def proposals_pending():
+        conn = connect()
+        try:
+            return jsonify({"pending": list_pending(conn)})
+        finally:
+            conn.close()
+
+    @app.post("/proposals/<int:proposal_id>/decision")
+    def proposals_decide(proposal_id):
+        """Slice 4. The dispatcher is the seeded stand-in account; the caller
+        cannot name who they are (real login replaces stub_dispatcher_id)."""
+        body = request.get_json(silent=True) or {}
+        conn = connect()
+        try:
+            result = decide_human(
+                conn, proposal_id, body.get("decision"), stub_dispatcher_id(conn)
+            )
+        except DecideError as exc:
+            status = {
+                "PROPOSAL_NOT_FOUND": 404,
+                "INVALID_DECISION": 400,
+                "NOT_A_DISPATCHER": 403,
+            }.get(exc.code, 500)
+            return jsonify({"error": {"code": exc.code, "message": str(exc)}}), status
+        except RegistryError as exc:
+            return jsonify({"error": {"code": exc.code, "message": str(exc)}}), 409
+        finally:
+            conn.close()
+        return jsonify(result)
 
     return app
 
