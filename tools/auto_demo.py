@@ -31,6 +31,7 @@ development database.
 """
 import argparse
 import ctypes
+import ctypes.wintypes
 import json
 import os
 import shutil
@@ -251,6 +252,69 @@ def play(steps, clips, env, fast, t0):
     return events
 
 
+def capture_input(full_screen):
+    """ffmpeg input arguments. Capturing a window by its title gives a black
+    picture on many Windows setups (the first real recording was 100% black),
+    so this captures the desktop, cropped to this console window's rectangle
+    when it can be found. Full screen, or a fallback when the window cannot be
+    found (Windows Terminal hides the real one), captures the whole desktop."""
+    base = ["-f", "gdigrab", "-framerate", "15"]
+    if not full_screen:
+        user32 = ctypes.windll.user32
+        hwnd = ctypes.windll.kernel32.GetConsoleWindow()
+        if hwnd and user32.IsWindowVisible(hwnd) and not user32.IsIconic(hwnd):
+            rect = ctypes.wintypes.RECT()
+            user32.GetWindowRect(hwnd, ctypes.byref(rect))
+            width, height = (rect.right - rect.left) // 2 * 2, (rect.bottom - rect.top) // 2 * 2
+            if rect.left >= 0 and rect.top >= 0 and width > 200 and height > 200:
+                return base + [
+                    "-offset_x", str(rect.left), "-offset_y", str(rect.top),
+                    "-video_size", f"{width}x{height}", "-i", "desktop",
+                ], f"this window ({width}x{height} at {rect.left},{rect.top})"
+    return base + ["-i", "desktop"], "the whole desktop (close anything private)"
+
+
+def black_share(path):
+    """Fraction of the video that is black, from ffmpeg's blackdetect."""
+    probe = subprocess.run(
+        ["ffmpeg", "-hide_banner", "-i", str(path), "-vf", "blackdetect=d=1:pix_th=0.05", "-an", "-f", "null", "-"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    total = 0.0
+    for line in probe.stderr.splitlines():
+        if "Duration:" in line:
+            h, m, sec = line.split("Duration:")[1].split(",")[0].strip().split(":")
+            total = int(h) * 3600 + int(m) * 60 + float(sec)
+    black = sum(
+        float(part.split("black_duration:")[1].split()[0])
+        for part in probe.stderr.splitlines()
+        if "black_duration:" in part
+    )
+    return (black / total) if total else 1.0
+
+
+def test_capture(full_screen):
+    """Record 3 seconds the way the real run will, and say if it came out black."""
+    source, where = capture_input(full_screen)
+    print(f"Test capture of {where} for 3 seconds...")
+    with tempfile.TemporaryDirectory() as tmp:
+        clip = Path(tmp) / "test.mp4"
+        subprocess.run(
+            ["ffmpeg", "-y", *source, "-t", "3", "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2",
+             "-c:v", "libx264", "-pix_fmt", "yuv420p", str(clip)],
+            check=False,
+            capture_output=True,
+        )
+        if not clip.exists():
+            sys.exit("FAIL: ffmpeg could not capture. Try --full-screen.")
+        share = black_share(clip)
+    if share > 0.9:
+        sys.exit("FAIL: the capture came out black. Try --full-screen.")
+    print("OK: the capture shows a picture. Now run with --record.")
+
+
 def prepare_database(env):
     path = ROOT / DEMO_DB
     path.parent.mkdir(exist_ok=True)
@@ -262,13 +326,22 @@ def main():
     parser.add_argument("--record", action="store_true", help="record the window with the voice")
     parser.add_argument("--tts-only", action="store_true", help="only make the voice clips and captions")
     parser.add_argument("--full-screen", action="store_true", help="record the whole desktop")
+    parser.add_argument("--test-capture", action="store_true", help="3-second capture test, then stop")
     parser.add_argument("--out", default=str(Path.home() / "Videos" / "iteration-1-demo.mp4"))
     args = parser.parse_args()
 
+    try:
+        ctypes.windll.shcore.SetProcessDpiAwareness(2)  # real pixels, so the capture rectangle is right
+    except (AttributeError, OSError):
+        pass
     steps = load_steps()
     env = demo_env()
     ctypes.windll.kernel32.SetConsoleTitleW(WINDOW_TITLE)
     os.system("")  # switches on colour codes in a plain Windows console
+
+    if args.test_capture:
+        test_capture(args.full_screen)
+        return
 
     if args.tts_only:
         with tempfile.TemporaryDirectory() as tmp:
@@ -305,11 +378,14 @@ def main():
             time.sleep(1)
         os.system("cls")
 
-        source = "desktop" if args.full_screen else f"title={WINDOW_TITLE}"
+        source, where = capture_input(args.full_screen)
+        print(f"Recording {where}")
+        time.sleep(1.5)
+        os.system("cls")
         video = tmp / "video.mp4"
         launch = time.time()
         ffmpeg = subprocess.Popen(
-            ["ffmpeg", "-y", "-f", "gdigrab", "-framerate", "15", "-i", source,
+            ["ffmpeg", "-y", *source,
              "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2", "-c:v", "libx264", "-preset", "veryfast",
              "-pix_fmt", "yuv420p", str(video)],
             stdin=subprocess.PIPE,
@@ -328,6 +404,12 @@ def main():
             ffmpeg.wait(timeout=60)
             (ROOT / DEMO_DB).unlink(missing_ok=True)
 
+        share = black_share(video)
+        if share > 0.9:
+            sys.exit(
+                f"FAIL: {share:.0%} of the recording is black, so it was NOT saved. "
+                "Run --test-capture first, and try --full-screen."
+            )
         audio = tmp / "voice.wav"
         build_audio(events, clips, lead, audio)
         write_captions(events, lead, CAPTIONS)
