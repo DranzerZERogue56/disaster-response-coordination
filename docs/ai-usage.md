@@ -365,7 +365,7 @@ Format: `Checked N of M claims in the verification log; N-x held up as stated. T
 ---
 
 **Date:** 2026-11-01
-**Zone:** Green (Ben chose this approach and reviews the script); rating: pending from Ben
+**Zone:** Green (Ben's rating, 2026-11-01, no number given; he rated the recording Green, which this tooling produced)
 **Tool:** Claude Code (Claude Sonnet 5.5), plus ffmpeg and Windows' built-in speech voice
 **What I asked for:** An automated demo: Ben asked for a screen recording with a text-to-speech voice that types and runs the demo, and asked that the narration script be shown to him before it runs so he can edit it, and that it be made known that he will watch the demo.
 **What I kept/changed:** The assistant wrote `tools/auto_demo.py`, `docs/demo/auto-demo-script.json` (the narration and the commands, which Ben can edit), `tools/dbq.py` (a read-only table printer for the demo), and four small request files under `seed/`. The voice is a computer voice, and the video says so in its first sentence; the commands are typed and really executed against the real app and a separate demo database. The video states that Ben reviewed the script and will watch the recording before submitting. Rehearsal (commands only, no voice or recording) passed: Report A auto-approved, Report B held, Report C refused with 409, 113 tests passed. The recording itself is not made until Ben approves the script.
@@ -374,7 +374,7 @@ Format: `Checked N of M claims in the verification log; N-x held up as stated. T
 ---
 
 **Date:** 2026-11-01
-**Zone:** Green (Ben chose the automated recording and ran it himself); rating: pending from Ben
+**Zone:** Green (Ben's rating, 2026-11-01, no number given): Ben chose the automated recording, ran it himself, and rated the recording Green
 **Tool:** Claude Code (Claude Sonnet 5.5), ffmpeg, Windows' built-in speech voice
 **What I asked for:** The final demo recording, made by `tools/auto_demo.py` and run by Ben in his own terminal at about 11:08 PM. It is `docs/demo/iteration-1-demo.mp4` (about 4 minutes 28 seconds) with captions in `docs/demo/iteration-1-demo.srt`.
 **What I kept/changed:** Two earlier attempts were thrown away and are not in the repository: the first had a completely black picture (window-title capture), the second showed Steam and Overwatch for its last half because another app took over the screen. The assistant fixed the recorder each time (desktop-region capture, black-video check, topmost window). The recording kept is the third. The assistant checked it: real picture throughout (contact sheet of the whole video: every sampled frame is the demo terminal, none black), audible voice, and the voice lines up with the screen to within about two seconds. The video says in its first sentence that the voice is a computer voice and that Ben reviewed the script and will watch the recording before submitting. The assistant cannot see whether Ben has watched it; Ben said he would.
