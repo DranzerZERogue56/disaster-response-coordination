@@ -307,3 +307,12 @@ Format: `Checked N of M claims in the verification log; N-x held up as stated. T
 **What I asked for:** The supporting material: `seed/iteration-1.sql`, `script/seed`, `docs/iteration-1-slices.md`, the draft `docs/reviews/iteration-1-self-review.md`, `docs/reviews/reviewer-questions.md`, the demo script edits, the `CLAUDE.md` summary in the canvas-HW tool, and this log's entries.
 **What I kept/changed:** All drafted by the assistant. The self-review is a draft that Ben has not corrected yet; its "four passes" are the assistant's own choice because the assignment does not define them. [Ben to confirm his corrections.] An outside reviewer (Ben's roommate) was given the 13 reviewer questions.
 **Why:** [Ben to confirm.] Proportion: of the roughly 1,400 lines of new source and test code in this iteration, the assistant wrote all of it; Ben's contribution is the design decisions above, the confidence ratings, reading the service files for slices 1-3, and the review. The assistant's own mistakes this session were: shell commands that failed on quoting and were redone, and stopping a test server by killing every `python.exe` process on the machine (no repository impact).
+
+---
+
+**Date:** 2026-11-01
+**Zone:** Green (Ben's decisions; [Ben to confirm his rating])
+**Tool:** Claude Code (Claude Sonnet 5.5)
+**What I asked for:** Fixes for three self-review findings, each decided by Ben in his own words: 2.2 "a set clock anyone using the software can see"; 3.2 "make it hard-coded: if it's assigned it's approved"; 3.3 "a proper error code, find every way it could be lost, auto-fix the gap". Ben also accepted 4.1 (no login) as a demo gap "as long as it's stated out loud".
+**What I kept/changed:** The assistant wrote all of it: the 5-second sweeper and `unit_clock()` / `GET /units` / units table on the reports page, one-transaction approve-and-assign on the auto, approve and reject paths, `UNIT_LOST_BEFORE_APPROVAL` with one automatic retry, 9 new tests (`tests/test_clock_and_atomicity.py`), and the doc updates. Ben did not edit the code. Choices that were the assistant's and not asked about: refreshing the reports page every 5 seconds as the visible clock; a single automatic retry (not more); not adding a database trigger, because that changes the baselined schema.
+**Why:** [Ben to confirm.] Verified by: 64/64 tests, including tests that make the decision save fail on purpose and prove the unit is not left assigned, and a test where a unit is lost between reserving and approving.

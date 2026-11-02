@@ -76,3 +76,17 @@ Spec: `.plans/slice-4-human-decision-spec.md`.
 | Commit | `4955704` |
 | Not done | A real delivery channel, acknowledgment tracking (FR-ALERT-02), the `UNIT_UNREACHABLE` error (needs a channel to be unreachable), the "within X seconds" target (X is undefined) |
 | Ben's confidence | 95 / 100, Green, 2026-11-01 |
+
+## Follow-up fixes after the self-review (2026-11-01 evening)
+
+Ben's answers to the four findings that matter most (self-review 2.2, 3.2, 3.3, 4.1):
+
+| Finding | What changed | Evidence |
+|---|---|---|
+| 2.2 no clock | A real clock: sweeper thread frees expired reservations every 5 s; `GET /units` and the `/reports` page show when each reserved unit will be freed and the seconds left | `tests/test_clock_and_atomicity.py`: clock numbers (240, 140, freed at 4:00), sweeper frees a stale reservation with nobody asking, route and page show it |
+| 3.2 two saves | Assign and approve are one transaction on all three paths; on any failure both are undone | Tests force the decision save to fail and check the unit is still `reserved`; an invariant check ("assigned implies approved") after every normal path |
+| 3.3 lost unit | Error code `UNIT_LOST_BEFORE_APPROVAL`, one automatic re-reserve and retry, reservation still shown | Tests: lost once is fixed and approved (`retried_after_unit_loss`); lost twice gives 409 with the new code, nothing assigned, nothing notified |
+| 4.1 no login | Accepted; spoken line added to the demo script | `docs/demo/iteration-1-script.md`, 2:50 beat |
+
+64 of 64 tests pass locally.
+

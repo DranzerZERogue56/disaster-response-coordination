@@ -42,6 +42,9 @@ Run on seeded data (`seed/iteration-1.sql` or equivalent, committed). Five slice
 2:50  curl localhost:8080/proposals/pending, then POST /proposals/2/decision with {"decision":"approve"} (the stubbed demo-dispatcher decides; no login yet).
       Show final_status flip to 'approved', decided_by set to the dispatcher's
       id, not 'auto' -- the audit trail tells the two paths apart.
+      SAY OUT LOUD: "There is no login yet. Anyone who can reach this address could press
+      approve, and it always counts as the stand-in demo-dispatcher. Real login is
+      planned before Milestone 12. This is a known, accepted gap for the demo."
 3:15  Submit Report C. Report A's unit is assigned and Report B's unit is
       held for the dispatcher (or assigned, after the 2:50 approval), so both
       Medical units are taken.
