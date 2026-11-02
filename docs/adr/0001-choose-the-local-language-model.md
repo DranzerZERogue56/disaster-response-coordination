@@ -48,3 +48,17 @@ Revisit this ADR if the measured NFR-PERF-01 p95 classification latency exceeds 
 | llama3.2:3b: 3B params, 2.0GB pull | https://ollama.com/library/llama3.2 | 2026-09-27 |
 | mistral:7b: 7B params, 4.4GB pull, Apache-2.0 | https://ollama.com/library/mistral | 2026-09-27 |
 | Llama 3.2 model license: custom "Llama 3.2 Community License," 700M-MAU clause | https://github.com/meta-llama/llama-models/blob/main/models/llama3_2/LICENSE | 2026-09-27 |
+
+## Amendment — 2026-10-26, dev-laptop model substitution
+
+ASM-01's Week 8 resolution already committed this project to running on the dev laptop with a smaller "lower level" model until the GPU server arrives. Starting Milestone 10's Classify & Propose slice, that dev-laptop model is **`phi4-mini:latest`** (3.8B params, 2.5GB via Ollama), not `llama3.2:3b` as this ADR originally decided.
+
+**Why:** `phi4-mini` was already pulled on this machine from earlier work; re-pulling `llama3.2:3b` instead would cost a ~2GB download and time this week doesn't need to spend, for a model this ADR's own fallback framing already treats as provisional on the dev laptop. This is not a re-evaluation of the Decision section above — `llama3.2:3b` remains the decision for the eventual GPU-server deployment this ADR was written for. This amendment only covers which model the dev-laptop fallback path actually runs in the meantime.
+
+**What this changes:** Nothing in the LLM Generate interface contract (`docs/architecture.md` §5) — both models run behind the same Ollama call. `docs/tech-evaluation.csv`/`.md` should get a `phi4-mini` row the next time either file is touched, so the license inventory covers what's actually running, not just what's evaluated.
+
+**What this doesn't change:** The original Decision stands for the GPU-server target. The Revisit trigger above (NFR-PERF-01 p95 latency, or >40% of reports routing to human review) now also applies to `phi4-mini` on the dev laptop — if either fires, re-evaluate the dev-laptop model choice specifically, separately from the GPU-server decision.
+
+| Claim in this amendment | Source | Checked on |
+|---|---|---|
+| phi4-mini: 3.8B params, 2.5GB pull, MIT license | https://dev.co/ai/llms/phi-4-mini-instruct, https://www.developersdigest.tech/local-models/phi-4-mini-instruct | 2026-10-26 |
