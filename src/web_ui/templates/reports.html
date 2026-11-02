@@ -1,4 +1,5 @@
 <!doctype html>
+<meta http-equiv="refresh" content="5">
 <title>Incident Reports — walking skeleton</title>
 <h1>Incident Reports</h1>
 <p>Submit Incident Report &rarr; Intake Gateway &rarr; SQLite <code>incident_reports</code> &rarr; this page.</p>
@@ -9,3 +10,18 @@
   <li>No reports yet.</li>
 {% endfor %}
 </ul>
+
+<h2>Units</h2>
+<p>A reserved unit is freed automatically when its clock runs out (this page refreshes every 5 seconds).</p>
+<table border="1" cellpadding="4">
+  <tr><th>Unit</th><th>Type</th><th>Status</th><th>Frees at (UTC)</th><th>Seconds left</th></tr>
+{% for u in units %}
+  <tr>
+    <td>#{{ u.unit_id }}</td><td>{{ u.unit_type }}</td><td>{{ u.status }}</td>
+    <td>{{ u.frees_at or "&mdash;"|safe }}</td>
+    <td>{{ u.seconds_left if u.seconds_left is not none else "&mdash;"|safe }}</td>
+  </tr>
+{% else %}
+  <tr><td colspan="5">No units yet.</td></tr>
+{% endfor %}
+</table>

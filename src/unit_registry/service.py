@@ -56,9 +56,10 @@ def release_unit(conn, unit_id):
     conn.commit()
 
 
-def release_for_proposal(conn, proposal_id):
+def release_for_proposal(conn, proposal_id, commit=True):
     """Free whatever unit this proposal is holding (a rejection calls this).
-    Only touches a unit still reserved by this exact proposal."""
+    Only touches a unit still reserved by this exact proposal. Pass
+    commit=False to make it part of the caller's transaction."""
     ids = [
         r["id"]
         for r in conn.execute(
@@ -68,7 +69,8 @@ def release_for_proposal(conn, proposal_id):
     ]
     for unit_id in ids:
         _free(conn, unit_id)
-    conn.commit()
+    if commit:
+        conn.commit()
     return ids
 
 
@@ -104,8 +106,12 @@ def reserve(conn, unit_id, proposal_id, now=None):
     raise RegistryError("UNIT_UNAVAILABLE", f"Unit {unit_id} is {row['status']}", [unit_id])
 
 
-def assign_unit(conn, unit_id, proposal_id):
+def assign_unit(conn, unit_id, proposal_id, commit=True):
     """Turn this proposal's reservation into an assignment (FR-RES-01).
+
+    Pass commit=False when the caller approves the proposal in the same
+    transaction: a unit is only ever "assigned" together with its proposal
+    being "approved", never one without the other.
 
     Only works if the unit is still reserved by this same proposal. If the
     window expired and someone else took it, raise UNIT_NO_LONGER_AVAILABLE
@@ -122,7 +128,34 @@ def assign_unit(conn, unit_id, proposal_id):
             f"Unit {unit_id} is no longer reserved for proposal {proposal_id}",
             [unit_id],
         )
-    conn.commit()
+    if commit:
+        conn.commit()
+
+
+def unit_clock(conn, now=None):
+    """What anyone using the software can see: every unit's status and, for
+    a reserved one, exactly when it will be freed and how many seconds are
+    left. Frees anything already expired first, so the numbers are current."""
+    now = now or _now()
+    release_expired(conn, now)
+    units = []
+    for r in conn.execute(
+        "SELECT id, unit_type, status, released_expected_by FROM units ORDER BY id"
+    ).fetchall():
+        until = r["released_expected_by"] if r["status"] == "reserved" else None
+        seconds_left = None
+        if until:
+            seconds_left = max(0, int((datetime.fromisoformat(until) - now).total_seconds()))
+        units.append(
+            {
+                "unit_id": r["id"],
+                "unit_type": r["unit_type"],
+                "status": r["status"],
+                "frees_at": until,
+                "seconds_left": seconds_left,
+            }
+        )
+    return units
 
 
 def reserve_for_proposal(conn, proposal_id, now=None):

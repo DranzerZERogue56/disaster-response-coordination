@@ -37,6 +37,13 @@ def decide_auto(conn, proposal_id, now=None):
     proposal returns the existing decision unchanged. If the reserved unit
     was lost in the meantime, RegistryError UNIT_NO_LONGER_AVAILABLE is
     raised and the proposal stays undecided.
+
+    A unit can be lost between reserving and this call only if: (1) its
+    4-minute window ran out and the clock freed it, (2) a dispatcher
+    rejected the same proposal at that moment, (3) the unit was taken out of
+    service (future heartbeat code, FR-DEGRADE-01), or (4) someone edited
+    the database by hand. The route calls this immediately after reserving
+    and retries once, so the window is a few milliseconds.
     """
     row = conn.execute(
         """
@@ -62,14 +69,20 @@ def decide_auto(conn, proposal_id, now=None):
     if needs_human(row["confidence"], row["severity"]):
         return {"proposal_id": proposal_id, "final_status": None, "held_for_human": True}
 
-    assign_unit(conn, row["recommended_unit_id"], proposal_id)
     decided_at = (now or datetime.now(UTC)).isoformat()
-    conn.execute(
-        "UPDATE agent_proposals SET final_status = 'approved', decided_by = 'auto', "
-        "decided_at = ? WHERE id = ?",
-        (decided_at, proposal_id),
-    )
-    conn.commit()
+    # One transaction: the unit becomes "assigned" and the proposal becomes
+    # "approved" together or not at all (self-review 3.2).
+    try:
+        assign_unit(conn, row["recommended_unit_id"], proposal_id, commit=False)
+        conn.execute(
+            "UPDATE agent_proposals SET final_status = 'approved', decided_by = 'auto', "
+            "decided_at = ? WHERE id = ?",
+            (decided_at, proposal_id),
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     return {
         "proposal_id": proposal_id,
         "final_status": "approved",
@@ -142,19 +155,24 @@ def decide_human(conn, proposal_id, decision, dispatcher_id, now=None):
             "already_decided": True,
         }
 
-    if decision == "approve":
-        assign_unit(conn, row["recommended_unit_id"], proposal_id)
-        final_status = "approved"
-    else:
-        release_for_proposal(conn, proposal_id)
-        final_status = "rejected"
-
     decided_at = (now or datetime.now(UTC)).isoformat()
-    conn.execute(
-        "UPDATE agent_proposals SET final_status = ?, decided_by = ?, decided_at = ? WHERE id = ?",
-        (final_status, str(dispatcher_id), decided_at, proposal_id),
-    )
-    conn.commit()
+    final_status = "approved" if decision == "approve" else "rejected"
+    # One transaction, same rule as the auto-path: unit change and decision
+    # are saved together or not at all.
+    try:
+        if decision == "approve":
+            assign_unit(conn, row["recommended_unit_id"], proposal_id, commit=False)
+        else:
+            release_for_proposal(conn, proposal_id, commit=False)
+        conn.execute(
+            "UPDATE agent_proposals SET final_status = ?, decided_by = ?, decided_at = ? "
+            "WHERE id = ?",
+            (final_status, str(dispatcher_id), decided_at, proposal_id),
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     return {
         "proposal_id": proposal_id,
         "final_status": final_status,
