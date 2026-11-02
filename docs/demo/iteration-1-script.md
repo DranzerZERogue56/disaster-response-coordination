@@ -53,22 +53,24 @@ Run on seeded data (`seed/iteration-1.sql` or equivalent, committed). Five slice
       and proposal rows stay in place, nothing is dispatched. The retry
       (next-best unit when one is free) is shown by the test suite at 4:10,
       not live.
-4:10  Terminal: run the test suite. Point at the tests covering slices 1-5.
-4:35  "Not done yet this iteration: the offline queue (T-3.2), real dispatcher
-      login replacing today's stubbed identity (T-7.4), and the Scenario Reader
-      for scripted playback (T-3.4). All three are GitHub issues already, with
-      Milestone 10/11 as the target."
+4:10  Terminal: run the test suite (94 tests). Point at the tests covering slices 1-5, and
+      say two bonus slices exist beyond the five, shown here by their tests rather than
+      live: the offline queue (10 reports during an outage, 0 lost) and Override
+      Assignment (a reason is required; the log shows who, when, why).
+4:35  "Not done yet this iteration: real dispatcher login replacing today's stubbed
+      identity (T-7.4), and the Scenario Reader for scripted playback (T-3.4). Both
+      are GitHub issues already, with Milestone 10/11 as the target."
 4:55  Stop talking.
 ```
 
 ## What's not done, and when
 
+(Built after this script was first drafted, so no longer deferred: the offline queue, slice 6, and Override Assignment, slice 7. See `docs/iteration-1-slices.md`.)
+
 | Deferred | Why | Scheduled |
 |---|---|---|
-| Offline queue (FR-INTAKE-01's queued path) | Not part of this week's money-path chain | Milestone 11 (tracked: issue for T-3.2) |
 | Real dispatcher auth (FR-AUTH-01, T-7.4) | Slice 5's escalation branch uses a stubbed single dispatcher identity this week — building real login/session this week risked the scope-creep trap Milestone 9 warned about | Its own slice, before Milestone 12 |
 | Scenario Reader / scripted playback (FR-SIM-01, T-3.4) | Not part of this week's money-path chain | Milestone 11 |
-| Override Assignment (FR-RES-02) | Milestone 10's human-intervention slice covers the *escalation* branch only, not post-decision overrides, per this week's scoping decision | Milestone 11 or 12 |
 
 ## Open question going in
 

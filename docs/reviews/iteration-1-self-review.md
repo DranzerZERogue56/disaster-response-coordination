@@ -35,7 +35,7 @@ Dispositions: **Fixed** (with commit), **Defect** (logged in `docs/review/review
 | # | Pass | Finding | Disposition |
 |---|---|---|---|
 | 3.1 | Safety | The rule (`confidence < 75` or Severe/Critical) lives in one function, `needs_human`, and is tested at 74/75/90 and Severe/Critical, matching NFR-SEC-02's five cases | No change needed |
-| 3.2 | Failure paths | `assign_unit` commits, then the proposal update commits separately. A crash between them leaves a unit `assigned` with a proposal still undecided | **Fixed** (Ben: 'if it's assigned it's approved'): assigning the unit and approving the proposal now happen in one database transaction (auto, human approve and human reject), rolled back together on any error. Tests make the decision save fail on purpose and check the unit is not left assigned. Not done: a database-level trigger enforcing the rule for every writer; that needs a schema change (migration 0002 and a change request), offered to Ben |
+| 3.2 | Failure paths | `assign_unit` commits, then the proposal update commits separately. A crash between them leaves a unit `assigned` with a proposal still undecided | **Fixed** twice. (1) Ben: "if it's assigned it's approved": assigning the unit and approving the proposal are one transaction (auto, human approve, human reject), tested by making the decision save fail on purpose. (2) Ben then asked for database-level enforcement: migration `0002` adds triggers so the database refuses an assigned unit whose proposal is not approved, for every writer (CR-001), tested with direct SQL |
 | 3.3 | Failure paths | In `POST /reports`, if auto-approve fails with `UNIT_NO_LONGER_AVAILABLE`, the response says `reservation: null` even though the reservation did succeed earlier | **Fixed** (Ben: 'give it a proper error code and find every way it could be lost'): error code `UNIT_LOST_BEFORE_APPROVAL` (reservation still shown in the response), plus one automatic re-reserve and retry (`retried_after_unit_loss`). The ways a unit can vanish between reserving and approving are listed in `decide_auto`'s docstring: the 4-minute clock, a dispatcher rejecting at that moment, a unit taken out of service (future FR-DEGRADE-01 code), or a manual database edit |
 | 3.4 | Correctness | A repeated call returns the first decision unchanged (`already_decided`) | No change needed; tested |
 
@@ -54,6 +54,32 @@ Dispositions: **Fixed** (with commit), **Defect** (logged in `docs/review/review
 |---|---|---|---|
 | 5.1 | Correctness | "Notify" is only a database row; no message leaves the machine | **Accepted**: the requirement names no channel (OQ-2); stated in the module, slice log and demo |
 | 5.2 | Correctness | FR-ALERT-01 still has "[X] seconds" and TODO acceptance criteria in `docs/requirements.md` | **Defect** in the specification, needs a change request (`docs/change-requests/`), target Milestone 11 |
+
+## Slice 6: Offline queue (`src/intake_gateway/queue.py`, `/connectivity` in `src/web_ui/app.py`)
+
+| # | Pass | Finding | Disposition |
+|---|---|---|---|
+| 6.1 | Failure paths | The connectivity switch is a variable in the running process: it resets to "connected" on restart and would not be shared by several server processes | **Accepted** for now: one dev server process; the queue itself is in the database and survives a restart. Revisit at Milestone 14 (deployment) |
+| 6.2 | Failure paths | Draining happens inside the one request that reconnects, so a very long queue makes that request slow | **Accepted**: 10 reports (NFR-REL-03) is instant; a background drain is a Milestone 12 option if NFR-REL-04's 100 reports needs it |
+| 6.3 | Correctness | No maximum queue size | **Accepted**: the spec leaves it open (OQ-1); stated in the module |
+| 6.4 | Correctness | Reports are ordered by `timestamp_reported` as text. Mixed time zones (a `-05:00` stamp next to a `Z` stamp) or different formats could sort wrongly | **Defect**, target Milestone 11: normalise timestamps to UTC at intake |
+| 6.5 | Correctness | A queued report that finds no free unit is not lost: it stays `created` and the reconnection response names the error | No change needed; tested (4 reports, 2 units) |
+
+## Slice 7: Override Assignment (`src/override_assignment/service.py`)
+
+| # | Pass | Finding | Disposition |
+|---|---|---|---|
+| 7.1 | Failure paths | The override, the unit swap and the log row happen in one transaction; a taken unit leaves the original assignment and the log untouched | No change needed; tested |
+| 7.2 | Correctness | The follow-up edits the same log row as FR-RES-02 asks, so the override log is not append-only (T-6.1 asks for that for proposals) | **Defect**, target Milestone 12 (append-only table for follow-ups) |
+| 7.3 | Safety | An observer's blocked attempt is refused but not logged (needs real login, FR-AUTH-01) | **Defect**, same target as 4.1 |
+| 7.4 | Correctness | A dispatcher can override to a unit of a different type (for example Fire for a Medical incident) with no warning | **Accepted**: FR-RES-02 says "any assignment, at any time"; the reason is the control. Could add a visible warning later |
+| 7.5 | Readability | `modified` now means two things: a dispatcher changed the unit at approval, or after the fact | **Accepted**: both mean "a person chose a different unit"; recorded in CR-001 |
+
+## Database rule (CR-001)
+
+| # | Pass | Finding | Disposition |
+|---|---|---|---|
+| D.1 | Correctness | The first version of the trigger did not fire when the proposal was undecided, because comparing NULL to a list is neither true nor false | **Fixed** in the same session (`COALESCE`), found by `tests/test_database_rule.py` before the commit |
 
 ## Cross-cutting
 

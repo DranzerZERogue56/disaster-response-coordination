@@ -90,3 +90,41 @@ Ben's answers to the four findings that matter most (self-review 2.2, 3.2, 3.3, 
 
 64 of 64 tests pass locally.
 
+## Database-level rule (CR-001, migration 0002)
+
+Ben's request after finding 3.2: "if it's assigned it's approved", enforced by the database itself.
+
+| Item | Evidence |
+|---|---|
+| Requirements | FR-AGENT-03, NFR-SEC-02, FR-RES-01 (strengthened) |
+| Where it lives | `migrations/0002-assigned-requires-approved.sql` (three triggers), `docs/change-requests/CR-001-assigned-requires-approved.md`, `CHANGELOG.md`, invariant I-assigned in `docs/architecture.md` |
+| Rule | A unit cannot be inserted or updated to `assigned` unless its proposal is `approved` or `modified`; an approved proposal cannot be un-approved while a unit is assigned to it |
+| Tests | `tests/test_database_rule.py` (9): direct SQL against undecided, rejected and escalated proposals is refused, approved and modified allowed, insert path refused, un-approving refused until the unit is freed, `tools/migrate.py` installs the triggers. Every other test now loads all migrations, so the whole suite runs with the triggers on |
+| Not done | Reservations (`reserved` state) are still guarded by application code only |
+
+## Slice 6: Offline queue (Medium tier, extra slice 1)
+
+| Item | Evidence |
+|---|---|
+| Requirements | FR-INTAKE-01 (queue while offline, drain in timestamp order), NFR-REL-03 (10 reports during an outage, 0 lost), FR-INTAKE-02 still applies offline |
+| Where it lives | `src/intake_gateway/queue.py` (switch, `queued_report_ids`, `release_queued`, `drain_queue`), `queued` option in `src/intake_gateway/service.py::submit_report`, `process_report`/`drain_one` and `/connectivity` routes in `src/web_ui/app.py` |
+| Acceptance criteria | AC-1 offline: a valid report is saved as `queued` (202), nothing else happens. AC-2 a malformed report is still rejected (400), not queued. AC-3 reconnecting processes queued reports oldest-first by reported time. AC-4 10 offline reports, 0 lost. AC-5 running out of units while draining loses nothing and does not stop the rest. AC-6 draining twice never processes a report twice |
+| Tests | `tests/test_offline_queue.py` (8). 94 of 94 pass locally |
+| Handled failure path | A drained report with no free unit reports `UNIT_ALREADY_RESERVED` in the reconnection response and stays `created`; invalid connectivity flag returns `INVALID_FLAG` (400) |
+| Commit | `65d343b` |
+| Not done | A maximum queue size (spec open question OQ-1). The switch is in memory, so it resets to connected on restart (the queue itself is in the database and survives). Timestamps are ordered as text, so mixed time zones could mis-order (self-review 6.4) |
+| Ben's confidence | ____ / 100, colour: ____ |
+
+## Slice 7: Override Assignment (Medium tier, extra slice 2)
+
+| Item | Evidence |
+|---|---|
+| Requirements | FR-RES-02 (override any assignment, only with a reason, logged with who/when/why/original choice/elapsed time, follow-up window), FR-AUDIT-02 |
+| Where it lives | `src/override_assignment/service.py` (`override_assignment`, `add_follow_up`), `reassign` in `src/unit_registry/service.py`, routes `POST /assignments/<id>/override` and `POST /overrides/<id>/follow-up` in `src/web_ui/app.py`, table `dispatcher_overrides` (already in the schema) |
+| Acceptance criteria | AC-1 an override with a reason moves the assignment and logs dispatcher, time, reason, the agent's original choice and (for a human-decided proposal) the seconds from AI escalation to human approval. AC-2 no reason is refused and nothing changes. AC-3 the follow-up is added to the same log entry, any time later, without touching the assignment. AC-4 a taken unit, an undecided proposal or an unknown id fail cleanly with no log row. AC-5 every override is its own row, even to the same unit. AC-6 an observer account is refused |
+| Tests | `tests/test_override_assignment.py` (13), including the full path through the HTTP routes. 94 of 94 pass locally |
+| Handled failure path | `REASON_REQUIRED` (400), `ASSIGNMENT_NOT_FOUND` (404), `NOT_A_DISPATCHER` (403), `UNIT_ALREADY_RESERVED` (409), `OVERRIDE_NOT_FOUND` (404), `FOLLOW_UP_REQUIRED` (400) |
+| Commit | `a16e311` |
+| Not done | Logging an observer's blocked attempt (needs real login, FR-AUTH-01). The log is not append-only yet (T-6.1), because the follow-up edits the same row as the spec asks. No warning when the new unit is a different type |
+| Ben's confidence | ____ / 100, colour: ____ |
+
