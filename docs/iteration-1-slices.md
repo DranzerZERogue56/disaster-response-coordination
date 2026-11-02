@@ -20,4 +20,4 @@ wired in. Switching is one setting (`CLASSIFY_MODEL`), no code changes.
 | Seed data | `seed/iteration-1.sql` (one run, one Medical node, two Medical units) |
 | Commit | `bd53194` |
 | Not done | Reserving the unit (slice 2). Deciding or escalating by confidence (slices 3-4). Real model (Ollama main, Python-side fallback). The 5 s timing is not measured yet (fake model is instant) |
-| Ben's confidence | ____ / 100, colour: ____ |
+| Ben's confidence | Green (number not given), 2026-11-01. Rated after opening `service.py` and the tests; the AI-usage entry should say so |
