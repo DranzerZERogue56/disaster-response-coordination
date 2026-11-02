@@ -16,6 +16,8 @@ Run on seeded data (`seed/iteration-1.sql` or equivalent, committed). Five slice
 - Report B — escalation path: location "near the old warehouse on 2nd", severity_raw "something happened, not sure how bad, no one's answering", description empty — deliberately vague, aimed at a sub-75 confidence classification
 - Report C — failure path: a second Medical-needing report submitted after Report A has already reserved `unit-med-1`, with only `unit-med-2` free
 
+<!-- MODEL SWAP: to demo on Ollama instead of the fake model, (1) set CLASSIFY_MODEL=ollama once that model class exists, and (2) in the 1:00 beat below, replace "fake-rules (the rules-based stand-in; Ollama is not wired in yet and the script says so out loud)" with "phi4-mini:latest (ADR 0001 amendment -- the dev-laptop fallback model, not the GPU-server target)". No code or seed changes needed. -->
+
 ---
 
 ```
@@ -26,9 +28,8 @@ Run on seeded data (`seed/iteration-1.sql` or equivalent, committed). Five slice
 0:35  Submit Report A (curl or the Web UI). Point at the response: severity,
       confidence, recommended_unit_id.
 1:00  Show the database row directly: the proposal landed in agent_proposals with
-      a real confidence score and model_identifier = phi4-mini:latest (ADR 0001
-      amendment -- this is the dev-laptop fallback model, not the GPU-server
-      target).
+      a confidence score and model_identifier = fake-rules (the rules-based
+      stand-in; Ollama is not wired in yet and the script says so out loud).
 1:20  Confidence >= 75 -> Decide Proposal's auto-path fires. Show
       agent_proposals.final_status = 'approved', decided_by = 'auto', and the
       unit's status flip to 'reserved' in the units table.
@@ -67,4 +68,4 @@ Run on seeded data (`seed/iteration-1.sql` or equivalent, committed). Five slice
 
 ## Open question going in
 
-Report B's wording is a best guess at producing a sub-75 confidence from `phi4-mini` — unlike the severity-based escalation trigger, this one depends on the model's actual output, not a fixed rule. If the real run doesn't land under 75, the report text gets tuned until it reliably does, and that tuning gets noted in `docs/ai-usage.md` if AI helped pick the wording.
+On the fake model, Report B reliably scores 40 (no recognizable keywords), so the escalation beat is deterministic. <!-- OLLAMA: when the real model is used, Report B's wording is a best guess at producing a sub-75 confidence from `phi4-mini`, and depends on the model's actual output, not a fixed rule. If the real run doesn't land under 75, tune the report text until it reliably does, and note the tuning in `docs/ai-usage.md` if AI helped pick the wording. -->
