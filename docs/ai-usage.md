@@ -356,7 +356,7 @@ Format: `Checked N of M claims in the verification log; N-x held up as stated. T
 ---
 
 **Date:** 2026-11-01
-**Zone:** Green (Ben asked for the demo to be run); rating: pending from Ben
+**Zone:** Green (Ben's rating, 2026-11-01, no number given; he rated the demo recording Green)
 **Tool:** Claude Code (Claude Sonnet 5.5)
 **What I asked for:** "Run the demo and record it." The assistant cannot screen-record, so it wrote `tools/demo_run.py`, which follows `docs/demo/iteration-1-script.md` against the real app on a freshly seeded database and writes `docs/demo/iteration-1-run-transcript.md`. That transcript is the fallback record. The narrated video is Ben's to make.
 **What I kept/changed:** The assistant wrote the tool and ran it once; the output in the transcript is what the app really returned (Report A auto-approved, Report B held then approved by the stand-in dispatcher, Report C refused with 409, 113 tests passed). Ben did not edit it.
