@@ -67,6 +67,10 @@ Run on seeded data (`seed/iteration-1.sql` or equivalent, committed). Five slice
 
 `python tools/auto_demo.py --record` runs this script by itself: a computer voice reads `docs/demo/auto-demo-script.json`, each command is typed and really executed against the real app (separate demo database, port 8080), and the window is recorded, with captions in `docs/demo/iteration-1-demo.srt`. The first spoken sentence says the voice is a computer voice and that Ben reviewed the script and will watch the recording. `python tools/auto_demo.py` alone is a rehearsal with no voice or recording.
 
+## The recording
+
+`docs/demo/iteration-1-demo.mp4` (about 4 min 28 s, computer-voice narration, captions in `docs/demo/iteration-1-demo.srt`), made by `tools/auto_demo.py` against the real app on a freshly seeded database. Link from the tag: https://github.com/DranzerZERogue56/disaster-response-coordination/blob/iteration-1/docs/demo/iteration-1-demo.mp4
+
 ## Fallback record
 
 If the live run fails on camera, `docs/demo/iteration-1-run-transcript.md` is a real run of this script (made by `python tools/demo_run.py`), with the same beats and outputs.
