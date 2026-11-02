@@ -34,24 +34,26 @@ The path of one report: `POST /reports` in `src/web_ui/app.py` goes to classify,
 15. `src/override_assignment/service.py`: an override needs a reason and is one transaction (unit swap, proposal marked `modified`, log row). Can a half-done override ever be left behind? Is it clear who did what, when and why from the log row alone?
 16. `migrations/0002-assigned-requires-approved.sql`: three triggers say an assigned unit needs an approved (or modified) proposal. Is there a way around them, or a case where they block something legitimate?
 
-## Answers (reviewer: please fill in, or tell Ben)
+## Answers (peer reviewer, relayed by Ben, 2026-11-01)
+
+Note on matching: the reviewer sent 15 numbered answers for 16 questions, so they were matched to questions by what each answer says. Q5 and Q8 are the two "already fixed" answers (matched in order); Q6 is the "No, it does not" answer; Q9 (no login) has no answer. The reviewer should confirm Q5, Q6, Q8 and Q9 if the exact match matters.
 
 | Q | Answer |
 |---|---|
-| 1 | |
-| 2 | |
-| 3 | |
-| 4 | |
-| 5 | |
-| 6 | |
-| 7 | |
-| 8 | |
-| 9 | |
-| 10 | |
-| 11 | |
-| 12 | |
-| 13 | |
-| 14 | |
-| 15 | |
-| 16 | |
+| 1 | Any data could technically be input and pass; the check should only validate shape. Answers that come back and pass validation are more likely to be correct, and prompt engineering can improve accuracy further. |
+| 2 | "Propose the best remaining unit" is correct. The system needs to offer at least an option. |
+| 3 | It is clear. |
+| 4 | No. That was worked on in an earlier slice (one conditional UPDATE, plus the eight-thread test). |
+| 5 | (see note) "He already fixed it." |
+| 6 | No, it does not. |
+| 7 | No. Nothing should get dispatched without a person, and nothing does. |
+| 8 | (see note) "Ben already fixed it." |
+| 9 | (no answer given) |
+| 10 | The dispatcher can always notify them outside the software, but there should be a way to do it in the software. |
+| 11 | That is honest enough. |
+| 12 | There are no obvious bugs that a test would not catch. |
+| 13 | No. |
+| 14 | Reports being entered with a different time, so not UTC. |
+| 15 | I do not believe a half-done override could ever be left behind. |
+| 16 | There should be no way they block something legitimate. |
 

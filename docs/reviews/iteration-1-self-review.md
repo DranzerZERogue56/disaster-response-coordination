@@ -111,4 +111,17 @@ Comments and dispositions go in the section below. The reviewer's questions are 
 
 | Reviewer | Date | Comment | Disposition |
 |---|---|---|---|
-| Peer reviewer (name withheld) | 2026-11-01 | Answers to the 16 questions in `docs/reviews/reviewer-questions.md` are being collected and will be added here | pending |
+| Peer reviewer (name withheld) | 2026-11-01 | Q1: the validator only checks shape; any data could technically pass, so answers that pass are more likely right, and prompt engineering can raise accuracy further | **Accepted**: that is how it is meant to work. Noted for the Ollama work (schema validator plus one retry, GitHub issue #5) |
+| Peer reviewer | 2026-11-01 | Q2: "propose the best remaining unit" is correct; it must offer at least an option | No change needed: matches FR-AGENT-02 criterion 2 |
+| Peer reviewer | 2026-11-01 | Q3: swapping the model is clear | No change needed |
+| Peer reviewer | 2026-11-01 | Q4: two requests cannot both hold a unit | No change needed; also covered by the eight-thread test |
+| Peer reviewer | 2026-11-01 | Q6: nothing else reads the old recommended unit and gets confused | No change needed |
+| Peer reviewer | 2026-11-01 | Q7: nothing is dispatched without a person | No change needed; backed by the safety-rule table and the database rule (CR-001) |
+| Peer reviewer | 2026-11-01 | Q10: the dispatcher can always notify a unit outside the software, but there should be a way to do it inside the software | **Accepted, deferred**: a real delivery channel is the open question OQ-2 (finding 5.1); the demo and docs say "notify" is a database row only. Needs a change request to finish FR-ALERT-01 |
+| Peer reviewer | 2026-11-01 | Q11: calling notify a record only is honest enough | No change needed |
+| Peer reviewer | 2026-11-01 | Q12: no obvious bug that a test would not catch | No change needed (the reviewer did not name a test; the self-review's own gaps stand) |
+| Peer reviewer | 2026-11-01 | Q13: no commit message fails to explain why | No change needed |
+| Peer reviewer | 2026-11-01 | Q14: reports entered with a different time zone could be ordered wrongly | **Fixed** before this answer was recorded (finding 6.4): times are stored in UTC and a mixed-time-zone queue test passes |
+| Peer reviewer | 2026-11-01 | Q15: a half-done override cannot be left behind | No change needed; the override is one transaction (finding 7.1) |
+| Peer reviewer | 2026-11-01 | Q16: the database rules cannot block anything legitimate | No change needed |
+| Peer reviewer | 2026-11-01 | Q5, Q8: already fixed by Ben. Q9: no answer | Recorded as given; the matching of these three is uncertain (see the note in `reviewer-questions.md`) |
