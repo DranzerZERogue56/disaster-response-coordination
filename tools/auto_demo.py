@@ -158,9 +158,32 @@ def type_command(cmd, fast):
     sys.stdout.flush()
 
 
+def find_bash():
+    """Git's bash. A plain `bash` on PATH is not trusted: on Windows it can be
+    the WSL launcher in System32, which would run commands in the wrong place,
+    and a normal cmd window often has no bash on PATH at all."""
+    candidates = []
+    git = shutil.which("git")
+    if git:
+        root = Path(git).resolve().parent.parent
+        if root.name.lower() in {"mingw64", "cmd", "bin"}:
+            root = root.parent if root.name.lower() == "mingw64" else root
+        candidates += [root / "bin" / "bash.exe", root / "usr" / "bin" / "bash.exe"]
+    for base in (os.environ.get("ProgramFiles"), os.environ.get("ProgramFiles(x86)"), os.environ.get("LOCALAPPDATA")):
+        if base:
+            candidates += [Path(base) / "Git" / "bin" / "bash.exe", Path(base) / "Programs" / "Git" / "bin" / "bash.exe"]
+    for candidate in candidates:
+        if candidate.exists():
+            return str(candidate)
+    found = shutil.which("bash")
+    if found and "system32" not in found.lower():
+        return found
+    sys.exit("Could not find Git's bash.exe. Install Git for Windows, or run this from Git Bash.")
+
+
 def run_command(cmd, env):
     proc = subprocess.Popen(
-        ["bash", "-c", cmd],
+        [find_bash(), "-c", cmd],
         cwd=ROOT,
         env=env,
         stdout=subprocess.PIPE,
@@ -245,6 +268,7 @@ def main():
     steps = load_steps()
     env = demo_env()
     ctypes.windll.kernel32.SetConsoleTitleW(WINDOW_TITLE)
+    os.system("")  # switches on colour codes in a plain Windows console
 
     if args.tts_only:
         with tempfile.TemporaryDirectory() as tmp:
@@ -259,6 +283,7 @@ def main():
             print(f"narration alone: {sum(d for _, d in clips):.0f}s. captions: {CAPTIONS}")
         return
 
+    find_bash()  # stop now, before anything is recorded, if bash cannot be found
     prepare_database(env)
 
     if not args.record:
