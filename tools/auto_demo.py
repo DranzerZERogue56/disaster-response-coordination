@@ -252,6 +252,36 @@ def play(steps, clips, env, fast, t0):
     return events
 
 
+def find_demo_window():
+    """The window whose title contains WINDOW_TITLE. Windows Terminal hides
+    the real console window, but its own window carries the tab title."""
+    user32 = ctypes.windll.user32
+    found = []
+
+    @ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.wintypes.HWND, ctypes.wintypes.LPARAM)
+    def visit(hwnd, _):
+        if user32.IsWindowVisible(hwnd):
+            length = user32.GetWindowTextLengthW(hwnd)
+            if length:
+                buffer = ctypes.create_unicode_buffer(length + 1)
+                user32.GetWindowTextW(hwnd, buffer, length + 1)
+                if WINDOW_TITLE in buffer.value:
+                    found.append(hwnd)
+        return True
+
+    user32.EnumWindows(visit, 0)
+    return found[0] if found else None
+
+
+def keep_on_top(hwnd):
+    """Stop other apps from covering the demo while it is recorded."""
+    user32 = ctypes.windll.user32
+    if user32.IsIconic(hwnd):
+        user32.ShowWindow(hwnd, 9)  # SW_RESTORE
+    # HWND_TOPMOST = -1; SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW
+    user32.SetWindowPos(hwnd, -1, 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0040)
+
+
 def capture_input(full_screen):
     """ffmpeg input arguments. Capturing a window by its title gives a black
     picture on many Windows setups (the first real recording was 100% black),
@@ -261,8 +291,10 @@ def capture_input(full_screen):
     base = ["-f", "gdigrab", "-framerate", "15"]
     if not full_screen:
         user32 = ctypes.windll.user32
-        hwnd = ctypes.windll.kernel32.GetConsoleWindow()
-        if hwnd and user32.IsWindowVisible(hwnd) and not user32.IsIconic(hwnd):
+        hwnd = find_demo_window() or ctypes.windll.kernel32.GetConsoleWindow()
+        if hwnd and user32.IsWindowVisible(hwnd):
+            keep_on_top(hwnd)
+            time.sleep(0.5)
             rect = ctypes.wintypes.RECT()
             user32.GetWindowRect(hwnd, ctypes.byref(rect))
             width, height = (rect.right - rect.left) // 2 * 2, (rect.bottom - rect.top) // 2 * 2
