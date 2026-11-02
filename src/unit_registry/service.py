@@ -158,6 +158,55 @@ def unit_clock(conn, now=None):
     return units
 
 
+def reassign(conn, proposal_id, new_unit_id, now=None, commit=True):
+    """Move an assignment from the unit it holds to `new_unit_id` (FR-RES-02).
+
+    The new unit must be available. The old unit goes back to available.
+    Pass commit=False to make it part of the caller's transaction. Moving to
+    the unit already assigned is allowed and changes nothing.
+    """
+    now = now or _now()
+    current = conn.execute(
+        "SELECT id FROM units WHERE reserved_by_proposal_id = ? AND status = 'assigned'",
+        (proposal_id,),
+    ).fetchone()
+    if current is None:
+        raise RegistryError(
+            "ASSIGNMENT_NOT_FOUND", f"Proposal {proposal_id} has no assigned unit", [new_unit_id]
+        )
+    if current["id"] == new_unit_id:
+        return {"unit_id": new_unit_id, "changed": False}
+
+    target = conn.execute("SELECT status FROM units WHERE id = ?", (new_unit_id,)).fetchone()
+    if target is None:
+        raise RegistryError("UNIT_NOT_FOUND", f"No unit with id {new_unit_id}", [new_unit_id])
+    if target["status"] != "available":
+        code = (
+            "UNIT_ALREADY_RESERVED"
+            if target["status"] in ("reserved", "assigned")
+            else "UNIT_UNAVAILABLE"
+        )
+        raise RegistryError(code, f"Unit {new_unit_id} is {target['status']}", [new_unit_id])
+
+    conn.execute(
+        "UPDATE units SET status = 'available', reserved_by_proposal_id = NULL, "
+        "reserved_at = NULL, released_expected_by = NULL WHERE id = ? AND status = 'assigned'",
+        (current["id"],),
+    )
+    cur = conn.execute(
+        "UPDATE units SET status = 'assigned', reserved_by_proposal_id = ?, reserved_at = ?, "
+        "released_expected_by = NULL WHERE id = ? AND status = 'available'",
+        (proposal_id, now.isoformat(), new_unit_id),
+    )
+    if cur.rowcount != 1:
+        raise RegistryError(
+            "UNIT_ALREADY_RESERVED", f"Unit {new_unit_id} was taken first", [new_unit_id]
+        )
+    if commit:
+        conn.commit()
+    return {"unit_id": new_unit_id, "changed": True, "released_unit_id": current["id"]}
+
+
 def reserve_for_proposal(conn, proposal_id, now=None):
     """Reserve the proposal's recommended unit; if it is taken, try each
     alternative in order. When an alternative wins, the proposal is updated

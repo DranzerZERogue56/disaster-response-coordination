@@ -32,7 +32,16 @@ from src.intake_gateway.queue import (
     set_connected,
 )
 from src.intake_gateway.service import ValidationError, list_reports, submit_report
-from src.notify_responder.service import NotifyError, notify_for_decision
+from src.notify_responder.service import (
+    NotifyError,
+    notify_for_decision,
+    notify_responder,
+)
+from src.override_assignment.service import (
+    OverrideError,
+    add_follow_up,
+    override_assignment,
+)
 from src.unit_registry.service import (
     RegistryError,
     release_expired,
@@ -294,6 +303,56 @@ def create_app():
             return jsonify({"error": {"code": exc.code, "message": str(exc)}}), status
         except RegistryError as exc:
             return jsonify({"error": {"code": exc.code, "message": str(exc)}}), 409
+        finally:
+            conn.close()
+        return jsonify(result)
+
+    @app.post("/assignments/<int:proposal_id>/override")
+    def assignment_override(proposal_id):
+        """Slice 7. Same stand-in dispatcher as slice 4; the caller cannot name one."""
+        body = request.get_json(silent=True) or {}
+        conn = connect()
+        try:
+            result = override_assignment(
+                conn,
+                proposal_id,
+                body.get("new_unit_id"),
+                body.get("reason"),
+                stub_dispatcher_id(conn),
+            )
+            # Tell the unit that now holds the assignment.
+            try:
+                result["notification"] = notify_responder(
+                    conn, proposal_id, result["new_unit_id"]
+                )
+            except NotifyError as exc:
+                result["notification"] = {"error": {"code": exc.code, "message": str(exc)}}
+        except OverrideError as exc:
+            status = {
+                "REASON_REQUIRED": 400,
+                "ASSIGNMENT_NOT_FOUND": 404,
+                "NOT_A_DISPATCHER": 403,
+            }.get(exc.code, 400)
+            return jsonify({"error": {"code": exc.code, "message": str(exc)}}), status
+        except DecideError as exc:
+            return jsonify({"error": {"code": exc.code, "message": str(exc)}}), 500
+        except RegistryError as exc:
+            return jsonify({"error": {"code": exc.code, "message": str(exc)}}), 409
+        finally:
+            conn.close()
+        return jsonify(result)
+
+    @app.post("/overrides/<int:override_id>/follow-up")
+    def override_follow_up(override_id):
+        body = request.get_json(silent=True) or {}
+        conn = connect()
+        try:
+            result = add_follow_up(conn, override_id, body.get("text"), stub_dispatcher_id(conn))
+        except OverrideError as exc:
+            status = 404 if exc.code == "OVERRIDE_NOT_FOUND" else 400
+            return jsonify({"error": {"code": exc.code, "message": str(exc)}}), status
+        except DecideError as exc:
+            return jsonify({"error": {"code": exc.code, "message": str(exc)}}), 500
         finally:
             conn.close()
         return jsonify(result)
