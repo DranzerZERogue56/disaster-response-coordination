@@ -10,6 +10,8 @@ from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request
 
+from src.classify_propose.model import get_model
+from src.classify_propose.service import ClassifyError, classify_and_propose
 from src.db import connect, ensure_scenario_run
 from src.intake_gateway.service import ValidationError, list_reports, submit_report
 
@@ -45,6 +47,15 @@ def create_app():
             run_id = ensure_scenario_run(conn)
             fields = request.get_json(silent=True) or request.form
             result = submit_report(conn, run_id, fields)
+            # Architecture §5: creating a report triggers Classify & Propose.
+            # If it can't classify, the report stays 'created' for a human.
+            try:
+                result["proposal"] = classify_and_propose(
+                    conn, result["report_id"], get_model()
+                )
+            except ClassifyError as exc:
+                result["proposal"] = None
+                result["needs_human"] = {"code": exc.code, "message": str(exc)}
         except ValidationError as exc:
             return (
                 jsonify(
