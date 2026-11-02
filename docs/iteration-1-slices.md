@@ -129,3 +129,14 @@ Ben's request after finding 3.2: "if it's assigned it's approved", enforced by t
 | Not done | Logging an observer's blocked attempt (needs real login, FR-AUTH-01). The log is not append-only yet (T-6.1), because the follow-up edits the same row as the spec asks. No warning when the new unit is a different type |
 | Ben's confidence | 90 / 100, Green, 2026-11-01 |
 
+## Self-review round 2 fixes (Ben's answers, 2026-11-01 evening)
+
+| Finding | What changed | Evidence |
+|---|---|---|
+| 2.3 held proposal expiring | A held proposal whose unit's clock runs out times out (`rejected` / `timeout`), leaves the pending list, and a late approval changes nothing | `tests/test_human_decision.py` (3 tests replace the old "fails and stays undecided" one) |
+| 2.4 concurrency | Real threads | `tests/test_timestamps_and_concurrency.py`: 8 threads, 1 winner |
+| 6.4 timestamp order | Reported time stored as UTC; `INVALID_TIMESTAMP` for non-ISO input | Same file: five offset cases, bad inputs, and a mixed-time-zone queue drain |
+| 7.2 append-only log | `override_follow_ups` table plus no-edit triggers (migration 0003, CR-002) | `tests/test_override_assignment.py`: edits to an override or a follow-up are refused |
+| 1.3 / 1.5 measurement (Medium tier NFR) | `python -m src.classify_propose.measure --write` runs NFR-PERF-01's method and records the confidence spread | `docs/measurements.md`, `tests/test_measure.py`. Fake model only; the requirement is not met until run with the real model |
+
+113 of 113 tests pass locally.

@@ -344,3 +344,11 @@ Format: `Checked N of M claims in the verification log; N-x held up as stated. T
 **What I kept/changed:** The assistant wrote `src/override_assignment/service.py`, `reassign` in the Unit Registry, two routes, and 13 tests. Ben did not edit the code.
 **Why:** Ben did not state a separate reason for delegating. Verified by: tests, 94/94 at that point; the whole override is one transaction, tested by an override to a taken unit leaving the original assignment and the log untouched. Known gaps in the self-review (7.1 to 7.3).
 
+---
+
+**Date:** 2026-11-01
+**Zone:** Green (Ben's decisions in the self-review question round); rating for the build: pending from Ben
+**Tool:** Claude Code (Claude Sonnet 5.5)
+**What I asked for:** Fixes for self-review findings 2.3, 2.4, 6.4 and 7.2, plus a measurement for 1.5, each chosen by Ben from options the assistant listed: timed-out proposals leave the pending list; a threaded reserve test; reported times normalised to UTC; override follow-ups in an append-only table (migration 0003, CR-002); and a measurement of NFR-PERF-01 with the confidence spread. Commits `b8c124e`, `4eaa83e`, `6fe5897`.
+**What I kept/changed:** The assistant wrote all the code, tests, migration, CR and `docs/measurements.md`. Ben did not edit the code. Choices that were the assistant's: a timed-out proposal is recorded as `rejected` with `decided_by = 'timeout'` rather than a new status; a time with no offset is taken as UTC; deleting override rows stays allowed so the purge job can work; the measurement uses a fixed set of 20 reports the assistant wrote. Two earlier tests were rewritten because the new timeout behaviour changed what they checked.
+**Why:** Ben did not state a separate reason beyond his choices. Verified by: 113/113 tests, lint, the secrets check and the smoke check. The measurement is of the fake model only and says so in the file.
