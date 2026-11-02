@@ -45,6 +45,11 @@ def classify_and_propose(conn, report_id, model):
     if report is None:
         raise ClassifyError("REPORT_NOT_FOUND", f"No report with id {report_id}")
 
+    if report["status"] != "created":
+        raise ClassifyError(
+            "ALREADY_CLASSIFIED", f"Report {report_id} is already {report['status']}"
+        )
+
     output = model.classify(dict(report))
     _validate(output)
 

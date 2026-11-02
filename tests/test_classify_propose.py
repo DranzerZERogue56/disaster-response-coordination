@@ -113,6 +113,16 @@ def test_no_unit_of_needed_type_is_reported_not_guessed(conn):
     assert conn.execute("SELECT count(*) FROM agent_proposals").fetchone()[0] == 0
 
 
+def test_classifying_twice_does_not_make_a_second_proposal(conn):
+    rid = add_report(conn, "chest pain")
+    classify_and_propose(conn, rid, FakeModel())
+    with pytest.raises(ClassifyError) as exc:
+        classify_and_propose(conn, rid, FakeModel())
+
+    assert exc.value.code == "ALREADY_CLASSIFIED"
+    assert conn.execute("SELECT count(*) FROM agent_proposals").fetchone()[0] == 1
+
+
 def test_unknown_report_id(conn):
     with pytest.raises(ClassifyError) as exc:
         classify_and_propose(conn, 999, FakeModel())
