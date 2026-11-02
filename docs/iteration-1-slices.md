@@ -44,6 +44,6 @@ wired in. Switching is one setting (`CLASSIFY_MODEL`), no code changes.
 | Acceptance criteria | AC-1 confidence 75+ and not Severe/Critical: `final_status='approved'`, `decided_by='auto'`, `decided_at` set, unit goes `reserved` to `assigned`. AC-2 anything else is left untouched (no decision, unit stays reserved) for a human. AC-3 a second call returns the existing decision unchanged. AC-4 if the reservation was lost, `UNIT_NO_LONGER_AVAILABLE` is raised and the proposal stays undecided |
 | Tests | `tests/test_decide_proposal.py`: the safety rule table (74 Moderate held; 75 and 90 Moderate auto; 95 Severe and 95 Critical held, plus 0, 100 and 100-Severe edges), the same five cases end to end against the database, idempotent second call, lost reservation, assign refuses another proposal's reservation, unknown proposal. Route test now checks A is auto-approved and C (Severe) is held. All pass locally |
 | Handled failure path | `UNIT_NO_LONGER_AVAILABLE` (route returns 409). Held proposals are not errors |
-| Commit | see git log ("Slice 3") |
+| Commit | `353b437` |
 | Not done | The human decision itself (slice 4). The real FR-RES-01 follow-up when the unit is lost (secondary path to a responder) is just the error for now. Batch-mode stand-in policy (60 threshold) is not built |
-| Ben's confidence | ____ / 100, colour: ____ |
+| Ben's confidence | 94 / 100, Green, 2026-11-01 |
