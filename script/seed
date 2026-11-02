@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# One command to get the demo's starting state: a fresh database with every
+# migration applied, then seed/iteration-1.sql (one run, one Medical node,
+# two Medical units, one stand-in dispatcher).
+#
+#   ./script/seed            seed a database that has no scenario run yet
+#   ./script/seed --reset    delete the database first, then seed from scratch
+#
+# Success looks like: "seed complete" printed last. It refuses to seed on top
+# of existing data, because the seed file is meant for a fresh database.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+source script/common.sh
+
+if [ "${1:-}" = "--reset" ]; then
+  rm -f "$DB_PATH"
+fi
+
+mkdir -p "$(dirname "$DB_PATH")"
+"$PYTHON" tools/migrate.py "$DB_PATH"
+
+"$PYTHON" - "$DB_PATH" <<'PY'
+import sqlite3
+import sys
+
+path = sys.argv[1]
+conn = sqlite3.connect(path)
+if conn.execute("SELECT count(*) FROM scenario_runs").fetchone()[0]:
+    sys.exit(f"{path} already has data; run ./script/seed --reset to start over")
+with open("seed/iteration-1.sql", encoding="utf-8") as f:
+    conn.executescript(f.read())
+conn.close()
+PY
+
+echo "seed complete"
