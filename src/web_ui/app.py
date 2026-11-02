@@ -21,9 +21,19 @@ from src.decide_proposal.service import (
     stub_dispatcher_id,
 )
 from src.intake_gateway.service import ValidationError, list_reports, submit_report
+from src.notify_responder.service import NotifyError, notify_for_decision
 from src.unit_registry.service import RegistryError, reserve_for_proposal
 
 TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
+
+
+def try_notify(conn, decision):
+    """Notify after an approval. A failed notification never undoes the
+    decision; it is reported next to it so a person can see it."""
+    try:
+        return notify_for_decision(conn, decision)
+    except NotifyError as exc:
+        return {"error": {"code": exc.code, "message": str(exc)}}
 
 
 def create_app():
@@ -76,6 +86,8 @@ def create_app():
                     result["decision"] = decide_auto(
                         conn, result["proposal"]["proposal_id"]
                     )
+                    # Slice 5: tell the unit once the assignment is final.
+                    result["notification"] = try_notify(conn, result["decision"])
                 except RegistryError as exc:
                     result["reservation"] = None
                     result["error"] = {
@@ -119,6 +131,7 @@ def create_app():
             result = decide_human(
                 conn, proposal_id, body.get("decision"), stub_dispatcher_id(conn)
             )
+            result["notification"] = try_notify(conn, result)
         except DecideError as exc:
             status = {
                 "PROPOSAL_NOT_FOUND": 404,

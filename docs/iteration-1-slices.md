@@ -59,6 +59,20 @@ Spec: `.plans/slice-4-human-decision-spec.md`.
 | Acceptance criteria | AC-1 a held proposal is listed as pending, a decided one is not. AC-2 approve gives `approved`, `decided_by` is the dispatcher id (not `auto`), unit becomes `assigned`. AC-3 reject gives `rejected`, unit freed, report stays `classified`, no new proposal. AC-4 a second decision changes nothing. AC-5 approving after the reservation expired fails with `UNIT_NO_LONGER_AVAILABLE`, still undecided. AC-6 an observer account is refused |
 | Tests | `tests/test_human_decision.py`, 12 tests, including reject not freeing another proposal's unit and the full demo beat through the HTTP routes (vague report held, listed as pending, approved by the stand-in dispatcher). 48 of 48 pass locally |
 | Handled failure path | `UNIT_NO_LONGER_AVAILABLE` (409), `PROPOSAL_NOT_FOUND` (404), `INVALID_DECISION` (400), `NOT_A_DISPATCHER` (403), `STUB_DISPATCHER_MISSING` (500) |
-| Commit | see git log ("Slice 4") |
+| Commit | `17c66b0` |
 | Not done | Real login (FR-AUTH-01), modify and override with a reason (FR-RES-02), automatic re-proposal after reject, a browser UI, the 45 s decision target (NFR-USE-01). The caller cannot name the dispatcher; the route always uses the seeded stand-in |
+| Ben's confidence | ____ / 100, colour: ____ |
+
+## Slice 5: Notify Responder
+
+| Item | Evidence |
+|---|---|
+| Requirements | FR-ALERT-01 (tell the assigned unit once the assignment is final). Gap in the requirement itself: the "within [X] seconds" number and both acceptance criteria are still `TODO` in `docs/requirements.md`, so this slice is built to the architecture contract (`docs/architecture.md`, Notify Responder) and the gap needs a change request |
+| Where it lives | `src/notify_responder/service.py` (`notify_responder`, `notify_for_decision`), called from both approval paths in `src/web_ui/app.py` (auto-approve in `POST /reports`, human approve in `POST /proposals/<id>/decision`) |
+| What "notify" means here | A row in `notifications` with `sent_at` set and `acknowledged_at` empty. No message leaves the machine; the requirement names no channel (architecture open question OQ-2). A real channel would replace one INSERT |
+| Acceptance criteria | AC-1 an approved, assigned proposal gets a notification row with `sent_at`. AC-2 nothing is sent for a unit that is only reserved, for a held or rejected proposal, or for a unit assigned to a different proposal (`NOT_ASSIGNED`). AC-3 notifying the same assignment twice makes two rows (architecture contract). AC-4 a repeated approval call does not notify again. AC-5 a failed notification never undoes the approval; it is reported beside it |
+| Tests | `tests/test_notify_responder.py`, 6 tests including the route-level beat: A auto-approved is notified at once, B held is not, B notified only after the dispatcher approves. 54 of 54 pass locally |
+| Handled failure path | `NOT_ASSIGNED` (reported in the response as `notification.error`, decision stands) |
+| Commit | see git log ("Slice 5") |
+| Not done | A real delivery channel, acknowledgment tracking (FR-ALERT-02), the `UNIT_UNREACHABLE` error (needs a channel to be unreachable), the "within X seconds" target (X is undefined) |
 | Ben's confidence | ____ / 100, colour: ____ |
