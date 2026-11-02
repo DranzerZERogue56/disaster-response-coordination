@@ -63,6 +63,10 @@ Run on seeded data (`seed/iteration-1.sql` or equivalent, committed). Five slice
 4:55  Stop talking.
 ```
 
+## Fallback record
+
+If the live run fails on camera, `docs/demo/iteration-1-run-transcript.md` is a real run of this script (made by `python tools/demo_run.py`), with the same beats and outputs.
+
 ## What's not done, and when
 
 (Built after this script was first drafted, so no longer deferred: the offline queue, slice 6, and Override Assignment, slice 7. See `docs/iteration-1-slices.md`.)

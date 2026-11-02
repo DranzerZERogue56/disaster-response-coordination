@@ -347,8 +347,17 @@ Format: `Checked N of M claims in the verification log; N-x held up as stated. T
 ---
 
 **Date:** 2026-11-01
-**Zone:** Green (Ben's decisions in the self-review question round); rating for the build: pending from Ben
+**Zone:** Green, 90/100 (Ben's rating, 2026-11-01), for the decisions and fixes in the self-review question round
 **Tool:** Claude Code (Claude Sonnet 5.5)
 **What I asked for:** Fixes for self-review findings 2.3, 2.4, 6.4 and 7.2, plus a measurement for 1.5, each chosen by Ben from options the assistant listed: timed-out proposals leave the pending list; a threaded reserve test; reported times normalised to UTC; override follow-ups in an append-only table (migration 0003, CR-002); and a measurement of NFR-PERF-01 with the confidence spread. Commits `b8c124e`, `4eaa83e`, `6fe5897`.
 **What I kept/changed:** The assistant wrote all the code, tests, migration, CR and `docs/measurements.md`. Ben did not edit the code. Choices that were the assistant's: a timed-out proposal is recorded as `rejected` with `decided_by = 'timeout'` rather than a new status; a time with no offset is taken as UTC; deleting override rows stays allowed so the purge job can work; the measurement uses a fixed set of 20 reports the assistant wrote. Two earlier tests were rewritten because the new timeout behaviour changed what they checked.
 **Why:** Ben did not state a separate reason beyond his choices. Verified by: 113/113 tests, lint, the secrets check and the smoke check. The measurement is of the fake model only and says so in the file.
+
+---
+
+**Date:** 2026-11-01
+**Zone:** Green (Ben asked for the demo to be run); rating: pending from Ben
+**Tool:** Claude Code (Claude Sonnet 5.5)
+**What I asked for:** "Run the demo and record it." The assistant cannot screen-record, so it wrote `tools/demo_run.py`, which follows `docs/demo/iteration-1-script.md` against the real app on a freshly seeded database and writes `docs/demo/iteration-1-run-transcript.md`. That transcript is the fallback record. The narrated video is Ben's to make.
+**What I kept/changed:** The assistant wrote the tool and ran it once; the output in the transcript is what the app really returned (Report A auto-approved, Report B held then approved by the stand-in dispatcher, Report C refused with 409, 113 tests passed). Ben did not edit it.
+**Why:** The rubric asks for a fallback recording. Verified by: the run itself; the tool starts and stops only the server it launched.

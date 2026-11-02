@@ -140,3 +140,10 @@ Ben's request after finding 3.2: "if it's assigned it's approved", enforced by t
 | 1.3 / 1.5 measurement (Medium tier NFR) | `python -m src.classify_propose.measure --write` runs NFR-PERF-01's method and records the confidence spread | `docs/measurements.md`, `tests/test_measure.py`. Fake model only; the requirement is not met until run with the real model |
 
 113 of 113 tests pass locally.
+
+| Ben's confidence | 90 / 100, Green, 2026-11-01 |
+
+## Demo fallback record
+
+`python tools/demo_run.py` follows the demo script against the real app on a freshly seeded database and writes `docs/demo/iteration-1-run-transcript.md`: Report A auto-approved and notified, the visible reservation clock, Report B held and approved by the stand-in dispatcher (with the "no login yet" statement), Report C refused with HTTP 409, and the test suite (113 passed). It is a real run, not a mock-up, and is the fallback if the live recording goes wrong. The narrated screen recording is separate and is made by Ben.
+
