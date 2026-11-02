@@ -14,6 +14,7 @@ from src.classify_propose.model import get_model
 from src.classify_propose.service import ClassifyError, classify_and_propose
 from src.db import connect, ensure_scenario_run
 from src.intake_gateway.service import ValidationError, list_reports, submit_report
+from src.unit_registry.service import RegistryError, reserve_for_proposal
 
 TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
 
@@ -56,6 +57,21 @@ def create_app():
             except ClassifyError as exc:
                 result["proposal"] = None
                 result["needs_human"] = {"code": exc.code, "message": str(exc)}
+            # Slice 2: reserve the proposed unit the moment it is proposed.
+            # Its own call (not inside classify) so it can fail on its own.
+            if result["proposal"]:
+                try:
+                    result["reservation"] = reserve_for_proposal(
+                        conn, result["proposal"]["proposal_id"]
+                    )
+                except RegistryError as exc:
+                    result["reservation"] = None
+                    result["error"] = {
+                        "code": exc.code,
+                        "message": str(exc),
+                        "tried": exc.tried,
+                    }
+                    return jsonify(result), 409
         except ValidationError as exc:
             return (
                 jsonify(
