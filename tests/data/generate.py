@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Generate the Milestone 11 test data: three families, from a fixed seed.
 
     python tests/data/generate.py        rewrites happy.json, boundary.json, hostile.json

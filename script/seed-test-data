@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# One command for the Milestone 11 test data: regenerate the three families from the fixed seed,
+# then load the happy family into a fresh database through the real intake route.
+#
+#   ./script/seed-test-data                  loads into data/test.sqlite
+#   ./script/seed-test-data path/to/db       loads into that file
+#
+# Success looks like: "loaded 20 happy reports ... {201: 20}" then "test data seeded".
+set -euo pipefail
+cd "$(dirname "$0")/.."
+source script/common.sh
+
+"$PYTHON" tests/data/generate.py
+"$PYTHON" tests/data/load.py "${1:-data/test.sqlite}"
+echo "test data seeded"
