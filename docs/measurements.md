@@ -27,3 +27,19 @@ ADR 0001 says to re-evaluate the model if more than 40% of reports route to huma
 | Share a person would be asked to review (confidence under 75, or Severe/Critical) | 40% (at or under the 40% line) |
 
 The share depends heavily on how the seeded set was written (four of the twenty are deliberately vague, and several clear cases come out Severe), so it describes the fake model on this set, not what real traffic would do.
+
+## NFR-REL-01: node failure detected within 30 s of the missed heartbeat (5 trials)
+
+Measured by `python tools/measure_heartbeat.py --write` on 2026-11-05. Real processes (not a mock): 5 node processes heartbeat every 10 s; one more keeps running; the trial nodes are killed together; the watcher is polled once a second against the real clock.
+
+| Trial | Node | Missed heartbeat to alert (s) | Kill to alert (s) |
+|---|---|---|---|
+| 1 | 2 | 20.98 | 29.04 |
+| 2 | 3 | 20.97 | 29.04 |
+| 3 | 4 | 20.97 | 29.04 |
+| 4 | 5 | 20.96 | 29.04 |
+| 5 | 6 | 20.96 | 29.04 |
+
+**Worst case: 20.98 s against the 30 s limit (PASS).** The surviving node was notified and a human notice was written for each trial.
+
+The requirement's metric is time from the missed heartbeat (the last heartbeat plus the interval), so that is the column the pass or fail uses. Kill-to-alert is longer, because a node can die up to one interval before its next heartbeat is due; it is shown so the difference is not hidden. Detection cannot be faster than the threshold itself: an alert needs 30 s of silence, and the silence starts at the last heartbeat, not at the miss.
