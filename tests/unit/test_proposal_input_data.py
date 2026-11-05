@@ -62,6 +62,7 @@ def test_the_recorded_input_survives_the_report_being_changed_or_removed(conn):
 
 
 @pytest.mark.defect("DEF-014")
+@pytest.mark.covers("FR-AUDIT-01-AC2")
 def test_the_logged_input_cannot_be_edited_afterwards(conn):
     result = classify_and_propose(conn, make_report(conn), FakeModel())
     with pytest.raises(sqlite3.IntegrityError, match="cannot be changed"):

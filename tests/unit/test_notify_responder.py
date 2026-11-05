@@ -65,6 +65,7 @@ def test_notification_row_has_sent_at_and_no_acknowledgment(conn):
     assert row["acknowledged_at"] is None
 
 
+@pytest.mark.covers("FR-ALERT-01-AC2")
 def test_nothing_is_sent_for_a_unit_that_is_only_reserved(conn):
     pid = reserved_proposal(conn, confidence=40)  # held, never approved
     with pytest.raises(NotifyError) as exc:
@@ -73,6 +74,7 @@ def test_nothing_is_sent_for_a_unit_that_is_only_reserved(conn):
     assert notifications(conn) == []
 
 
+@pytest.mark.covers("FR-ALERT-01-AC2")
 def test_nothing_is_sent_for_another_proposals_unit(conn):
     first = reserved_proposal(conn, unit_id=1)
     second = reserved_proposal(conn, unit_id=2)

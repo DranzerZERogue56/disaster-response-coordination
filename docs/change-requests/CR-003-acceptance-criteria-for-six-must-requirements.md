@@ -59,3 +59,18 @@ A Must requirement with no acceptance criterion cannot be verified, and a requir
 - [x] Plan and hours re-baselined: not needed (+0.5 h, under the 4 h threshold)
 - [x] Row added to `CHANGELOG.md`
 - [x] New baseline tag: not created. Ben to decide whether filling in criteria counts as a Must change (spec-baseline-v1.1)
+
+## Second round (2026-11-05, later the same day)
+
+Ben asked what the failure-case criteria should be. The assistant proposed three, Ben said "I like the 3 proposed ideas" and asked for the FR-ALERT-01 one to be more explicit. He also asked for a rough hypothesis of what the FR-SIM-01 pace criterion will look like, and for the FR-INFER-02 second criterion to be left open with a note saying why. All five are now in `docs/requirements.md`:
+
+| Requirement | Added | State |
+|---|---|---|
+| FR-ALERT-01-AC2 | A unit that is not assigned to an approved proposal (reserved and waiting, rejected, or assigned to another incident) is never notified: nothing recorded, the system says so, the assignment is untouched | testable now |
+| FR-AUDIT-01-AC2 | Once a proposal is logged, changing its input data is refused and the original stays | testable now |
+| FR-INFER-01-AC2 | With the network switched off, a report is still classified and proposed as normal | testable now |
+| FR-SIM-01-AC2 | **A hypothesis**, marked as one: reports play back with their scenario gaps divided by a speed (60 s apart arrive 6 s apart at 10x, 10% tolerance) and the same scenario at the same speed repeats exactly. Confirmed or changed when the Scenario Reader is built | not testable: not built, stays a visible gap |
+| FR-INFER-02-AC2 | Left blank on purpose, with the reason written in the requirement: it needs the real model on the target hardware | stays a visible gap |
+
+The wording of the first three is the assistant's proposal that Ben approved; the numbers and the idea in the pace hypothesis are Ben's request. Ben to confirm the wording stands.
+

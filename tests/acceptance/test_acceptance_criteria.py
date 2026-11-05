@@ -418,3 +418,74 @@ def test_FR_AUTH_01_AC2_an_unauthenticated_caller_cannot_approve(world):
     held = post(client, report(VAGUE)).get_json()
     resp = client.post(f"/proposals/{held['proposal']['proposal_id']}/decision", json={"decision": "approve"})
     assert resp.status_code in (401, 403)
+
+
+# ---- second-round criteria (CR-003): the failure and abuse cases --------------------------------------
+
+
+@pytest.mark.covers("FR-ALERT-01-AC2")
+def test_FR_ALERT_01_AC2_a_unit_that_is_not_assigned_is_never_notified(world):
+    from src.notify_responder.service import NotifyError, notify_responder
+
+    client, db = world
+    held = post(client, report(VAGUE, minute=1)).get_json()  # unit reserved; proposal waits for a dispatcher
+    held_pid, held_unit = held["proposal"]["proposal_id"], held["reservation"]["unit_id"]
+    conn = sqlite3.connect(db)
+    conn.row_factory = sqlite3.Row
+
+    def refused(proposal_id, unit_id):
+        with pytest.raises(NotifyError) as exc:
+            notify_responder(conn, proposal_id, unit_id)
+        assert exc.value.code == "NOT_ASSIGNED"  # the system says the unit is not assigned
+
+    refused(held_pid, held_unit)  # (a) only reserved, still waiting for a dispatcher
+
+    client.post(f"/proposals/{held_pid}/decision", json={"decision": "reject"})
+    refused(held_pid, held_unit)  # (b) its proposal was rejected
+
+    other = post(client, report(CLEAR, minute=2)).get_json()  # a different incident, auto-approved
+    refused(held_pid, other["reservation"]["unit_id"])  # (c) assigned to a different incident
+
+    # nothing was recorded for any of the three requests; the only notification is the legitimate one
+    rows = [dict(r) for r in conn.execute("SELECT assignment_id FROM notifications")]
+    assert rows == [{"assignment_id": other["proposal"]["proposal_id"]}]
+    # and the assignments were left exactly as they were
+    assert conn.execute("SELECT final_status FROM agent_proposals WHERE id = ?", (held_pid,)).fetchone()[0] == "rejected"
+    assert conn.execute("SELECT status FROM units WHERE id = ?", (other["reservation"]["unit_id"],)).fetchone()[0] == "assigned"
+    conn.close()
+
+
+@pytest.mark.covers("FR-AUDIT-01-AC2")
+def test_FR_AUDIT_01_AC2_logged_input_data_cannot_be_changed_afterwards(world):
+    client, db = world
+    post(client, report(CLEAR))
+    original = query(db, "SELECT input_data FROM agent_proposals")[0]["input_data"]
+    assert original and CLEAR in original
+
+    conn = sqlite3.connect(db)
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute("UPDATE agent_proposals SET input_data = '{}'")
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute("UPDATE agent_proposals SET input_data = NULL")
+    conn.close()
+
+    assert query(db, "SELECT input_data FROM agent_proposals")[0]["input_data"] == original
+
+
+@pytest.mark.covers("FR-INFER-01-AC2")
+def test_FR_INFER_01_AC2_with_the_network_switched_off_a_report_is_still_classified_and_proposed(world, monkeypatch):
+    import socket
+
+    def no_network(*args, **kwargs):
+        raise OSError("the network is switched off for this test")
+
+    # every way of opening a connection fails, including to this machine itself
+    monkeypatch.setattr(socket.socket, "connect", no_network)
+    monkeypatch.setattr(socket, "create_connection", no_network)
+    monkeypatch.setattr(socket, "getaddrinfo", no_network)
+
+    client, _ = world
+    body = post(client, report(CLEAR)).get_json()
+
+    assert body["proposal"]["severity"] == "Serious" and body["proposal"]["recommended_unit_id"] in (1, 2)
+    assert body["decision"]["final_status"] == "approved"

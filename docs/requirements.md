@@ -11,7 +11,7 @@
 > *shape* of a good requirement — not to be copied, adapted, or reworded
 > into your own requirements. Delete the example boxes as you go.
 
-**Author:** Dranzer Rogue  **Version:** 1.4  **Date:** 2026-09-11 (created), last revised 2026-11-05 (CR-003)
+**Author:** Dranzer Rogue  **Version:** 1.4  **Date:** 2026-09-11 (created), last revised 2026-11-05 (CR-003, second round)
 **Status:** Baselined 2026-10-18 — see `docs/baseline.md`; changes from here go through `docs/change-requests/`
 
 
@@ -283,7 +283,7 @@ of detail that belongs in the technical specification (Week 6).
 **Rationale:** this is the other core differentiator besides the multi agent part, if it phones home its just another cloud tool
 **Acceptance criteria:**
 - Given the system is running, when a reviewer inspects the console logs (or the `.env` file, if the reviewer is trusted with it), then no calls to an external API appear.
-- `[ TODO — Ben has not yet written the failure-case criterion for this requirement (CR-003) ]`
+- Given the network is switched off, when a report is submitted, then the system still classifies it and proposes a unit as normal.
 *Criteria wording: from Ben's answers of 2026-11-05 (CR-003), put into Given/when/then form by the assistant; Ben to confirm the wording.*
 
 **Source:** proposal, core architecture decision
@@ -295,7 +295,7 @@ of detail that belongs in the technical specification (Week 6).
 **Rationale:** needs an actual number here I can test against during a demo, "fast" isnt a requirement
 **Acceptance criteria:**
 - Given a report, when the agent returns a classification or a proposal, then it returns within 5 seconds on the target hardware (RTX 3090 or 4090, 24 GB VRAM).
-- `[ TODO — Ben has not yet written the failure-case criterion for this requirement (CR-003) ]`
+- `[ TODO — left blank on purpose (CR-003): a failure-case criterion for the 5-second limit needs a real model on the target hardware (RTX 3090 or 4090), which is neither wired in nor available yet. Ben to write it when the model is connected (Milestone 12). ]`
 *Criteria wording: from Ben's answers of 2026-11-05 (CR-003), put into Given/when/then form by the assistant; Ben to confirm the wording.*
 
 **Source:** local ai server spec
@@ -332,7 +332,7 @@ of detail that belongs in the technical specification (Week 6).
 **Rationale:** an assignment nobody gets told about didnt actually happen
 **Acceptance criteria:**
 - Given an assignment has been finalized, when the system notifies the assigned responder, then the notification is sent within 10 seconds of the assignment being finalized.
-- `[ TODO — Ben has not yet written the failure-case criterion for this requirement (CR-003) ]`
+- Given a unit that is not assigned to an approved proposal (for example a unit that is only reserved for a proposal still waiting for a dispatcher, a unit whose proposal was rejected, or a unit assigned to a different incident), when the system is asked to notify that unit, then no notification is recorded for it, the system answers that the unit is not assigned, and the assignment it was asked about is left unchanged, so that a responder is never told to go somewhere nobody has approved.
 *Criteria wording: from Ben's answers of 2026-11-05 (CR-003), put into Given/when/then form by the assistant; Ben to confirm the wording.*
 
 **Source:** proposal, basic notification need
@@ -382,7 +382,7 @@ of detail that belongs in the technical specification (Week 6).
 **Rationale:** probably the single most important requirement for the defense, if I cant show why an agent did something the whole "trustworthy AI in emergencies" argument falls apart
 **Acceptance criteria:**
 - Given an agent generates a proposal, when the proposal is logged (at the moment it is generated, before it is approved or rejected), then the log entry includes the input data the agent used and its confidence score.
-- `[ TODO — Ben has not yet written the failure-case criterion for this requirement (CR-003) ]`
+- Given a proposal has been logged, when anyone tries to change the input data recorded with it afterwards, then the change is refused and the original input data stays exactly as it was logged.
 *Criteria wording: from Ben's answers of 2026-11-05 (CR-003), put into Given/when/then form by the assistant; Ben to confirm the wording.*
 
 **Source:** came out of thinking about what a reviewer would push back on, explainability
@@ -421,7 +421,7 @@ of detail that belongs in the technical specification (Week 6).
 **Rationale:** not walking into my defense relying on live data working right the first time, this is basically insurance for demo day
 **Acceptance criteria:**
 - Given the same scenario is run three times with no training between runs, when each run finishes, then the confidence scores are the same, or very similar.
-- `[ TODO — Ben has not yet written the failure-case criterion for this requirement (CR-003) ]`
+- *Hypothesis, to be confirmed when the Scenario Reader is built (Milestone 12):* Given a prewritten scenario whose reports carry their own reported times, and a speed setting, when the scenario is played, then each report is submitted after the gap it has in the scenario divided by the speed (for example reports 60 seconds apart arrive 6 seconds apart at 10 times speed, within a 10% tolerance), and playing the same scenario at the same speed gives the same order and spacing every time.
 *Criteria wording: from Ben's answers of 2026-11-05 (CR-003), put into Given/when/then form by the assistant; Ben to confirm the wording.*
 
 **Source:** personal experience, dont trust live demos
