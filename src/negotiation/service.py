@@ -18,7 +18,7 @@ import json
 from datetime import UTC, datetime
 
 from src.negotiation.tiebreak import Contender, compare, richness
-from src.unit_registry.service import release_for_proposal, reserve
+from src.unit_registry.service import RegistryError, release_for_proposal, reserve
 
 FAR_FUTURE = "9999-12-31T23:59:59+00:00"  # a report time that cannot be read never wins on "reported first"
 
@@ -149,7 +149,15 @@ def requeue_loser(conn, loser_proposal_id, contested_unit_id, winner_proposal_id
         ),
     ).lastrowid
     conn.commit()
-    reserve(conn, chosen, new_id, now=now)
+    try:
+        reserve(conn, chosen, new_id, now=now)
+    except RegistryError:  # the unit was taken between choosing it and reserving it: a person must place this incident
+        conn.execute(
+            "INSERT INTO human_escalations (report_id, proposal_id, reason, created_at) VALUES (?, ?, 'TIEBREAK_LOST_NO_UNIT', ?)",
+            (old["report_id"], new_id, stamp),
+        )
+        conn.commit()
+        return {"requeued": False, "new_proposal_id": new_id, "reason": "TIEBREAK_LOST_NO_UNIT"}
     return {"requeued": True, "new_proposal_id": new_id, "unit_id": chosen}
 
 

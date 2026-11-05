@@ -164,3 +164,17 @@ def test_a_notice_in_the_address_is_shown_as_text_never_as_markup(world):
     response = client.get("/dispatcher?notice=%3Cscript%3Ealert(1)%3C/script%3E&ok=0")
     body = response.get_data(as_text=True)
     assert "<script>alert(1)</script>" not in body and "&lt;script&gt;" in body
+
+
+def test_an_unknown_action_is_a_plain_404_not_a_redirect(world):
+    client, _conn = world
+    response = client.post("/dispatcher/proposals/1/explode")
+    assert response.status_code == 404 and "Location" not in response.headers
+
+
+@pytest.mark.parametrize("path", ["/proposals/1/decision", "/assignments/1/override", "/overrides/1/follow-up", "/connectivity"])
+@pytest.mark.parametrize("body", [[1, 2], 5, "text", None])
+def test_json_routes_survive_a_body_that_is_not_an_object(world, path, body):
+    """Review finding: a JSON list used to crash four routes with a 500."""
+    client, _conn = world
+    assert client.post(path, json=body).status_code < 500

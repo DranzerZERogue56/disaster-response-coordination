@@ -61,6 +61,12 @@ from src.web_ui.dispatcher import bp as dispatcher_bp
 TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
 
 
+def json_object():
+    """The request's JSON body if it is an object, otherwise an empty one (a list or a number is not a body)."""
+    body = request.get_json(silent=True)
+    return body if isinstance(body, dict) else {}
+
+
 class UnitLostBeforeApproval(Exception):
     """The reserved unit vanished between reserving and auto-approving, and
     one automatic retry did not fix it. Carries the reservation so the
@@ -281,7 +287,7 @@ def create_app():
     def connectivity_set():
         """Simulated network (the design's connectivity flag). Going back
         online drains the queue, oldest report first (FR-INTAKE-01)."""
-        body = request.get_json(silent=True) or {}
+        body = json_object()
         if not isinstance(body.get("connected"), bool):
             return (
                 jsonify(
@@ -318,7 +324,7 @@ def create_app():
     def proposals_decide(proposal_id):
         """Slice 4. The dispatcher is the seeded stand-in account; the caller
         cannot name who they are (real login replaces stub_dispatcher_id)."""
-        body = request.get_json(silent=True) or {}
+        body = json_object()
         conn = connect()
         try:
             result = decide_with_retry(
@@ -346,7 +352,7 @@ def create_app():
     @app.post("/assignments/<int:proposal_id>/override")
     def assignment_override(proposal_id):
         """Slice 7. Same stand-in dispatcher as slice 4; the caller cannot name one."""
-        body = request.get_json(silent=True) or {}
+        body = json_object()
         conn = connect()
         try:
             result = override_with_notice(
@@ -373,7 +379,7 @@ def create_app():
 
     @app.post("/overrides/<int:override_id>/follow-up")
     def override_follow_up(override_id):
-        body = request.get_json(silent=True) or {}
+        body = json_object()
         conn = connect()
         try:
             result = add_follow_up(conn, override_id, body.get("text"), stub_dispatcher_id(conn))

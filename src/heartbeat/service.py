@@ -136,5 +136,6 @@ def confirm_recovery(conn, node_id, dispatcher_id, now=None):
         (stamp, dispatcher_id, node_id),
     )
     conn.execute("UPDATE agent_nodes SET status = 'recovered', recovered_confirmed_by = ? WHERE id = ?", (dispatcher_id, node_id))
+    deliver_cached(conn, node_id, stamp)  # nothing cached may be left behind once the node is trusted again
     conn.commit()
     return {"node_id": node_id, "status": "recovered", "confirmed_by": dispatcher_id, "confirmed_at": stamp}

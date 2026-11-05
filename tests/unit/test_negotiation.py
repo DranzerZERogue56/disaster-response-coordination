@@ -185,3 +185,39 @@ def test_unknown_or_identical_proposals_are_refused(conn):
         resolve_conflict(conn, a, a, now=NOW)
     with pytest.raises(LookupError):
         resolve_conflict(conn, a, 9999, now=NOW)
+
+
+def test_a_requeued_proposal_whose_unit_is_taken_in_the_gap_escalates_instead_of_vanishing(tmp_path, monkeypatch):
+    """Review finding: if reserve() lost a race after the replacement proposal was written, nothing told a person."""
+    import glob
+    import sqlite3
+    from pathlib import Path
+
+    import src.negotiation.service as svc
+    from src.unit_registry.service import RegistryError
+
+    c = sqlite3.connect(tmp_path / "gap.sqlite")
+    c.row_factory = sqlite3.Row
+    for path in sorted(glob.glob("migrations/*.sql")):
+        c.executescript(Path(path).read_text(encoding="utf-8"))
+    c.executescript(Path("seed/iteration-1.sql").read_text(encoding="utf-8"))
+    rid = c.execute(
+        "INSERT INTO incident_reports (scenario_run_id, location, severity_raw, timestamp_reported, reporting_unit, status, received_at, severity) "
+        "VALUES (1, 'x', 'y', 't', 'u', 'classified', 't', 'Moderate')"
+    ).lastrowid
+    pid = c.execute(
+        "INSERT INTO agent_proposals (report_id, agent_node_id, confidence, recommended_unit_id, reasoning, alternatives, model_identifier, "
+        "model_version, generated_at) VALUES (?, 1, 50, 1, 'r', '[2]', 'fake', '1', 't')",
+        (rid,),
+    ).lastrowid
+    c.commit()
+
+    def lost_race(*args, **kwargs):
+        raise RegistryError("UNIT_ALREADY_RESERVED", "taken first")
+
+    monkeypatch.setattr(svc, "reserve", lost_race)
+    result = svc.requeue_loser(c, pid, 1, pid)
+
+    assert result["requeued"] is False and result["reason"] == "TIEBREAK_LOST_NO_UNIT"
+    assert c.execute("SELECT COUNT(*) FROM human_escalations WHERE reason = 'TIEBREAK_LOST_NO_UNIT'").fetchone()[0] == 1
+    c.close()

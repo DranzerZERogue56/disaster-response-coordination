@@ -10,7 +10,7 @@ Severity is always a word plus a symbol, never colour alone (NFR-ACC-02). The di
 stand-in account, as for the JSON routes: real sign-in (FR-AUTH-01) is not built, so these forms carry no
 login and no CSRF token; both arrive with sign-in.
 """
-from flask import Blueprint, redirect, render_template, request, url_for
+from flask import Blueprint, abort, redirect, render_template, request, url_for
 
 from src.db import connect
 from src.decide_proposal.service import DecideError, list_pending, stub_dispatcher_id
@@ -104,7 +104,7 @@ def console():
 def decide(proposal_id, action):
     decision = {"approve": "approve", "modify": "modify", "reject": "reject"}.get(action)
     if decision is None:
-        return _back(f"Unknown action {action!r}.", False), 404
+        abort(404)
     conn = connect()
     try:
         result = decide_with_retry(

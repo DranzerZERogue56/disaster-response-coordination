@@ -12,7 +12,9 @@
 --
 -- unit_events is the history of status changes. agent_inboxes is one row per (event, receiving node):
 -- delivered at once to a node that is alive or recovered, cached (delivered_at NULL) for a node that is
--- not_responding until the node responds again (src/heartbeat/service.py delivers them in event order). The
+-- not_responding and silent (its latest alert has not been marked resumed; a node that has answered again can
+-- receive updates even before a human confirms it, so only silence caches). Cached updates are delivered by
+-- src/heartbeat/service.py in event order. The
 -- unit's own agent node is the source of its changes, so it gets no inbox row for them.
 --
 -- `at` is the reservation timestamp when the unit has one (the moment the proposal reserved it), otherwise the
@@ -59,8 +61,8 @@ BEGIN
     INSERT INTO agent_inboxes (event_id, node_id, delivered_at, cached)
     SELECT last_insert_rowid(),
            n.id,
-           CASE WHEN n.status = 'not_responding' THEN NULL ELSE strftime('%Y-%m-%dT%H:%M:%f+00:00', 'now') END,
-           CASE WHEN n.status = 'not_responding' THEN 1 ELSE 0 END
+           CASE WHEN (n.status = 'not_responding' AND (SELECT a.recovered_at FROM node_alerts a WHERE a.node_id = n.id ORDER BY a.id DESC LIMIT 1) IS NULL) THEN NULL ELSE strftime('%Y-%m-%dT%H:%M:%f+00:00', 'now') END,
+           CASE WHEN (n.status = 'not_responding' AND (SELECT a.recovered_at FROM node_alerts a WHERE a.node_id = n.id ORDER BY a.id DESC LIMIT 1) IS NULL) THEN 1 ELSE 0 END
     FROM agent_nodes n
     WHERE n.id != NEW.agent_node_id AND n.scenario_run_id = NEW.scenario_run_id;
 
@@ -72,10 +74,10 @@ BEGIN
            'Status update for unit ' || NEW.id || ' (' || NEW.status || ') could not be delivered to node ' || down.id || ' and was cached.',
            strftime('%Y-%m-%dT%H:%M:%f+00:00', 'now')
     FROM agent_nodes down, agent_nodes up
-    WHERE down.status = 'not_responding'
+    WHERE (down.status = 'not_responding' AND (SELECT a.recovered_at FROM node_alerts a WHERE a.node_id = down.id ORDER BY a.id DESC LIMIT 1) IS NULL)
       AND down.id != NEW.agent_node_id
       AND down.scenario_run_id = NEW.scenario_run_id
-      AND up.status != 'not_responding'
+      AND NOT (up.status = 'not_responding' AND (SELECT a.recovered_at FROM node_alerts a WHERE a.node_id = up.id ORDER BY a.id DESC LIMIT 1) IS NULL)
       AND up.id != down.id
       AND up.id != NEW.agent_node_id
       AND up.scenario_run_id = NEW.scenario_run_id

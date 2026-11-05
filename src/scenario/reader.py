@@ -80,7 +80,8 @@ def _check_speed(speed):
 
 def play_scenario(path, speed, submit, conn=None, sleep=time.sleep, clock=time.monotonic):
     """Play a scenario. `submit(payload)` is called once per report, in order. Returns
-    {run_id, reports_queued, started_at, gaps} where gaps are the planned seconds between one report and the
+    {run_id, reports_queued, started_at, gaps}. run_id is the scenario_runs row recording this play (when it started and
+    which file); the app files the reports themselves under its current run, not under this one. gaps are the planned seconds between one report and the
     next (scenario gap divided by speed). `conn` defaults to the app database."""
     _check_speed(speed)
     reports = load_scenario(path)

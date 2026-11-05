@@ -179,3 +179,27 @@ def test_the_purge_deletes_old_status_events_and_their_inboxes(conn):
 
     assert result["purged"]["unit_events"] >= 1 and result["purged"]["agent_inboxes"] >= 2
     assert events(conn) == [] and inbox(conn, 2) == []
+
+
+def test_a_node_that_has_resumed_receives_updates_at_once_and_no_false_warning_is_raised(conn):
+    """Review finding: resumed-but-unconfirmed is not 'cannot receive'."""
+    take_node_down(conn, 3)
+    heartbeat(conn, 3, now=T0 + timedelta(seconds=50))  # it answers again; a human has not confirmed yet
+    reserve(conn, 1, proposal(conn), now=T0 + timedelta(seconds=60))
+    row = inbox(conn, 3)[-1]
+    assert row["cached"] == 0 and row["delivered_at"] is not None
+    assert agent_view(conn, 3)[1] == "reserved"
+    assert conn.execute("SELECT COUNT(*) FROM node_notices WHERE message LIKE 'Status update%'").fetchone()[0] == 0
+
+
+def test_confirming_recovery_leaves_nothing_cached_behind(conn):
+    from src.heartbeat.service import confirm_recovery
+
+    take_node_down(conn, 3)
+    pid = proposal(conn)
+    reserve(conn, 1, pid, now=T0 + timedelta(seconds=40))  # cached while node 3 is silent
+    conn.execute("UPDATE node_alerts SET recovered_at = ? WHERE node_id = 3", (T0.isoformat(),))  # resumed without a heartbeat path
+    conn.commit()
+    confirm_recovery(conn, 3, 1, now=T0 + timedelta(seconds=70))
+    assert [r for r in inbox(conn, 3) if r["delivered_at"] is None] == []
+    assert agent_view(conn, 3)[1] == "reserved"

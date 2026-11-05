@@ -56,7 +56,7 @@ def main(argv=None):
     except OSError as exc:
         print(f"stopped after {len(sent)} report(s): {exc}", file=sys.stderr)
         return 1
-    print(f"scenario run {result['run_id']} finished: {result['reports_queued']} reports at speed {args.speed}")
+    print(f"play recorded as scenario_runs row {result['run_id']}; finished: {result['reports_queued']} reports at speed {args.speed}")
     return 0
 
 
