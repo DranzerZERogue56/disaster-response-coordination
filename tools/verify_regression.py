@@ -49,6 +49,9 @@ DEFECTS = [
     ("DEF-023", "6c470be", "tests/integration/test_dispatcher_ui_http.py::test_json_routes_survive_a_body_that_is_not_an_object[body0-/proposals/1/decision]"),
     ("DEF-024", "6c470be", "tests/unit/test_negotiation.py::test_a_requeued_proposal_whose_unit_is_taken_in_the_gap_escalates_instead_of_vanishing"),
     ("DEF-025", "6c470be", "tests/integration/test_dispatcher_ui_http.py::test_an_unknown_action_is_a_plain_404_not_a_redirect"),
+    ("DEF-026", "eb522c9", "tests/unit/test_def026_027.py::test_a_proposal_does_not_start_from_a_unit_the_proposing_agents_view_shows_as_taken"),
+    ("DEF-027", "eb522c9", "tests/unit/test_def026_027.py::test_two_live_proposals_on_one_incident_are_settled_by_the_same_tiebreak_and_logged"),
+    ("DEF-028", "eb522c9", "tests/integration/test_dispatcher_ui_http.py::test_a_banner_forged_in_the_address_is_not_shown"),
 ]
 
 

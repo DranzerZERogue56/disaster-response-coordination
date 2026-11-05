@@ -38,9 +38,9 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 | DEF-023 | A JSON list or number body crashes four more routes with HTTP 500 (decision, override, follow-up, connectivity) | NFR-REL-01 | S3 | P2 | independent review (M11) | Fixed | `6c470be` | `test_json_routes_survive_a_body_that_is_not_an_object` |
 | DEF-024 | A tiebreak loser's replacement proposal that loses its unit in a race is left with no unit and no escalation | FR-COORD-01-AC2 | S3 | P2 | independent review (M11) | Fixed | `6c470be` | `test_a_requeued_proposal_whose_unit_is_taken_in_the_gap_escalates_instead_of_vanishing` |
 | DEF-025 | An unknown console action answers a redirect with status 404, so the explanation is never shown | NFR-REL-01 | S4 | P3 | independent review (M11) | Fixed | `6c470be` | `test_an_unknown_action_is_a_plain_404_not_a_redirect` |
-| DEF-026 | Agents' proposals do not consult the broadcast view: a reserved unit can still be proposed when none is free | FR-RES-03-AC3 | S3 | P3 | independent review (M11) | Open | none | none (needs a design decision) |
-| DEF-027 | The tiebreak is applied only to same-unit conflicts; FR-COORD-03-AC1 ("other kinds of conflict") is shown by a test of the function alone | FR-COORD-03-AC1 | S3 | P3 | independent review (M11) | Open | none | `test_a_conflict_that_is_not_a_unit_claim_uses_the_same_order` (function level) |
-| DEF-028 | The console's success or error banner is read from the address, so a link can display a false "approved" message | NFR-ACC-01 (console) | S4 | P4 | independent review (M11) | Open | none | none (needs sign-in; see DEF-018) |
+| DEF-026 | Agents' proposals do not consult the broadcast view: a reserved unit can still be proposed when none is free | FR-RES-03-AC3 | S3 | P3 | independent review (M11) | Fixed | `eb522c9` | `test_a_proposal_does_not_start_from_a_unit_the_proposing_agents_view_shows_as_taken` |
+| DEF-027 | The tiebreak is applied only to same-unit conflicts; FR-COORD-03-AC1 ("other kinds of conflict") is shown by a test of the function alone | FR-COORD-03-AC1 | S3 | P3 | independent review (M11) | Fixed | `eb522c9` | `test_two_live_proposals_on_one_incident_are_settled_by_the_same_tiebreak_and_logged` |
+| DEF-028 | The console's success or error banner is read from the address, so a link can display a false "approved" message | NFR-ACC-01 (console) | S4 | P4 | independent review (M11) | Fixed | `eb522c9` | `test_a_banner_forged_in_the_address_is_not_shown` |
 
 ---
 
@@ -172,7 +172,7 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 - **Expected vs actual:** Expected: other agents receive status and reservation updates. Actual: there were no separate agents; one process and one database were the single source of truth.
 - **Evidence:** the three criteria showed as gaps in `docs/traceability.csv`; no test was possible without agent nodes (`agent_nodes` and heartbeats arrived in Tasks 8 and 14).
 - **Severity S3:** the safety effect (no double-booking) was met by the database and the property test P3; the broadcast was not; **Priority P3:** scheduled with the negotiation work.
-- **Traceability and status:** FR-RES-03-AC1, AC2, AC3; Fixed in `b0fd744` (migration 0008: a trigger publishes every status change to every other agent node, caches it for a silent node and warns the others; CR-010). A limit remains: see DEF-026. Owner: Ben.
+- **Traceability and status:** FR-RES-03-AC1, AC2, AC3; Fixed in `b0fd744` (migration 0008: a trigger publishes every status change to every other agent node, caches it for a silent node and warns the others; CR-010). The limit found by review (proposals ignoring the view) was closed in DEF-026. Owner: Ben.
 
 ### DEF-017 — "Notify" only records a row; the software cannot notify a responder
 - **Environment:** commit `4a0afc2`.
@@ -252,7 +252,7 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 - **Expected vs actual:** Expected (FR-RES-03-AC3): "their decisions exclude that unit". Actual: `classify_and_propose` reads `units` directly and, when none is free, proposes a reserved one (FR-AGENT-02-AC2 wants a proposal anyway); the later tiebreak settles it. `choices()` exists and is tested but nothing in the proposal step calls it.
 - **Evidence:** `grep` for callers of `choices` and `agent_view`; the broadcast tests exercise the functions only.
 - **Severity S3:** no double booking happens (the registry refuses it); the criterion is met by the view, not by the decision path; **Priority P3:** wiring it in changes how FR-AGENT-02-AC2 behaves and needs a design decision.
-- **Traceability and status:** FR-RES-03-AC3; Open; workaround: the registry refuses to reserve a unit that is taken, and the tiebreak settles any clash. The matrix shows it verified at function level; this entry is the caveat. Owner: Ben.
+- **Traceability and status:** FR-RES-03-AC3; Fixed in `eb522c9`: the proposal step ranks the proposing agent's own view (the agent whose role matches the unit type) after the registry's state, so a unit the agent believes is taken is not the first offer; with healthy views nothing changes. Owner: Ben.
 
 ### DEF-027 — The tiebreak is only reached through same-unit conflicts
 - **Environment:** commit `b0fd744`; found by the independent whole-branch review.
@@ -260,7 +260,7 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 - **Expected vs actual:** Expected (FR-COORD-03-AC1): the same tiebreak resolves conflicts "other than claiming the same unit". Actual: the rule is one reusable function and its test shows that, but the only conflict the system detects is two proposals claiming one unit.
 - **Evidence:** `tests/unit/test_negotiation.py` (function level); no other caller.
 - **Severity S3:** the rule is correct and shared; no other conflict kind is produced yet; **Priority P3:** other conflict kinds need requirements first.
-- **Traceability and status:** FR-COORD-03-AC1; Open; workaround: none is needed today because no other conflict kind is produced; a caveat on a "verified" row. Owner: Ben.
+- **Traceability and status:** FR-COORD-03-AC1; Fixed in `eb522c9`: `settle_report_conflict` settles two live proposals on one incident with the same tiebreak and logs it (a loser already approved goes to a person), and runs after every proposal is written. Owner: Ben.
 
 ### DEF-028 — The console banner can be spoofed from the address
 - **Environment:** commit `b0fd744`; found by the independent whole-branch review.
@@ -268,4 +268,4 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 - **Expected vs actual:** Expected: a banner only for something that happened. Actual: the page shows the green message. Escaping is correct, so there is no script injection.
 - **Evidence:** review ran it.
 - **Severity S4:** misleading text, no state change, local-only server; **Priority P4:** a real fix is a signed flash message, which needs sign-in (DEF-018).
-- **Traceability and status:** console; Open; workaround: bind to localhost only (as for DEF-018) and read the Units and Proposals tables, not the banner, for what happened. Owner: Ben.
+- **Traceability and status:** console; Fixed in `eb522c9`: the banner is a signed, two-minute token made by the server; an address carrying anything else shows nothing. Owner: Ben.
