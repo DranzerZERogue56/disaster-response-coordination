@@ -13,6 +13,7 @@ Baseline declared 2026-10-18 (`docs/baseline.md`). No change requests have been 
 | CR-007 | 2026-11-05 | Incident versions and an append-only reconciliation log (migration 0007) | FR-COORD-02 | +0.5 | approved |
 | CR-008 | 2026-11-05 | Node-failure alerts and notices (migration 0005): flagged after 30 s silent, recovery only after a human confirms | FR-DEGRADE-01, NFR-REL-01 | +0.5 | approved |
 | CR-009 | 2026-11-05 | Purge Job: units are reset not deleted, nodes untouched; success shape lists purged and reset tables (NFR-PRIV-01) | NFR-PRIV-01 | +0.25 | approved |
+| CR-010 | 2026-11-05 | Unit status changes published to every other agent: events, inboxes with a cache for down nodes, warning notices (migration 0008) | FR-RES-03 | +0.75 | approved |
 
 ### The threshold rule — when a change needs a CR
 

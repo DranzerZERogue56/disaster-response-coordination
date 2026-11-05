@@ -2,7 +2,7 @@
 
 Incident data is hard-deleted 24 hours after receipt. "Hard" matters: NFR-PRIV-01's own test asks for
 zero rows when it queries every data store for the seeded report ids, which a soft-delete flag would not
-satisfy. Deleted, in foreign-key order: reconciliation log, incident versions, escalations, tiebreak log, follow-ups, overrides, notifications, proposals, reports.
+satisfy. Deleted, in foreign-key order: unit-status events and their inboxes, reconciliation log, incident versions, escalations, tiebreak log, follow-ups, overrides, notifications, proposals, reports.
 
 Retention clocks: `received_at` (reports), `generated_at` (proposals), `overridden_at` (overrides),
 `added_at` (follow-ups), `sent_at` (notifications). A row whose parent is being purged goes with it even
@@ -34,6 +34,11 @@ EXPIRED_OVERRIDES = (
 )
 
 
+EXPIRED_EVENTS = (
+    "SELECT id FROM unit_events WHERE recorded_at <= :cutoff OR proposal_id IN (" + EXPIRED_PROPOSALS + ")"
+)
+
+
 class PurgeFailed(Exception):
     """The purge could not finish; nothing was changed."""
 
@@ -52,6 +57,8 @@ def purge(conn, now=None, retention_hours=RETENTION_HOURS):
         ).rowcount
         # children before parents, each deletion using subqueries that are still intact
         steps = [
+            ("agent_inboxes", "event_id IN (" + EXPIRED_EVENTS + ")"),
+            ("unit_events", "id IN (" + EXPIRED_EVENTS + ")"),
             (
                 "reconciliation_log",
                 "decided_at <= :cutoff OR report_id IN ("
@@ -99,6 +106,8 @@ def purge(conn, now=None, retention_hours=RETENTION_HOURS):
             "human_escalations",
             "reconciliation_log",
             "incident_versions",
+            "agent_inboxes",
+            "unit_events",
         )
     }
     return {"purged": ordered, "reset": {"units": reset}, "run_at": now.isoformat()}

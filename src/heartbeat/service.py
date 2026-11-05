@@ -13,6 +13,8 @@ silent again before anyone confirms, that is a new episode with a new alert.
 """
 from datetime import UTC, datetime, timedelta
 
+from src.unit_registry.broadcast import deliver_cached
+
 INTERVAL_SECONDS = 10
 MISSES = 3
 
@@ -53,6 +55,7 @@ def heartbeat(conn, node_id, now=None):
     conn.execute("UPDATE agent_nodes SET last_heartbeat_at = ? WHERE id = ?", (stamp, node_id))
     resumed = False
     if node["status"] == "not_responding":
+        deliver_cached(conn, node_id, stamp)  # the updates it missed while down (FR-RES-03-AC2)
         alert = _open_alert(conn, node_id)
         if alert is not None and alert["recovered_at"] is None:
             conn.execute("UPDATE node_alerts SET recovered_at = ? WHERE id = ?", (stamp, alert["id"]))
