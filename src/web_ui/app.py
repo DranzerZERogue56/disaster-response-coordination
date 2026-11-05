@@ -197,6 +197,8 @@ def start_node_watcher(interval_seconds):
 
 def create_app():
     app = Flask(__name__, template_folder=str(TEMPLATE_DIR))
+    # signs the console banner messages; a new random key per start is fine (a banner lives for two minutes)
+    app.config["BANNER_SIGNER"] = app.config.get("BANNER_SIGNER") or os.environ.get("BANNER_SIGNER") or os.urandom(32).hex()
 
     # script/start sets SWEEP_SECONDS; tests and imports leave it unset, so no
     # background thread starts unless the app is really being run.

@@ -10,7 +10,16 @@ Severity is always a word plus a symbol, never colour alone (NFR-ACC-02). The di
 stand-in account, as for the JSON routes: real sign-in (FR-AUTH-01) is not built, so these forms carry no
 login and no CSRF token; both arrive with sign-in.
 """
-from flask import Blueprint, abort, redirect, render_template, request, url_for
+from flask import (
+    Blueprint,
+    abort,
+    current_app,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
+from itsdangerous import BadSignature, URLSafeTimedSerializer
 
 from src.db import connect
 from src.decide_proposal.service import DecideError, list_pending, stub_dispatcher_id
@@ -31,6 +40,7 @@ LEVELS = (
 )
 SYMBOLS = dict(LEVELS)
 MAX_NOTICE = 300
+NOTICE_MAX_AGE = 120  # seconds a banner can be shown for after the action
 HINTS = {
     "UNIT_ALREADY_RESERVED": "Choose a different unit.",
     "UNIT_UNAVAILABLE": "Choose a different unit.",
@@ -59,8 +69,23 @@ def _refused(what, exc):
     return _back(f"{what} was not changed: {exc} ({code}). {HINTS.get(code, '')}".strip(), False)
 
 
+def _signer():
+    return URLSafeTimedSerializer(current_app.config["BANNER_SIGNER"], salt="dispatcher-banner")
+
+
 def _back(message, ok):
-    return redirect(url_for("dispatcher.console", notice=message[:MAX_NOTICE], ok="1" if ok else "0"), code=303)
+    """Post/redirect/get with the message carried as a signed token, so only text this server wrote can be shown."""
+    token = _signer().dumps({"m": message[:MAX_NOTICE], "ok": bool(ok)})
+    return redirect(url_for("dispatcher.console", n=token), code=303)
+
+
+def _banner():
+    token = request.args.get("n", "")
+    try:
+        data = _signer().loads(token, max_age=NOTICE_MAX_AGE)
+        return str(data["m"])[:MAX_NOTICE], bool(data["ok"])
+    except (BadSignature, KeyError, TypeError):
+        return "", False
 
 
 @bp.get("/dispatcher")
@@ -87,6 +112,7 @@ def console():
         ]
     finally:
         conn.close()
+    notice, ok = _banner()
     return render_template(
         "dispatcher.html",
         pending=pending,
@@ -95,8 +121,8 @@ def console():
         alerts=alerts,
         escalations=escalations,
         levels=[{"label": label, "symbol": symbol} for label, symbol in LEVELS],
-        notice=request.args.get("notice", "")[:MAX_NOTICE],
-        ok=request.args.get("ok") == "1",
+        notice=notice,
+        ok=ok,
     )
 
 

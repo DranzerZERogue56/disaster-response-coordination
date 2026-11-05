@@ -13,6 +13,8 @@ from datetime import UTC, datetime
 
 from src.classify_propose.chain import ChainExhausted
 from src.classify_propose.model import SEVERITIES, UNIT_TYPES
+from src.negotiation.service import settle_report_conflict
+from src.unit_registry.broadcast import agent_view
 
 # The report fields the agent is given; recorded with the proposal (FR-AUDIT-01, CR-004).
 INPUT_FIELDS = ("location", "severity_raw", "description", "timestamp_reported", "reporting_unit")
@@ -84,7 +86,7 @@ def classify_and_propose(conn, report_id, model):
     # rest rather than nothing (FR-AGENT-02 acceptance criterion 2).
     units = conn.execute(
         """
-        SELECT id, agent_node_id FROM units
+        SELECT id, agent_node_id, status FROM units
         WHERE scenario_run_id = ? AND unit_type = ? AND status != 'out_of_service'
         ORDER BY (status = 'available') DESC, id
         """,
@@ -94,6 +96,17 @@ def classify_and_propose(conn, report_id, model):
         raise ClassifyError(
             "NO_UNIT_OF_TYPE", f"No {output['unit_type']} unit exists for this scenario run"
         )
+
+    # The proposing agent is the one whose role matches the unit type. Its decisions start from the units *it*
+    # believes are free (FR-RES-03-AC3: a reservation is sent to the other agents so their decisions exclude that
+    # unit); the registry's own state still ranks first, so a stale view can only demote a unit, never promote one.
+    proposer = conn.execute(
+        "SELECT id FROM agent_nodes WHERE scenario_run_id = ? AND role_type = ? ORDER BY id LIMIT 1",
+        (report["scenario_run_id"], output["unit_type"]),
+    ).fetchone()
+    if proposer is not None:
+        believed_free = {unit_id for unit_id, status in agent_view(conn, proposer["id"]).items() if status == "available"}
+        units = sorted(units, key=lambda u: (u["status"] != "available", u["id"] not in believed_free))
 
     best, others = units[0], units[1:]
     now = datetime.now(UTC).isoformat()
@@ -125,6 +138,7 @@ def classify_and_propose(conn, report_id, model):
         (output["severity"], report_id),
     )
     conn.commit()
+    settle_report_conflict(conn, report_id)  # two live proposals on one incident are settled by the tiebreak
     return {
         "proposal_id": cur.lastrowid,
         "severity": output["severity"],

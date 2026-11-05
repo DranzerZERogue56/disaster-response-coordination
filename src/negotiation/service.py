@@ -176,3 +176,44 @@ def contest(conn, challenger_proposal_id, holder_proposal_id, unit_id, now=None)
     release_for_proposal(conn, holder_proposal_id)  # commits; the unit is available again
     requeue_loser(conn, holder_proposal_id, unit_id, challenger_proposal_id, now)
     return True
+
+
+def settle_report_conflict(conn, report_id, now=None):
+    """Two live proposals on one incident (not a clash over a unit): settle them with the same tiebreak and
+    log it (FR-COORD-03-AC1). A live proposal is undecided, approved or modified. The loser, if still undecided,
+    is rejected (decided_by 'tiebreak') and its hold freed; a loser that is already approved cannot be
+    un-approved while a unit is assigned to it, so a person is asked (one open escalation, DUPLICATE_PROPOSALS).
+    Returns [{winner, loser, reason}] for each pair settled; [] when there is nothing to settle."""
+    live = [
+        r["id"]
+        for r in conn.execute(
+            "SELECT id FROM agent_proposals WHERE report_id = ? AND (final_status IS NULL OR final_status IN ('approved', 'modified')) "
+            "ORDER BY id",
+            (report_id,),
+        )
+    ]
+    outcomes = []
+    if len(live) < 2:
+        return outcomes
+    stamp = (now or datetime.now(UTC)).isoformat()
+    champion = live[0]
+    for challenger in live[1:]:
+        result = resolve_conflict(conn, champion, challenger, now)
+        outcomes.append({"winner": result["winner"], "loser": result["loser"], "reason": result["reason"]})
+        status = conn.execute("SELECT final_status FROM agent_proposals WHERE id = ?", (result["loser"],)).fetchone()["final_status"]
+        if status is None:
+            conn.execute(
+                "UPDATE agent_proposals SET final_status = 'rejected', decided_by = 'tiebreak', decided_at = ? WHERE id = ?",
+                (stamp, result["loser"]),
+            )
+            release_for_proposal(conn, result["loser"])  # commits
+        elif not conn.execute(
+            "SELECT 1 FROM human_escalations WHERE report_id = ? AND reason = 'DUPLICATE_PROPOSALS' AND resolved_at IS NULL", (report_id,)
+        ).fetchone():
+            conn.execute(
+                "INSERT INTO human_escalations (report_id, proposal_id, reason, created_at) VALUES (?, ?, 'DUPLICATE_PROPOSALS', ?)",
+                (report_id, result["loser"], stamp),
+            )
+            conn.commit()
+        champion = result["winner"]
+    return outcomes

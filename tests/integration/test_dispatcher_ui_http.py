@@ -159,11 +159,36 @@ def test_an_empty_system_renders_without_error(world):
     assert "No proposals are waiting" in page(client).text()
 
 
-def test_a_notice_in_the_address_is_shown_as_text_never_as_markup(world):
+def test_a_banner_forged_in_the_address_is_not_shown(world):
+    """DEF-028: only a message this server itself produced (signed, and fresh) is displayed."""
     client, _conn = world
-    response = client.get("/dispatcher?notice=%3Cscript%3Ealert(1)%3C/script%3E&ok=0")
-    body = response.get_data(as_text=True)
-    assert "<script>alert(1)</script>" not in body and "&lt;script&gt;" in body
+    for url in (
+        "/dispatcher?notice=Proposal+7+approved&ok=1",
+        "/dispatcher?n=not-a-real-token",
+        "/dispatcher?n=eyJtIjoiUHJvcG9zYWwgNyBhcHByb3ZlZCIsIm9rIjp0cnVlfQ.bad.signature",
+    ):
+        text = parse(client.get(url).get_data(as_text=True)).text()
+        assert "Proposal 7 approved" not in text
+        assert not parse(client.get(url).get_data(as_text=True)).find_all("div", role="status")
+
+
+def test_a_real_banner_is_signed_expires_and_is_shown_as_text_only(world):
+    client, _conn = world
+    pid = report(client, "1 Elm St")["proposal"]["proposal_id"]
+    response = client.post(f"/dispatcher/proposals/{pid}/approve")
+    assert response.status_code == 303 and "n=" in response.headers["Location"] and "approved" not in response.headers["Location"]
+    shown = client.get(response.headers["Location"])
+    assert "approved" in notice_text(shown)
+    # a banner token reused after it has expired is ignored
+    import src.web_ui.dispatcher as d
+
+    token = response.headers["Location"].split("n=")[1]
+    original = d.NOTICE_MAX_AGE
+    d.NOTICE_MAX_AGE = -1
+    try:
+        assert notice_text(client.get("/dispatcher?n=" + token)) == ""
+    finally:
+        d.NOTICE_MAX_AGE = original
 
 
 def test_an_unknown_action_is_a_plain_404_not_a_redirect(world):
