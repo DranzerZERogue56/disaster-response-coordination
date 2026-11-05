@@ -2,7 +2,7 @@
 
 Incident data is hard-deleted 24 hours after receipt. "Hard" matters: NFR-PRIV-01's own test asks for
 zero rows when it queries every data store for the seeded report ids, which a soft-delete flag would not
-satisfy. Deleted, in foreign-key order: follow-ups, overrides, notifications, proposals, reports.
+satisfy. Deleted, in foreign-key order: escalations, tiebreak log, follow-ups, overrides, notifications, proposals, reports.
 
 Retention clocks: `received_at` (reports), `generated_at` (proposals), `overridden_at` (overrides),
 `added_at` (follow-ups), `sent_at` (notifications). A row whose parent is being purged goes with it even
@@ -49,6 +49,18 @@ def purge(conn, now=None, retention_hours=RETENTION_HOURS):
         ).rowcount
         # children before parents, each deletion using subqueries that are still intact
         steps = [
+            (
+                "human_escalations",
+                "created_at <= :cutoff OR report_id IN (" + EXPIRED_REPORTS + ") OR proposal_id IN (" + EXPIRED_PROPOSALS + ")",
+            ),
+            (
+                "tiebreak_log",
+                "resolved_at <= :cutoff OR winner_proposal_id IN ("
+                + EXPIRED_PROPOSALS
+                + ") OR loser_proposal_id IN ("
+                + EXPIRED_PROPOSALS
+                + ")",
+            ),
             ("override_follow_ups", "added_at <= :cutoff OR override_id IN (" + EXPIRED_OVERRIDES + ")"),
             ("dispatcher_overrides", "id IN (" + EXPIRED_OVERRIDES + ")"),
             ("notifications", "sent_at <= :cutoff OR assignment_id IN (" + EXPIRED_PROPOSALS + ")"),
@@ -61,5 +73,16 @@ def purge(conn, now=None, retention_hours=RETENTION_HOURS):
     except sqlite3.Error as exc:
         conn.rollback()
         raise PurgeFailed(f"purge failed and was rolled back: {exc}") from exc
-    ordered = {t: purged[t] for t in ("incident_reports", "agent_proposals", "dispatcher_overrides", "override_follow_ups", "notifications")}
+    ordered = {
+        t: purged[t]
+        for t in (
+            "incident_reports",
+            "agent_proposals",
+            "dispatcher_overrides",
+            "override_follow_ups",
+            "notifications",
+            "tiebreak_log",
+            "human_escalations",
+        )
+    }
     return {"purged": ordered, "reset": {"units": reset}, "run_at": now.isoformat()}

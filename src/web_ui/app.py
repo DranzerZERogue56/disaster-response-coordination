@@ -38,6 +38,7 @@ from src.intake_gateway.service import (
     list_reports,
     submit_report,
 )
+from src.negotiation.service import contest
 from src.notify_responder.service import (
     NotifyError,
     notify_for_decision,
@@ -83,13 +84,13 @@ def reserve_and_decide(conn, proposal_id):
     gap between the two, reserve again once and retry (see decide_auto's
     docstring for how a unit can be lost). Returns
     (reservation, decision, retried_after_loss)."""
-    reservation = reserve_for_proposal(conn, proposal_id)
+    reservation = reserve_for_proposal(conn, proposal_id, on_conflict=contest)
     try:
         return reservation, decide_auto(conn, proposal_id), False
     except RegistryError as first:
         if first.code != "UNIT_NO_LONGER_AVAILABLE":
             raise
-    reservation = reserve_for_proposal(conn, proposal_id)
+    reservation = reserve_for_proposal(conn, proposal_id, on_conflict=contest)
     try:
         return reservation, decide_auto(conn, proposal_id), True
     except RegistryError as second:
@@ -312,7 +313,7 @@ def create_app():
                 # FR-RES-01-AC2: the held unit was lost before the dispatcher decided. Give the
                 # incident a second path to a responder (the proposal's alternatives) and approve
                 # that; only if no unit can be had does the dispatcher get the error.
-                reserve_for_proposal(conn, proposal_id)
+                reserve_for_proposal(conn, proposal_id, on_conflict=contest)
                 result = decide_human(conn, proposal_id, "approve", dispatcher)
                 result["retried_after_unit_loss"] = True
             result["notification"] = try_notify(conn, result)

@@ -214,10 +214,26 @@ def reassign(conn, proposal_id, new_unit_id, now=None, commit=True):
     return {"unit_id": new_unit_id, "changed": True, "released_unit_id": current["id"]}
 
 
-def reserve_for_proposal(conn, proposal_id, now=None):
-    """Reserve the proposal's recommended unit; if it is taken, try each
-    alternative in order. When an alternative wins, the proposal is updated
-    to point at it. If every unit is taken, raise UNIT_ALREADY_RESERVED."""
+def _undecided_holder(conn, unit_id):
+    """The proposal holding this unit as a reservation (not an assignment) that nobody has decided yet,
+    or None. Only such a reservation can be contested by a tiebreak; an assigned unit never can."""
+    row = conn.execute(
+        "SELECT u.reserved_by_proposal_id FROM units u JOIN agent_proposals p ON p.id = u.reserved_by_proposal_id "
+        "WHERE u.id = ? AND u.status = 'reserved' AND p.final_status IS NULL",
+        (unit_id,),
+    ).fetchone()
+    return row["reserved_by_proposal_id"] if row else None
+
+
+def reserve_for_proposal(conn, proposal_id, now=None, on_conflict=None):
+    """Reserve the proposal's recommended unit; if it is taken, try each alternative in order. When an
+    alternative wins, the proposal is updated to point at it. If every unit is taken, raise
+    UNIT_ALREADY_RESERVED.
+
+    `on_conflict(conn, challenger_id, holder_id, unit_id, now) -> bool` is the tiebreak (FR-COORD-01),
+    passed in by the caller so this module never imports it. It is asked only when a unit is held by a
+    reservation nobody has approved yet; if it says the challenger won, the unit is reserved for the
+    challenger. An assigned unit is never offered to it."""
     release_expired(conn, now)
     proposal = conn.execute(
         "SELECT recommended_unit_id, alternatives FROM agent_proposals WHERE id = ?",
@@ -229,11 +245,20 @@ def reserve_for_proposal(conn, proposal_id, now=None):
     candidates = [proposal["recommended_unit_id"], *json.loads(proposal["alternatives"])]
     failed = []
     for unit_id in candidates:
+        result = None
         try:
             result = reserve(conn, unit_id, proposal_id, now)
         except RegistryError as exc:
             if exc.code == "UNIT_NOT_FOUND":
                 raise
+            holder = _undecided_holder(conn, unit_id) if (exc.code == "UNIT_ALREADY_RESERVED" and on_conflict) else None
+            if holder is not None and on_conflict(conn, proposal_id, holder, unit_id, now):
+                try:
+                    result = reserve(conn, unit_id, proposal_id, now)
+                    result["won_tiebreak_against"] = holder
+                except RegistryError:
+                    result = None
+        if result is None:
             failed.append(unit_id)
             continue
         if unit_id != proposal["recommended_unit_id"]:

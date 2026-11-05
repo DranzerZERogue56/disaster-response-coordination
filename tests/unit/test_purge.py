@@ -91,7 +91,8 @@ def test_everything_older_is_deleted_in_foreign_key_order_and_the_unit_is_reset(
     result = purge(conn, now=NOW)
 
     assert [count(conn, t) for t in TABLES] == [0, 0, 0, 0, 0]
-    assert result["purged"] == {t: 1 for t in TABLES}
+    assert {t: result["purged"][t] for t in TABLES} == {t: 1 for t in TABLES}
+    assert result["purged"]["tiebreak_log"] == 0 and result["purged"]["human_escalations"] == 0  # none were made here
     unit = conn.execute("SELECT status, reserved_by_proposal_id, reserved_at FROM units WHERE id = 1").fetchone()
     assert (unit["status"], unit["reserved_by_proposal_id"], unit["reserved_at"]) == ("available", None, None)
     assert result["reset"] == {"units": 1}
