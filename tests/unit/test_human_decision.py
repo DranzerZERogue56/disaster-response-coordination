@@ -178,7 +178,7 @@ def test_observer_account_is_refused(conn):
 def test_bad_decision_and_unknown_proposal(conn):
     pid, _ = held_proposal(conn)
     with pytest.raises(DecideError) as exc:
-        decide_human(conn, pid, "modify", stub_dispatcher_id(conn))
+        decide_human(conn, pid, "escalate", stub_dispatcher_id(conn))
     assert exc.value.code == "INVALID_DECISION"
     with pytest.raises(DecideError) as exc:
         decide_human(conn, 999, "approve", stub_dispatcher_id(conn))

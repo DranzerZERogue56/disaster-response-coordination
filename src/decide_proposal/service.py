@@ -8,15 +8,15 @@ writes to the units table.
 """
 from datetime import UTC, datetime
 
-from src.unit_registry.service import assign_unit, release_for_proposal
+from src.unit_registry.service import RegistryError, assign_unit, release_for_proposal
 
 CONFIDENCE_THRESHOLD = 75
 HIGH_SEVERITIES = ("Severe", "Critical")
 
 
 class DecideError(Exception):
-    """code is PROPOSAL_NOT_FOUND, INVALID_DECISION, STUB_DISPATCHER_MISSING
-    or NOT_A_DISPATCHER."""
+    """code is PROPOSAL_NOT_FOUND, INVALID_DECISION, STUB_DISPATCHER_MISSING,
+    NOT_A_DISPATCHER, MODIFIED_UNIT_REQUIRED or MODIFIED_UNIT_UNCHANGED."""
 
     def __init__(self, code, message):
         self.code = code
@@ -125,15 +125,45 @@ def list_pending(conn):
     return [dict(r) for r in rows]
 
 
-def decide_human(conn, proposal_id, decision, dispatcher_id, now=None):
-    """A dispatcher approves or rejects a proposal.
+def _take_unit(conn, unit_id, proposal_id, stamp):
+    """Assign an available unit straight to a proposal (the modify action). The single UPDATE only matches
+    an available unit, so a unit taken in the meantime is refused and the caller rolls everything back."""
+    cur = conn.execute(
+        "UPDATE units SET status = 'assigned', reserved_by_proposal_id = ?, reserved_at = ?, "
+        "released_expected_by = NULL WHERE id = ? AND status = 'available'",
+        (proposal_id, stamp, unit_id),
+    )
+    if cur.rowcount != 1:
+        raise RegistryError("UNIT_ALREADY_RESERVED", f"Unit {unit_id} was taken first", [unit_id])
+
+
+def _check_modify_target(conn, unit_id, scenario_run_id, recommended_unit_id):
+    if unit_id == recommended_unit_id:
+        raise DecideError("MODIFIED_UNIT_UNCHANGED", f"Unit {unit_id} is the unit already proposed; approve instead")
+    target = conn.execute("SELECT status, scenario_run_id FROM units WHERE id = ?", (unit_id,)).fetchone()
+    if target is None or target["scenario_run_id"] != scenario_run_id:
+        raise RegistryError("UNIT_NOT_FOUND", f"No unit with id {unit_id} in this scenario run", [unit_id])
+    if target["status"] != "available":
+        code = "UNIT_ALREADY_RESERVED" if target["status"] in ("reserved", "assigned") else "UNIT_UNAVAILABLE"
+        raise RegistryError(code, f"Unit {unit_id} is {target['status']}", [unit_id])
+
+
+def decide_human(conn, proposal_id, decision, dispatcher_id, now=None, modified_unit_id=None):
+    """A dispatcher approves, modifies or rejects a proposal.
 
     approve: unit reserved -> assigned (may raise UNIT_NO_LONGER_AVAILABLE,
     in which case nothing is decided). reject: the held unit is freed.
+    modify: approve, but with a different, available unit (`modified_unit_id`, required): final_status
+    'modified', the held unit is freed and the chosen one assigned in one transaction.
     A second call on a decided proposal returns the existing decision.
     """
-    if decision not in ("approve", "reject"):
-        raise DecideError("INVALID_DECISION", f"decision must be approve or reject, got {decision!r}")
+    if decision not in ("approve", "reject", "modify"):
+        raise DecideError("INVALID_DECISION", f"decision must be approve, modify or reject, got {decision!r}")
+    if decision == "modify":
+        if type(modified_unit_id) is not int:
+            raise DecideError("MODIFIED_UNIT_REQUIRED", "modify needs modified_unit_id, the number of the unit to send instead")
+    elif modified_unit_id is not None:
+        raise DecideError("INVALID_DECISION", "modified_unit_id only goes with the modify decision")
 
     account = conn.execute(
         "SELECT role FROM dispatcher_accounts WHERE id = ?", (dispatcher_id,)
@@ -142,8 +172,8 @@ def decide_human(conn, proposal_id, decision, dispatcher_id, now=None):
         raise DecideError("NOT_A_DISPATCHER", f"Account {dispatcher_id} may not decide proposals")
 
     row = conn.execute(
-        "SELECT recommended_unit_id, final_status, decided_by, decided_at "
-        "FROM agent_proposals WHERE id = ?",
+        "SELECT p.recommended_unit_id, p.final_status, p.decided_by, p.decided_at, r.scenario_run_id "
+        "FROM agent_proposals p JOIN incident_reports r ON r.id = p.report_id WHERE p.id = ?",
         (proposal_id,),
     ).fetchone()
     if row is None:
@@ -156,9 +186,12 @@ def decide_human(conn, proposal_id, decision, dispatcher_id, now=None):
             "decided_at": row["decided_at"],
             "already_decided": True,
         }
+    if decision == "modify":
+        _check_modify_target(conn, modified_unit_id, row["scenario_run_id"], row["recommended_unit_id"])
 
     decided_at = (now or datetime.now(UTC)).isoformat()
-    final_status = "approved" if decision == "approve" else "rejected"
+    final_status = {"approve": "approved", "reject": "rejected", "modify": "modified"}[decision]
+    released = []
     # One transaction, same rule as the auto-path: unit change and decision
     # are saved together or not at all.
     try:
@@ -169,15 +202,22 @@ def decide_human(conn, proposal_id, decision, dispatcher_id, now=None):
         )
         if decision == "approve":
             assign_unit(conn, row["recommended_unit_id"], proposal_id, commit=False)
+        elif decision == "modify":
+            released = release_for_proposal(conn, proposal_id, commit=False)
+            _take_unit(conn, modified_unit_id, proposal_id, decided_at)
         else:
             release_for_proposal(conn, proposal_id, commit=False)
         conn.commit()
     except Exception:
         conn.rollback()
         raise
-    return {
+    result = {
         "proposal_id": proposal_id,
         "final_status": final_status,
         "decided_by": str(dispatcher_id),
         "decided_at": decided_at,
     }
+    if decision == "modify":
+        result["unit_id"] = modified_unit_id
+        result["released_unit_id"] = released[0] if released else None
+    return result

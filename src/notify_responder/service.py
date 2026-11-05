@@ -62,8 +62,15 @@ def notify_for_decision(conn, decision):
         "already_decided"
     ):
         return None
-    unit_id = conn.execute(
-        "SELECT recommended_unit_id FROM agent_proposals WHERE id = ?",
-        (decision["proposal_id"],),
-    ).fetchone()["recommended_unit_id"]
+    # The unit holding the assignment: for a modified proposal that is the dispatcher's choice, not the
+    # agent's recommendation.
+    assigned = conn.execute(
+        "SELECT id FROM units WHERE reserved_by_proposal_id = ? AND status = 'assigned'", (decision["proposal_id"],)
+    ).fetchone()
+    if assigned:
+        unit_id = assigned["id"]
+    else:
+        unit_id = conn.execute(
+            "SELECT recommended_unit_id FROM agent_proposals WHERE id = ?", (decision["proposal_id"],)
+        ).fetchone()["recommended_unit_id"]
     return notify_responder(conn, decision["proposal_id"], unit_id)

@@ -335,7 +335,9 @@ def create_app():
         try:
             dispatcher = stub_dispatcher_id(conn)
             try:
-                result = decide_human(conn, proposal_id, body.get("decision"), dispatcher)
+                result = decide_human(
+                    conn, proposal_id, body.get("decision"), dispatcher, modified_unit_id=body.get("modified_unit_id")
+                )
             except RegistryError as exc:
                 if exc.code != "UNIT_NO_LONGER_AVAILABLE" or body.get("decision") != "approve":
                     raise
@@ -350,6 +352,8 @@ def create_app():
             status = {
                 "PROPOSAL_NOT_FOUND": 404,
                 "INVALID_DECISION": 400,
+                "MODIFIED_UNIT_REQUIRED": 400,
+                "MODIFIED_UNIT_UNCHANGED": 400,
                 "NOT_A_DISPATCHER": 403,
             }.get(exc.code, 500)
             return jsonify({"error": {"code": exc.code, "message": str(exc)}}), status
