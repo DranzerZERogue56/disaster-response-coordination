@@ -104,7 +104,7 @@ def main():
     if "--sample" in sys.argv:
         print("\nManual spot-check (10 reproducible reports; look for real addresses or names):")
         for line in sample():
-            print("  -", line)
+            print("  -", line.encode("ascii", "backslashreplace").decode())  # emoji in hostile data must not break a Windows console
     print("synthetic check:", "FAILED" if problems else "ok")
     return 1 if problems else 0
 
