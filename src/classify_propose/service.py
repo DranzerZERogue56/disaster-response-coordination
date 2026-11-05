@@ -26,14 +26,19 @@ class ClassifyError(Exception):
 
 
 def _validate(output):
-    """A model's answer is only trusted if it has exactly the shape we need."""
+    """A model's answer is only trusted if it has exactly the shape we need: both labels in their
+    allowed sets, a confidence that is a real whole number from 0 to 100 (not a boolean, a float or
+    text), and a reasoning that is non-empty text (DEF-015: it used to accept None, numbers and lists)."""
     try:
         ok = (
-            output["severity"] in SEVERITIES
+            isinstance(output["severity"], str)
+            and output["severity"] in SEVERITIES
+            and isinstance(output["unit_type"], str)
             and output["unit_type"] in UNIT_TYPES
-            and isinstance(output["confidence"], int)
+            and type(output["confidence"]) is int
             and 0 <= output["confidence"] <= 100
-            and str(output["reasoning"]).strip() != ""
+            and isinstance(output["reasoning"], str)
+            and output["reasoning"].strip() != ""
         )
     except (KeyError, TypeError):
         ok = False

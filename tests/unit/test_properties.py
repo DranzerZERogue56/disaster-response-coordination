@@ -188,7 +188,6 @@ def is_exactly_right(answer):
 
 @pytest.mark.covers("FR-AGENT-01-AC2")
 @pytest.mark.defect("DEF-015")
-@pytest.mark.xfail(strict=True, reason="open defect DEF-015: the validator accepts non-text reasoning and boolean confidence")
 @PROFILE
 @given(answer=answers)
 def test_P4_a_model_answer_passes_validation_only_if_it_is_exactly_the_right_shape(answer):
