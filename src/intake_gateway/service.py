@@ -6,15 +6,25 @@ Submit Incident Report (architecture.md §5, FR-INTAKE-01, FR-INTAKE-02).
 Duplicate detection (FR-INTAKE-03) and the offline queue are stubbed —
 see docs/skeleton-trace.md for what's real this week and what isn't.
 """
+from collections.abc import Mapping
 from datetime import UTC, datetime
 
 REQUIRED_FIELDS = ("location", "severity_raw", "timestamp_reported", "reporting_unit")
 
 
 class ValidationError(Exception):
-    def __init__(self, missing):
-        self.missing = missing
-        super().__init__("FIELD_MISSING: " + ", ".join(missing))
+    """One or more fields are missing (FIELD_MISSING) or improperly filled (FIELD_INVALID).
+    `fields` lists every bad field, top-down in the order of the report form (FR-INTAKE-02)."""
+
+    def __init__(self, fields, code="FIELD_MISSING"):
+        self.fields = list(fields)
+        self.missing = self.fields  # older name, still used by callers and tests
+        self.code = code
+        super().__init__(f"{code}: " + ", ".join(self.fields))
+
+
+class InvalidBody(Exception):
+    """The request body is not a JSON object (for example a list or a bare string)."""
 
 
 class InvalidTimestamp(Exception):
@@ -35,9 +45,21 @@ def normalize_timestamp(value):
 
 
 def submit_report(conn, scenario_run_id, fields, queued=False):
-    missing = [f for f in REQUIRED_FIELDS if not fields.get(f)]
-    if missing:
-        raise ValidationError(missing)
+    if not isinstance(fields, Mapping):
+        raise InvalidBody("The report must be sent as a JSON object, for example {\"location\": ...}")
+    missing, invalid = [], []
+    for name in REQUIRED_FIELDS:
+        value = fields.get(name)
+        if value is None or value == "":
+            missing.append(name)
+        elif not isinstance(value, str) or not value.strip():
+            invalid.append(name)  # a number, list, object, boolean, or only whitespace
+    description = fields.get("description")
+    if description is not None and not isinstance(description, str):
+        invalid.append("description")
+    bad = [name for name in (*REQUIRED_FIELDS, "description") if name in missing or name in invalid]
+    if bad:
+        raise ValidationError(bad, "FIELD_MISSING" if missing else "FIELD_INVALID")
     reported = normalize_timestamp(fields["timestamp_reported"])
 
     received_at = datetime.now(UTC).isoformat()

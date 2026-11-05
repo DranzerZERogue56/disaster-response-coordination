@@ -32,6 +32,7 @@ from src.intake_gateway.queue import (
     set_connected,
 )
 from src.intake_gateway.service import (
+    InvalidBody,
     InvalidTimestamp,
     ValidationError,
     list_reports,
@@ -231,14 +232,16 @@ def create_app():
                 jsonify({"error": {"code": "INVALID_TIMESTAMP", "message": str(exc)}}),
                 400,
             )
+        except InvalidBody as exc:
+            return jsonify({"error": {"code": "INVALID_BODY", "message": str(exc)}}), 400
         except ValidationError as exc:
             return (
                 jsonify(
                     {
                         "error": {
-                            "code": "FIELD_MISSING",
+                            "code": exc.code,
                             "message": str(exc),
-                            "field": exc.missing,
+                            "field": exc.fields,
                         }
                     }
                 ),

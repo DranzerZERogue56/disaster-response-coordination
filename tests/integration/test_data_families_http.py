@@ -19,17 +19,8 @@ DATA = Path(__file__).resolve().parents[1] / "data"
 
 # entry name -> (open defect id, which kinds of test it breaks). "crash" = the server returns a 5xx;
 # "reject" = the specification says reject, but the report is accepted or the server crashes.
-OPEN_DEFECTS = {
-    "json-list-instead-of-object": ("DEF-009", {"crash", "reject"}),
-    "json-string-instead-of-object": ("DEF-009", {"crash", "reject"}),
-    "list-as-severity": ("DEF-010", {"crash", "reject"}),
-    "object-as-location": ("DEF-010", {"crash", "reject"}),
-    "deeply-nested-values": ("DEF-010", {"crash", "reject"}),
-    "whitespace-only-location": ("DEF-011", {"reject"}),
-    "whitespace-only-severity": ("DEF-011", {"reject"}),
-    "number-as-location": ("DEF-012", {"reject"}),
-    "boolean-as-reporting-unit": ("DEF-012", {"reject"}),
-}
+# Empty when every defect the data found is fixed. Fixed ones are tagged with @pytest.mark.defect below.
+OPEN_DEFECTS = {}  # DEF-009 to DEF-012 were fixed (see docs/defect-log.md); their regression tests are the cases below
 
 
 def load(family):
@@ -97,9 +88,12 @@ def test_every_entry_is_marked_synthetic_and_has_a_stated_outcome(family):
 
 def test_the_data_is_reproducible_from_the_fixed_seed(tmp_path):
     """Regenerating gives byte-identical files (so a diff means the generator changed)."""
-    before = {f: (DATA / f"{f}.json").read_bytes() for f in ("happy", "boundary", "hostile")}
+    def read(f):
+        return (DATA / f"{f}.json").read_bytes().replace(b"\r\n", b"\n")  # a Windows checkout may use CRLF
+
+    before = {f: read(f) for f in ("happy", "boundary", "hostile")}
     subprocess.run([sys.executable, str(DATA / "generate.py")], check=True, capture_output=True)
-    after = {f: (DATA / f"{f}.json").read_bytes() for f in ("happy", "boundary", "hostile")}
+    after = {f: read(f) for f in ("happy", "boundary", "hostile")}
     assert before == after
 
 
@@ -149,6 +143,7 @@ def test_boundary_values_that_are_allowed_are_accepted(client, entry):
 # --- hostile: never crash; reject what the specification says to reject; store the rest as sent --
 
 
+@pytest.mark.defect("DEF-009", "DEF-010")
 @pytest.mark.parametrize("entry", params("hostile", "crash"))
 def test_hostile_input_never_crashes_the_server(client, entry):
     tc, db = client
@@ -160,6 +155,7 @@ def test_hostile_input_never_crashes_the_server(client, entry):
 
 
 @pytest.mark.covers("FR-INTAKE-02-AC1")
+@pytest.mark.defect("DEF-009", "DEF-010", "DEF-011", "DEF-012")
 @pytest.mark.parametrize("entry", params("hostile", "reject", expect="reject"))
 def test_hostile_input_the_specification_rejects_is_rejected(client, entry):
     tc, db = client
