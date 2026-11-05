@@ -43,6 +43,12 @@ DEFECTS = [
     ("DEF-013", "9607340", "tests/integration/test_human_approval_second_path_http.py::test_a_lost_unit_is_replaced_by_an_alternative_when_the_dispatcher_approves"),
     ("DEF-014", "9607340", "tests/unit/test_proposal_input_data.py::test_the_proposal_records_the_input_data_and_the_confidence_when_it_is_generated"),
     ("DEF-015", "4a0afc2", "tests/unit/test_model_answer_validation.py::test_reasoning_must_be_non_empty_text"),
+    ("DEF-016", "b0fd744", "tests/unit/test_broadcast.py::test_every_agent_sees_a_status_change"),
+    ("DEF-021", "6c470be", "tests/unit/test_broadcast.py::test_confirming_recovery_leaves_nothing_cached_behind"),
+    ("DEF-022", "6c470be", "tests/unit/test_broadcast.py::test_a_node_that_has_resumed_receives_updates_at_once_and_no_false_warning_is_raised"),
+    ("DEF-023", "6c470be", "tests/integration/test_dispatcher_ui_http.py::test_json_routes_survive_a_body_that_is_not_an_object[body0-/proposals/1/decision]"),
+    ("DEF-024", "6c470be", "tests/unit/test_negotiation.py::test_a_requeued_proposal_whose_unit_is_taken_in_the_gap_escalates_instead_of_vanishing"),
+    ("DEF-025", "6c470be", "tests/integration/test_dispatcher_ui_http.py::test_an_unknown_action_is_a_plain_404_not_a_redirect"),
 ]
 
 

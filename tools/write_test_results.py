@@ -26,24 +26,9 @@ THRESHOLD_LINE_COVERAGE = 90
 
 # Why a Must requirement is not yet verified: a short reason per requirement, for the matrix reader.
 REASONS = {
-    "FR-ALERT-01": "failure-case criterion (AC2) not yet written; AC1 passes",
-    "FR-AUDIT-01": "failure-case criterion (AC2) not yet written; AC1 passes",
-    "FR-INFER-01": "second criterion (AC2) not yet written; AC1 passes",
     "FR-INFER-02": "names the target hardware (RTX 3090/4090) and a real model; neither is available, so it stays unverified instead of being passed on the fake model",
-    "FR-SIM-01": "the scenario replay is not built; AC1 (same confidence three times) passes but the pace criterion is unwritten",
-    "FR-RES-03": "AC1 to AC3 need other agents to broadcast to; no agents exist (DEF-016). AC4 (the 4-minute release) passes",
-    "FR-COORD-01": "negotiation and tiebreaks not built (Milestone 12)",
-    "FR-COORD-02": "negotiation and reconciliation not built (Milestone 12)",
-    "FR-COORD-03": "negotiation and tiebreaks not built (Milestone 12)",
-    "FR-DEGRADE-01": "node heartbeats not built",
-    "FR-DEGRADE-02": "fallback chain not built; needs a real model first",
     "NFR-PERF-01": "names the target hardware and a real model; the fake-model measurement exists in docs/measurements.md but is not claimed as verification",
-    "NFR-PRIV-01": "the 24-hour purge job does not exist",
-    "NFR-REL-01": "needs node heartbeats (not built)",
-    "NFR-ACC-01": "needs a real dispatcher UI and a manual keyboard-only pass",
-    "NFR-ACC-02": "needs a real dispatcher UI and a manual grayscale pass",
-    "NFR-MNT-01": "the clean-machine test is the Week 13 deliverable",
-    "NFR-SEC-03": "wants synthetic data under data/synthetic/ with a check script; the test data lives in tests/data/ (a path mismatch, not yet reconciled)",
+    "NFR-ACC-01": "a manual keyboard-only pass by Ben with the mouse unplugged (script: tests/manual/scripts/acc-01-keyboard-only.md); not yet run",
 }
 
 

@@ -337,6 +337,9 @@ def test_FR_AUDIT_02_AC2_a_logged_override_can_only_be_added_to_never_taken_away
 
 @pytest.mark.covers("FR-SIM-01-AC1")
 def test_FR_SIM_01_AC1_the_same_scenario_three_times_gives_the_same_confidence(tmp_path, monkeypatch):
+    """Plays the real demo scenario file through the Scenario Reader, three times, each on a fresh database."""
+    from src.scenario.reader import play_scenario
+
     confidences = []
     for run in range(3):
         db_path = tmp_path / f"run{run}.sqlite"
@@ -351,8 +354,14 @@ def test_FR_SIM_01_AC1_the_same_scenario_three_times_gives_the_same_confidence(t
         app = create_app()
         app.testing = False
         with app.test_client() as client:
-            run_scores = [post(client, report(t, minute=i)).get_json()["proposal"]["confidence"] for i, t in enumerate((CLEAR, VAGUE))]
-        confidences.append(run_scores)
+            scores = []
+
+            def submit(payload, client=client, scores=scores):
+                scores.append(post(client, payload).get_json()["proposal"]["confidence"])
+
+            result = play_scenario(REPO / "seed" / "scenarios" / "demo-scenario.json", 1000, submit, sleep=lambda _s: None)
+            assert result["reports_queued"] == 3 and len(scores) == 3
+        confidences.append(scores)
     assert confidences[0] == confidences[1] == confidences[2]
 
 

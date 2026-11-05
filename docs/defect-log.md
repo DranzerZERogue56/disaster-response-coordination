@@ -28,11 +28,19 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 | DEF-013 | A dispatcher's approval gives no second path when the held unit was lost | FR-RES-01-AC2 | S2 | P2 | acceptance test (M11) | Fixed | `9607340` | `test_a_lost_unit_is_replaced_by_an_alternative_when_the_dispatcher_approves` |
 | DEF-014 | The proposal log does not record the input data the agent used | FR-AUDIT-01-AC1 | S3 | P2 | acceptance test (M11) | Fixed | `9607340` | `test_the_proposal_records_the_input_data_and_the_confidence_when_it_is_generated` |
 | DEF-015 | The model-answer validator accepts non-text reasoning and boolean confidence | FR-AGENT-01-AC2 | S3 | P2 | property test (M11) | Fixed | `4a0afc2` | `test_reasoning_must_be_non_empty_text` |
-| DEF-016 | Unit status changes and reservations are not sent to "every agent" (no agents exist) | FR-RES-03-AC1..AC3 | S3 | P3 | traceability gap (M11) | Open | none | none (not built) |
+| DEF-016 | Unit status changes and reservations are not sent to "every agent" (no agents exist) | FR-RES-03-AC1..AC3 | S3 | P3 | traceability gap (M11) | Fixed | `b0fd744` | `test_every_agent_sees_a_status_change` |
 | DEF-017 | "Notify" only records a row; there is no way to notify a responder from the software | FR-ALERT-01 | S3 | P3 | peer reviewer (M10, Q10) | Open | none | none (needs a channel decision) |
 | DEF-018 | Anyone who can reach the server can approve or override; there is no login | FR-AUTH-01-AC2 | S2 | P2 | acceptance test (M11) | Open | none | `test_FR_AUTH_01_AC2_an_unauthenticated_caller_cannot_approve` (expected to fail) |
 | DEF-019 | No length limit: a 100,000-character location is accepted and stored | FR-INTAKE-02 | S4 | P4 | hostile test data (M11) | Will not fix | none | `test_hostile_text_that_is_accepted_is_stored_exactly_as_sent[100k-character-location]` (passes: stored safely) |
 | DEF-020 | A report timestamped in the year 2099 is accepted | FR-INTAKE-02 | S4 | P3 | hostile test data (M11) | Open | none | `test_hostile_text_that_is_accepted_is_stored_exactly_as_sent[far-future-time]` (passes: stored safely) |
+| DEF-021 | Updates cached for a node are stranded if a human confirms its recovery before its next heartbeat | FR-RES-03-AC2 | S3 | P2 | independent review (M11) | Fixed | `6c470be` | `test_confirming_recovery_leaves_nothing_cached_behind` |
+| DEF-022 | A node that has answered again but is not yet confirmed is treated as down: false "could not be delivered" warnings | FR-RES-03-AC2 | S4 | P3 | independent review (M11) | Fixed | `6c470be` | `test_a_node_that_has_resumed_receives_updates_at_once_and_no_false_warning_is_raised` |
+| DEF-023 | A JSON list or number body crashes four more routes with HTTP 500 (decision, override, follow-up, connectivity) | NFR-REL-01 | S3 | P2 | independent review (M11) | Fixed | `6c470be` | `test_json_routes_survive_a_body_that_is_not_an_object[body0-/proposals/1/decision]` |
+| DEF-024 | A tiebreak loser's replacement proposal that loses its unit in a race is left with no unit and no escalation | FR-COORD-01-AC2 | S3 | P2 | independent review (M11) | Fixed | `6c470be` | `test_a_requeued_proposal_whose_unit_is_taken_in_the_gap_escalates_instead_of_vanishing` |
+| DEF-025 | An unknown console action answers a redirect with status 404, so the explanation is never shown | NFR-REL-01 | S4 | P3 | independent review (M11) | Fixed | `6c470be` | `test_an_unknown_action_is_a_plain_404_not_a_redirect` |
+| DEF-026 | Agents' proposals do not consult the broadcast view: a reserved unit can still be proposed when none is free | FR-RES-03-AC3 | S3 | P3 | independent review (M11) | Open | none | none (needs a design decision) |
+| DEF-027 | The tiebreak is applied only to same-unit conflicts; FR-COORD-03-AC1 ("other kinds of conflict") is shown by a test of the function alone | FR-COORD-03-AC1 | S3 | P3 | independent review (M11) | Open | none | `test_a_conflict_that_is_not_a_unit_claim_uses_the_same_order` (function level) |
+| DEF-028 | The console's success or error banner is read from the address, so a link can display a false "approved" message | NFR-ACC-01 (console) | S4 | P4 | independent review (M11) | Open | none | none (needs sign-in; see DEF-018) |
 
 ---
 
@@ -161,10 +169,10 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 ### DEF-016 — Status changes and reservations are not sent to "every agent"
 - **Environment:** commit `4a0afc2`.
 - **Steps:** 1. Read FR-RES-03-AC1 to AC3 ("every agent sees the updated status", "sent to the other agents"). 2. Look for agents.
-- **Expected vs actual:** Expected: other agents receive status and reservation updates. Actual: there are no separate agents; one process and one database are the single source of truth.
-- **Evidence:** the three criteria show as gaps in `docs/traceability.csv`; no test is possible without agents.
-- **Severity S3:** the safety effect (no double-booking) is met by the database and the property test P3; the broadcast is not; **Priority P3:** scheduled with the negotiation work (Milestone 12).
-- **Traceability and status:** FR-RES-03-AC1, AC2, AC3; Open; workaround: the registry is the only writer. Owner: Ben.
+- **Expected vs actual:** Expected: other agents receive status and reservation updates. Actual: there were no separate agents; one process and one database were the single source of truth.
+- **Evidence:** the three criteria showed as gaps in `docs/traceability.csv`; no test was possible without agent nodes (`agent_nodes` and heartbeats arrived in Tasks 8 and 14).
+- **Severity S3:** the safety effect (no double-booking) was met by the database and the property test P3; the broadcast was not; **Priority P3:** scheduled with the negotiation work.
+- **Traceability and status:** FR-RES-03-AC1, AC2, AC3; Fixed in `b0fd744` (migration 0008: a trigger publishes every status change to every other agent node, caches it for a silent node and warns the others; CR-010). A limit remains: see DEF-026. Owner: Ben.
 
 ### DEF-017 — "Notify" only records a row; the software cannot notify a responder
 - **Environment:** commit `4a0afc2`.
@@ -197,3 +205,67 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 - **Evidence:** hostile entry `far-future-time` passes (marked "safe", not "reject", on purpose).
 - **Severity S4:** a far-future time sorts last in the queue and misleads nobody into a wrong dispatch (workaround: the dispatcher reads the report time on the page and the queue is oldest-first); **Priority P3:** needs Ben's decision on whether FR-INTAKE-02 should reject times more than some margin ahead.
 - **Traceability and status:** FR-INTAKE-02; Open. Owner: Ben.
+
+### DEF-021 — Updates cached for a node are stranded if a human confirms recovery first
+- **Environment:** commit `b0fd744`; found by the independent whole-branch review.
+- **Steps:** 1. Node 3 goes silent and resumes. 2. A unit is reserved while the node is still `not_responding`: the update is cached. 3. A dispatcher confirms the recovery. 4. The node sends more heartbeats.
+- **Expected vs actual:** Expected (FR-RES-03-AC2): the cached update reaches the node. Actual: delivery ran only in the heartbeat of a `not_responding` node, so the row stayed cached for good and the node's view said `available` for a reserved unit.
+- **Evidence:** review snippet reproduced it; `tests/unit/test_broadcast.py::test_confirming_recovery_leaves_nothing_cached_behind`.
+- **Severity S3:** a recovered node would act on a stale picture, but the registry still refuses a double booking; **Priority P2.**
+- **Traceability and status:** FR-RES-03-AC2; Fixed in `6c470be` (`confirm_recovery` delivers what is cached). Owner: Ben.
+
+### DEF-022 — A node that answered again is treated as down by the broadcast
+- **Environment:** commit `b0fd744`; found by the independent whole-branch review.
+- **Steps:** 1. Node 3 goes silent, then answers a heartbeat (late recovery marked, not yet confirmed). 2. A unit is reserved.
+- **Expected vs actual:** Expected: node 3 receives the update at once and nobody is warned. Actual: the trigger keyed on status alone, so the update was cached, and a "could not be delivered to node 3" warning went to its peers, attached to an alert already marked as a late recovery.
+- **Evidence:** `tests/unit/test_broadcast.py::test_a_node_that_has_resumed_receives_updates_at_once_and_no_false_warning_is_raised`.
+- **Severity S4:** a misleading warning, no data lost; **Priority P3.**
+- **Traceability and status:** FR-RES-03-AC2; Fixed in `6c470be` (migration 0008 now caches only for a node that is silent: not_responding and its latest alert not resumed). Owner: Ben.
+
+### DEF-023 — A JSON list or number body crashes four more routes
+- **Environment:** commit `b0fd744`; found by the independent whole-branch review.
+- **Steps:** 1. `POST /proposals/1/decision` (or `/assignments/1/override`, `/overrides/1/follow-up`, `/connectivity`) with the JSON body `[1, 2]`.
+- **Expected vs actual:** Expected: handled as an empty body and refused with a clear error. Actual: `AttributeError`, HTTP 500. The same class of defect as DEF-009, copied into four routes.
+- **Evidence:** review ran all four; `tests/integration/test_dispatcher_ui_http.py::test_json_routes_survive_a_body_that_is_not_an_object` (16 cases).
+- **Severity S3:** a crash, not a wrong dispatch; **Priority P2.**
+- **Traceability and status:** NFR-REL-01 (no unhandled exception reaches the user); Fixed in `6c470be` (one `json_object()` helper). Owner: Ben.
+
+### DEF-024 — A tiebreak loser's replacement can be left with no unit and no escalation
+- **Environment:** commit `b0fd744`; found by the independent whole-branch review (by reading).
+- **Steps:** 1. A proposal loses a tiebreak; its incident gets a replacement proposal for the next unit. 2. That unit is taken between choosing it and reserving it.
+- **Expected vs actual:** Expected (FR-COORD-01-AC2): the incident is placed or put in front of a human. Actual: the reserve failed after the replacement was committed, the error propagated and nothing escalated.
+- **Evidence:** `tests/unit/test_negotiation.py::test_a_requeued_proposal_whose_unit_is_taken_in_the_gap_escalates_instead_of_vanishing`.
+- **Severity S3:** an incident could be silently without a unit, in a narrow race; **Priority P2.**
+- **Traceability and status:** FR-COORD-01-AC2; Fixed in `6c470be`. The wider point (`contest` still commits in several steps) is not changed. Owner: Ben.
+
+### DEF-025 — An unknown console action answers a redirect with status 404
+- **Environment:** commit `b0fd744`; found by the independent whole-branch review.
+- **Steps:** 1. `POST /dispatcher/proposals/1/explode`.
+- **Expected vs actual:** Expected: a plain 404. Actual: a 404 carrying a redirect location, which browsers do not follow, so the message is never shown.
+- **Evidence:** `tests/integration/test_dispatcher_ui_http.py::test_an_unknown_action_is_a_plain_404_not_a_redirect`.
+- **Severity S4:** cosmetic; **Priority P3.**
+- **Traceability and status:** NFR-REL-01; Fixed in `6c470be`. Owner: Ben.
+
+### DEF-026 — Proposals do not consult the broadcast view
+- **Environment:** commit `b0fd744`; found by the independent whole-branch review.
+- **Steps:** 1. Reserve every unit of a type. 2. Classify another report of that type.
+- **Expected vs actual:** Expected (FR-RES-03-AC3): "their decisions exclude that unit". Actual: `classify_and_propose` reads `units` directly and, when none is free, proposes a reserved one (FR-AGENT-02-AC2 wants a proposal anyway); the later tiebreak settles it. `choices()` exists and is tested but nothing in the proposal step calls it.
+- **Evidence:** `grep` for callers of `choices` and `agent_view`; the broadcast tests exercise the functions only.
+- **Severity S3:** no double booking happens (the registry refuses it); the criterion is met by the view, not by the decision path; **Priority P3:** wiring it in changes how FR-AGENT-02-AC2 behaves and needs a design decision.
+- **Traceability and status:** FR-RES-03-AC3; Open. The matrix shows it verified at function level; this entry is the caveat. Owner: Ben.
+
+### DEF-027 — The tiebreak is only reached through same-unit conflicts
+- **Environment:** commit `b0fd744`; found by the independent whole-branch review.
+- **Steps:** 1. Look for any production caller of `resolve_conflict` other than `contest`.
+- **Expected vs actual:** Expected (FR-COORD-03-AC1): the same tiebreak resolves conflicts "other than claiming the same unit". Actual: the rule is one reusable function and its test shows that, but the only conflict the system detects is two proposals claiming one unit.
+- **Evidence:** `tests/unit/test_negotiation.py` (function level); no other caller.
+- **Severity S3:** the rule is correct and shared; no other conflict kind is produced yet; **Priority P3:** other conflict kinds need requirements first.
+- **Traceability and status:** FR-COORD-03-AC1; Open, caveat on a "verified" row. Owner: Ben.
+
+### DEF-028 — The console banner can be spoofed from the address
+- **Environment:** commit `b0fd744`; found by the independent whole-branch review.
+- **Steps:** 1. Open `/dispatcher?notice=Proposal+7+approved&ok=1`.
+- **Expected vs actual:** Expected: a banner only for something that happened. Actual: the page shows the green message. Escaping is correct, so there is no script injection.
+- **Evidence:** review ran it.
+- **Severity S4:** misleading text, no state change, local-only server; **Priority P4:** a real fix is a signed flash message, which needs sign-in (DEF-018).
+- **Traceability and status:** console; Open. Owner: Ben.
