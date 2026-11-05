@@ -489,3 +489,47 @@ def test_FR_INFER_01_AC2_with_the_network_switched_off_a_report_is_still_classif
 
     assert body["proposal"]["severity"] == "Serious" and body["proposal"]["recommended_unit_id"] in (1, 2)
     assert body["decision"]["final_status"] == "approved"
+
+
+# ---- NFR-PRIV-01: after the purge no data store holds the seeded reports ------------------------------
+
+
+@pytest.mark.covers("NFR-PRIV-01-AC1")
+def test_NFR_PRIV_01_AC1_after_the_purge_every_data_store_holds_nothing_about_the_seeded_reports(world):
+    from datetime import UTC, datetime, timedelta
+
+    from src.purge.job import purge
+
+    client, db = world
+    auto = post(client, report(CLEAR, minute=1)).get_json()  # auto-approved and notified, holds unit 1
+    free = 2 if auto["reservation"]["unit_id"] == 1 else 1
+    oid = client.post(
+        f"/assignments/{auto['proposal']['proposal_id']}/override", json={"new_unit_id": free, "reason": "closer"}
+    ).get_json()["override_id"]  # an override, so there is an audit trail to purge
+    client.post(f"/overrides/{oid}/follow-up", json={"text": "more detail"})
+    held = post(client, report(VAGUE, minute=2)).get_json()  # held for a dispatcher, then approved
+    pid = held["proposal"]["proposal_id"]
+    client.post(f"/proposals/{pid}/decision", json={"decision": "approve"})
+    report_ids = [auto["report_id"], held["report_id"]]
+    proposal_ids = [auto["proposal"]["proposal_id"], pid]
+    assert query(db, "SELECT count(*) AS n FROM notifications")[0]["n"] >= 2  # there is something to purge
+
+    conn = sqlite3.connect(db)
+    conn.row_factory = sqlite3.Row
+    purge(conn, now=datetime.now(UTC) + timedelta(hours=25))  # the retention clock overridden: no 24 h wait
+    conn.close()
+
+    marks = ",".join("?" * len(report_ids))
+    pmarks = ",".join("?" * len(proposal_ids))
+    for table, column, ids, mark in (
+        ("incident_reports", "id", report_ids, marks),
+        ("agent_proposals", "report_id", report_ids, marks),
+        ("dispatcher_overrides", "assignment_id", proposal_ids, pmarks),
+        ("notifications", "assignment_id", proposal_ids, pmarks),
+    ):
+        assert query(db, f"SELECT count(*) AS n FROM {table} WHERE {column} IN ({mark})", tuple(ids))[0]["n"] == 0, table
+    assert query(db, "SELECT count(*) AS n FROM override_follow_ups")[0]["n"] == 0
+    # what must survive survives, and the resources are free again
+    assert query(db, "SELECT count(*) AS n FROM dispatcher_accounts")[0]["n"] >= 1
+    assert query(db, "SELECT count(*) AS n FROM scenario_runs")[0]["n"] >= 1
+    assert {u["status"] for u in query(db, "SELECT status FROM units")} == {"available"}

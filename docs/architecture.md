@@ -179,7 +179,7 @@ Request      `{retention_hours: int, now_override: timestamp (test-only, lets a 
 Success      `{purged: {incident_reports: int, agent_proposals: int, dispatcher_overrides: int, units: int, agent_nodes: int, notifications: int}, run_at: timestamp}`
 Errors       `PURGE_FAILED` — surfaced the same way `WRITE_FAILED` is (never silently retried); a failed purge is a privacy-relevant failure, not an ordinary one
 Idempotency  Running it twice in immediate succession is safe — the second run finds nothing past the retention clock and reports zero rows purged for every table
-Side effects Hard-deletes rows (not a soft-delete flag) — this is what NFR-PRIV-01's own measurement method requires: "query every data store for the seeded report IDs and expect zero rows," which a flag alone wouldn't satisfy
+Side effects Hard-deletes rows (not a soft-delete flag) — this is what NFR-PRIV-01's own measurement method requires: "query every data store for the seeded report IDs and expect zero rows," which a flag alone wouldn't satisfy Implementation note (CR-009): units are reset to available rather than deleted, because they are the resources and not incident data; agent nodes hold no incident data and are left alone; the success shape is `{purged: {incident_reports, agent_proposals, dispatcher_overrides, override_follow_ups, notifications}, reset: {units}, run_at}`.
 Limits       Runs once per hour in practice (fine against a 24-hour window); the exact schedule isn't pinned to a specific cron expression in this release — see Open Question OQ-3, since this is the interface that makes that question concrete
 
 Error envelope used system-wide:
