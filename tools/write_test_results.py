@@ -57,12 +57,13 @@ def git(*args):
 
 def main():
     started = datetime.now(UTC)
+    # checked first: the run itself rewrites docs/traceability.csv, which is not "dirty" in this sense
+    dirty = bool(git("status", "--porcelain", "--untracked-files=no"))
     suite = run(
         [sys.executable, "-m", "pytest", "--cov=src", "--cov-report=term-missing:skip-covered", "--cov-fail-under=90", "-q", "--no-header", "-p", "no:cacheprovider"]
     )
     out = suite.stdout
-    summary = re.findall(r"^(\d+ (?:passed|failed)[^
-]*?) in ([\d.]+)s", out, re.M)  # pytest -q prints no === rule
+    summary = re.findall(r"^(\d+ (?:passed|failed)[^\n]*?) in ([\d.]+)s", out, re.M)  # pytest -q prints no === rule
     counts, seconds = (summary[-1] if summary else ("unknown", "0"))
     line_cov = re.search(r"Total coverage: ([\d.]+)%", out)
     line_cov = float(line_cov.group(1)) if line_cov else 0.0
@@ -114,7 +115,6 @@ def main():
         ci = "not checked (the GitHub CLI was unavailable); check the CI run on the pushed commit"
 
     sha = git("rev-parse", "--short", "HEAD")
-    dirty = bool(git("status", "--porcelain", "--untracked-files=no"))
     passed_all = suite.returncode == 0
 
     def status(ok):
