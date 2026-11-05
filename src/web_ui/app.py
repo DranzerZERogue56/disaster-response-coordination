@@ -303,9 +303,18 @@ def create_app():
         body = request.get_json(silent=True) or {}
         conn = connect()
         try:
-            result = decide_human(
-                conn, proposal_id, body.get("decision"), stub_dispatcher_id(conn)
-            )
+            dispatcher = stub_dispatcher_id(conn)
+            try:
+                result = decide_human(conn, proposal_id, body.get("decision"), dispatcher)
+            except RegistryError as exc:
+                if exc.code != "UNIT_NO_LONGER_AVAILABLE" or body.get("decision") != "approve":
+                    raise
+                # FR-RES-01-AC2: the held unit was lost before the dispatcher decided. Give the
+                # incident a second path to a responder (the proposal's alternatives) and approve
+                # that; only if no unit can be had does the dispatcher get the error.
+                reserve_for_proposal(conn, proposal_id)
+                result = decide_human(conn, proposal_id, "approve", dispatcher)
+                result["retried_after_unit_loss"] = True
             result["notification"] = try_notify(conn, result)
         except DecideError as exc:
             status = {

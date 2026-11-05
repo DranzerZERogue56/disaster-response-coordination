@@ -213,7 +213,6 @@ def test_FR_RES_01_AC1_an_approved_proposal_assigns_the_unit_and_confirms_a_resp
 
 @pytest.mark.covers("FR-RES-01-AC2")
 @pytest.mark.defect("DEF-013")
-@pytest.mark.xfail(strict=True, reason="open defect DEF-013: a dispatcher's approval does not retry when the unit was lost")
 def test_FR_RES_01_AC2_a_lost_unit_gets_a_second_path_when_a_dispatcher_approves(world):
     client, db = world
     body = post(client, report(VAGUE)).get_json()  # held, unit reserved
@@ -293,7 +292,6 @@ def test_FR_ALERT_01_AC1_the_responder_is_notified_within_ten_seconds_of_the_ass
 
 @pytest.mark.covers("FR-AUDIT-01-AC1")
 @pytest.mark.defect("DEF-014")
-@pytest.mark.xfail(strict=True, reason="open defect DEF-014: the proposal log does not record the input data the agent used")
 def test_FR_AUDIT_01_AC1_the_proposal_log_includes_the_input_data_and_the_confidence(world):
     client, db = world
     post(client, report(CLEAR))

@@ -13,6 +13,9 @@ from datetime import UTC, datetime
 
 from src.classify_propose.model import SEVERITIES, UNIT_TYPES
 
+# The report fields the agent is given; recorded with the proposal (FR-AUDIT-01, CR-004).
+INPUT_FIELDS = ("location", "severity_raw", "description", "timestamp_reported", "reporting_unit")
+
 
 class ClassifyError(Exception):
     """The report could not be classified; a human has to handle it."""
@@ -74,8 +77,8 @@ def classify_and_propose(conn, report_id, model):
         """
         INSERT INTO agent_proposals
             (report_id, agent_node_id, confidence, recommended_unit_id, reasoning,
-             alternatives, model_identifier, model_version, generated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+             alternatives, model_identifier, model_version, generated_at, input_data)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             report_id,
@@ -87,6 +90,10 @@ def classify_and_propose(conn, report_id, model):
             model.identifier,
             model.version,
             now,
+            json.dumps(
+                {k: report[k] for k in INPUT_FIELDS},
+                sort_keys=True,
+            ),
         ),
     )
     conn.execute(

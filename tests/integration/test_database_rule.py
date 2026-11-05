@@ -118,5 +118,6 @@ def test_migration_runner_applies_the_triggers_on_a_fresh_database(tmp_path):
         "proposals_stay_approved_while_unit_assigned",
         "override_follow_ups_no_edit",
         "dispatcher_overrides_no_edit",
+        "agent_proposals_input_data_is_final",
     }
 
