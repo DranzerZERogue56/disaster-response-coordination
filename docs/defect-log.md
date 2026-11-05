@@ -2,7 +2,7 @@
 
 Every defect has all seven fields: (1) ID and title, (2) environment, (3) steps to reproduce, (4) expected versus actual, (5) evidence, (6) severity and priority, assigned separately each with a reason, (7) traceability and status. `tools/verify_regression.py` checks, for every defect marked Fixed, that its named regression test **fails on the commit before the fix and passes now**; the result is in `docs/regression-proof.md`.
 
-**Status of this draft.** The defects, evidence and fixes are real. The severity and priority values are the assistant's proposals for Ben to confirm or change; severity is a fact about the product, priority is Ben's decision about his remaining hours (the template says to write down which hat you wore, so both are stated with a reason).
+**Status.** The defects, evidence and fixes are real. The severity and priority values were proposed by the assistant and **confirmed by Ben on 2026-11-05**; severity is a fact about the product, priority is Ben's decision about his remaining hours (the template says to write down which hat you wore, so both are stated with a reason).
 
 **Severity:** S1 data loss, security exposure, or the system will not run · S2 a Must requirement is not met and there is no acceptable workaround · S3 a requirement is partly met, or there is a real workaround · S4 cosmetic, wording, or a Could-priority gap.
 **Priority:** P1 fix now · P2 fix this iteration · P3 fix if hours remain, otherwise ship as a known defect · P4 will not fix, with the reason.

@@ -1,8 +1,8 @@
 # Test Plan — Disaster Response Coordination
 
-**Version:** 1.0 (draft)  ·  **Author:** Ben (Dranzer Rogue), with the assistant drafting the facts  ·  **Date:** 2026-11-05  ·  **Baseline commit:** `9607340` (the final run's commit is recorded in `docs/test-results.md`)
+**Version:** 1.0  ·  **Author:** Ben (Dranzer Rogue), with the assistant drafting the facts  ·  **Date:** 2026-11-05  ·  **Baseline commit:** `9607340` (the final run's commit is recorded in `docs/test-results.md`)
 
-> **Status of this draft.** Written by the assistant from the repository and from Ben's decisions of 2026-11-05. The numbers in section 6 (exit criteria) and the signature in section 9 are Ben's; he reads, edits and signs. The AI policy for this milestone lets an assistant propose test material; Ben approves every assertion, and `docs/ai-usage.md` records what was proposed.
+> **Status.** Written by the assistant from the repository and from Ben's decisions of 2026-11-05; read, confirmed and signed by Ben on 2026-11-05. The exit-criteria numbers in section 6 are Ben's. The AI policy for this milestone lets an assistant propose test material; Ben approves every assertion (he approved the test-to-criterion claims on 2026-11-05), and `docs/ai-usage.md` records what was proposed.
 
 ---
 
@@ -102,4 +102,4 @@ Results against these are in `docs/test-results.md`; any miss is annotated there
 
 I have read this plan and I am accountable for the exit criteria above.
 
-Signed: ____________________  ·  Date: ____________
+Signed: Ben (Dranzer Rogue)  ·  Date: 2026-11-05
