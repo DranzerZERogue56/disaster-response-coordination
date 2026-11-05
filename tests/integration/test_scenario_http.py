@@ -64,7 +64,7 @@ def test_the_demo_scenario_plays_through_the_real_route_in_order_with_the_right_
     assert rows(db, "SELECT COUNT(*) AS n FROM scenario_runs WHERE scenario_file LIKE '%demo-scenario.json'")[0]["n"] == 1
 
 
-def test_the_command_line_reports_a_bad_file_and_a_bad_speed_without_playing_anything(tmp_path, capsys):
+def test_the_command_line_reports_a_bad_file_and_a_bad_speed_without_playing_anything(world, tmp_path, capsys):
     bad = tmp_path / "bad.json"
     bad.write_text("{not json", encoding="utf-8")
     assert cli_main([str(bad), "--speed", "5"]) == 2
@@ -72,7 +72,7 @@ def test_the_command_line_reports_a_bad_file_and_a_bad_speed_without_playing_any
     assert "cannot play" in capsys.readouterr().err
 
 
-def test_the_command_line_stops_loudly_when_the_app_is_not_running(capsys):
+def test_the_command_line_stops_loudly_when_the_app_is_not_running(world, capsys):
     # nothing listens on this port; the first report cannot be delivered
     code = cli_main([str(SCENARIO), "--speed", "1000", "--url", "http://127.0.0.1:9"])
     assert code == 1 and "stopped after 0 report(s)" in capsys.readouterr().err
