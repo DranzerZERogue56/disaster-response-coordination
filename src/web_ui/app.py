@@ -25,6 +25,12 @@ from src.decide_proposal.service import (
     list_pending,
     stub_dispatcher_id,
 )
+from src.heartbeat.service import (
+    HeartbeatError,
+    check_nodes,
+    confirm_recovery,
+    heartbeat,
+)
 from src.intake_gateway.queue import (
     drain_queue,
     is_connected,
@@ -178,6 +184,25 @@ def start_sweeper(interval_seconds):
     threading.Thread(target=loop, daemon=True, name="reservation-sweeper").start()
 
 
+def start_node_watcher(interval_seconds):
+    """FR-DEGRADE-01: every few seconds, flag any node that has gone quiet. Off unless HEARTBEAT_CHECK_SECONDS is
+    set, because nothing in the demo sends heartbeats and the seeded node would be flagged at once."""
+
+    def loop():
+        while True:
+            time.sleep(interval_seconds)
+            try:
+                conn = connect()
+                try:
+                    check_nodes(conn)
+                finally:
+                    conn.close()
+            except sqlite3.Error as exc:
+                print(f"node watcher error: {exc}", file=sys.stderr)
+
+    threading.Thread(target=loop, daemon=True, name="node-watcher").start()
+
+
 def create_app():
     app = Flask(__name__, template_folder=str(TEMPLATE_DIR))
 
@@ -186,6 +211,9 @@ def create_app():
     sweep = os.environ.get("SWEEP_SECONDS")
     if sweep:
         start_sweeper(float(sweep))
+    watch = os.environ.get("HEARTBEAT_CHECK_SECONDS")
+    if watch:
+        start_node_watcher(float(watch))
 
     @app.get("/healthz")
     def healthz():
@@ -401,6 +429,45 @@ def create_app():
         finally:
             conn.close()
         return jsonify(result)
+
+    @app.post("/nodes/<int:node_id>/heartbeat")
+    def node_heartbeat(node_id):
+        conn = connect()
+        try:
+            result = heartbeat(conn, node_id)
+        except LookupError as exc:
+            return jsonify({"error": {"code": "NODE_NOT_FOUND", "message": str(exc)}}), 404
+        finally:
+            conn.close()
+        return jsonify(result)
+
+    @app.post("/nodes/<int:node_id>/confirm-recovery")
+    def node_confirm_recovery(node_id):
+        """Same stand-in dispatcher as the other human actions; the caller cannot name one."""
+        conn = connect()
+        try:
+            result = confirm_recovery(conn, node_id, stub_dispatcher_id(conn))
+        except HeartbeatError as exc:
+            status = {"NOT_A_DISPATCHER": 403, "NODE_NOT_FLAGGED": 409, "NODE_NOT_RESUMED": 409}.get(exc.code, 400)
+            return jsonify({"error": {"code": exc.code, "message": str(exc)}}), status
+        except LookupError as exc:
+            return jsonify({"error": {"code": "NODE_NOT_FOUND", "message": str(exc)}}), 404
+        finally:
+            conn.close()
+        return jsonify(result)
+
+    @app.get("/alerts")
+    def node_alerts():
+        conn = connect()
+        try:
+            alerts = [dict(r) for r in conn.execute("SELECT * FROM node_alerts ORDER BY id DESC")]
+            for alert in alerts:
+                alert["notices"] = [
+                    dict(r) for r in conn.execute("SELECT * FROM node_notices WHERE alert_id = ? ORDER BY id", (alert["id"],))
+                ]
+        finally:
+            conn.close()
+        return jsonify({"alerts": alerts})
 
     return app
 
