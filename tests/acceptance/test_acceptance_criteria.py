@@ -405,3 +405,16 @@ def test_NFR_SEC_04_AC1_the_secret_scan_finds_nothing_in_this_repo_and_catches_a
     subprocess.run(["git", "add", "config.txt"], cwd=repo, check=True)
     planted = subprocess.run([sys.executable, str(REPO / "tools" / "secrets_scan.py")], check=False, cwd=repo, capture_output=True, text=True)
     assert planted.returncode != 0
+
+
+# ---- FR-AUTH-01 (a Should requirement, but a real finding): who may approve? -----------------------------
+
+
+@pytest.mark.covers("FR-AUTH-01-AC2")
+@pytest.mark.defect("DEF-018")
+@pytest.mark.xfail(strict=True, reason="open defect DEF-018: there is no login, so an unauthenticated caller can approve")
+def test_FR_AUTH_01_AC2_an_unauthenticated_caller_cannot_approve(world):
+    client, _ = world
+    held = post(client, report(VAGUE)).get_json()
+    resp = client.post(f"/proposals/{held['proposal']['proposal_id']}/decision", json={"decision": "approve"})
+    assert resp.status_code in (401, 403)

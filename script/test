@@ -2,4 +2,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 source script/common.sh
-"$PYTHON" -m pytest
+# The coverage gate (Milestone 11 Medium tier): the suite fails if line coverage of src/ drops
+# below 90%. See docs/test-plan.md section 6. It is reported beneath verified-requirement
+# coverage (tools/coverage_report.py), never instead of it.
+"$PYTHON" -m pytest --cov=src --cov-report=term-missing:skip-covered --cov-fail-under=90
