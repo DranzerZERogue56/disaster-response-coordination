@@ -252,7 +252,7 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 - **Expected vs actual:** Expected (FR-RES-03-AC3): "their decisions exclude that unit". Actual: `classify_and_propose` reads `units` directly and, when none is free, proposes a reserved one (FR-AGENT-02-AC2 wants a proposal anyway); the later tiebreak settles it. `choices()` exists and is tested but nothing in the proposal step calls it.
 - **Evidence:** `grep` for callers of `choices` and `agent_view`; the broadcast tests exercise the functions only.
 - **Severity S3:** no double booking happens (the registry refuses it); the criterion is met by the view, not by the decision path; **Priority P3:** wiring it in changes how FR-AGENT-02-AC2 behaves and needs a design decision.
-- **Traceability and status:** FR-RES-03-AC3; Open. The matrix shows it verified at function level; this entry is the caveat. Owner: Ben.
+- **Traceability and status:** FR-RES-03-AC3; Open; workaround: the registry refuses to reserve a unit that is taken, and the tiebreak settles any clash. The matrix shows it verified at function level; this entry is the caveat. Owner: Ben.
 
 ### DEF-027 — The tiebreak is only reached through same-unit conflicts
 - **Environment:** commit `b0fd744`; found by the independent whole-branch review.
@@ -260,7 +260,7 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 - **Expected vs actual:** Expected (FR-COORD-03-AC1): the same tiebreak resolves conflicts "other than claiming the same unit". Actual: the rule is one reusable function and its test shows that, but the only conflict the system detects is two proposals claiming one unit.
 - **Evidence:** `tests/unit/test_negotiation.py` (function level); no other caller.
 - **Severity S3:** the rule is correct and shared; no other conflict kind is produced yet; **Priority P3:** other conflict kinds need requirements first.
-- **Traceability and status:** FR-COORD-03-AC1; Open, caveat on a "verified" row. Owner: Ben.
+- **Traceability and status:** FR-COORD-03-AC1; Open; workaround: none is needed today because no other conflict kind is produced; a caveat on a "verified" row. Owner: Ben.
 
 ### DEF-028 — The console banner can be spoofed from the address
 - **Environment:** commit `b0fd744`; found by the independent whole-branch review.
@@ -268,4 +268,4 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 - **Expected vs actual:** Expected: a banner only for something that happened. Actual: the page shows the green message. Escaping is correct, so there is no script injection.
 - **Evidence:** review ran it.
 - **Severity S4:** misleading text, no state change, local-only server; **Priority P4:** a real fix is a signed flash message, which needs sign-in (DEF-018).
-- **Traceability and status:** console; Open. Owner: Ben.
+- **Traceability and status:** console; Open; workaround: bind to localhost only (as for DEF-018) and read the Units and Proposals tables, not the banner, for what happened. Owner: Ben.
