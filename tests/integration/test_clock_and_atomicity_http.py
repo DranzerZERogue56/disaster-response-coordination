@@ -108,6 +108,7 @@ def test_sweeper_frees_an_expired_reservation_with_nobody_asking(tmp_path, monke
     c.close()
 
 
+@pytest.mark.covers("FR-RES-01-AC2")
 def test_unit_lost_once_is_fixed_automatically(client, monkeypatch):
     tc, db_path = client
     import src.web_ui.app as appmod

@@ -110,6 +110,7 @@ def test_every_unit_taken_raises_and_lists_what_was_tried(conn):
     assert exc.value.tried == [1, 2]
 
 
+@pytest.mark.covers("FR-RES-03-AC4")
 def test_reservation_frees_itself_after_four_minutes(conn):
     reserve(conn, 1, make_proposal(conn), now=T0)
 

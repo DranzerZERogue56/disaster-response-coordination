@@ -76,6 +76,7 @@ def overrides(conn):
     return conn.execute("SELECT * FROM dispatcher_overrides ORDER BY id").fetchall()
 
 
+@pytest.mark.covers("FR-RES-02-AC1", "FR-AUDIT-02-AC1")
 def test_override_moves_the_assignment_and_logs_who_when_why_and_the_original_choice(conn):
     pid = auto_assigned(conn)
     dispatcher = stub_dispatcher_id(conn)
@@ -95,6 +96,7 @@ def test_override_moves_the_assignment_and_logs_who_when_why_and_the_original_ch
     assert row["new_unit_id"] == 2
 
 
+@pytest.mark.covers("FR-RES-02-AC1")
 def test_elapsed_time_from_ai_escalation_to_human_approval_is_recorded(conn):
     pid = human_assigned(conn, seconds_to_decide=90)
     result = override_assignment(conn, pid, 2, "better fit", stub_dispatcher_id(conn), now=T0 + timedelta(minutes=3))
@@ -112,6 +114,7 @@ def test_an_auto_approved_assignment_has_no_escalation_to_time(conn):
 
 
 @pytest.mark.parametrize("reason", ["", "   ", None])
+@pytest.mark.covers("FR-RES-02-AC2")
 def test_no_reason_is_rejected_and_nothing_changes(conn, reason):
     pid = auto_assigned(conn)
     with pytest.raises(OverrideError) as exc:
@@ -176,6 +179,7 @@ def test_observer_accounts_cannot_override(conn):
     assert overrides(conn) == []
 
 
+@pytest.mark.covers("FR-RES-02-AC3")
 def test_follow_up_is_added_to_the_same_entry_without_touching_the_assignment(conn):
     pid = auto_assigned(conn)
     dispatcher = stub_dispatcher_id(conn)
@@ -194,6 +198,7 @@ def test_follow_up_is_added_to_the_same_entry_without_touching_the_assignment(co
     assert (unit_status(conn, 1), unit_status(conn, 2)) == ("available", "assigned")
 
 
+@pytest.mark.covers("FR-AUDIT-02-AC2")
 def test_the_override_log_and_its_follow_ups_cannot_be_edited(conn):
     pid = auto_assigned(conn)
     dispatcher = stub_dispatcher_id(conn)

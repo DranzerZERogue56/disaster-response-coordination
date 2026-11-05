@@ -6,6 +6,7 @@ Baseline declared 2026-10-18 (`docs/baseline.md`). No change requests have been 
 |---|---|---|---|---:|---|
 | CR-001 | 2026-11-01 | Database triggers: a unit is `assigned` only while its proposal is `approved`/`modified` (migration 0002) | FR-AGENT-03, NFR-SEC-02, FR-RES-01 | +0.5 | approved |
 | CR-002 | 2026-11-01 | Override follow-ups become an append-only table; override rows can no longer be edited (migration 0003) | FR-RES-02, FR-AUDIT-02 | +0.5 | approved |
+| CR-003 | 2026-11-05 | Acceptance criteria written for FR-ALERT-01, FR-AUDIT-01, FR-AUDIT-02, FR-SIM-01, FR-INFER-01, FR-INFER-02; "[X] seconds" set to 10 (FR-ALERT-01) and 5 (FR-INFER-02) | those six | +0.5 | approved |
 
 ### The threshold rule — when a change needs a CR
 

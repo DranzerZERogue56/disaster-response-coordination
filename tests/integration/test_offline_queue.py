@@ -59,6 +59,7 @@ def go_offline(tc):
     assert tc.post("/connectivity", json={"connected": False}).get_json()["connected"] is False
 
 
+@pytest.mark.covers("FR-INTAKE-01-AC2")
 def test_offline_report_is_saved_as_queued_and_nothing_else_happens(client):
     tc, db = client
     go_offline(tc)
@@ -73,6 +74,7 @@ def test_offline_report_is_saved_as_queued_and_nothing_else_happens(client):
     assert tc.get("/connectivity").get_json() == {"connected": False, "queued_reports": 1}
 
 
+@pytest.mark.covers("FR-INTAKE-02-AC2")
 def test_a_malformed_report_is_still_rejected_offline(client):
     tc, db = client
     go_offline(tc)
@@ -81,6 +83,7 @@ def test_a_malformed_report_is_still_rejected_offline(client):
     assert rows(db, "SELECT count(*) FROM incident_reports") == [(0,)]
 
 
+@pytest.mark.covers("FR-INTAKE-01-AC2")
 def test_reconnecting_processes_queued_reports_oldest_first(client):
     tc, db = client
     go_offline(tc)
@@ -108,6 +111,7 @@ def test_reconnecting_processes_queued_reports_oldest_first(client):
     assert tc.get("/connectivity").get_json() == {"connected": True, "queued_reports": 0}
 
 
+@pytest.mark.covers("FR-INTAKE-01-AC2", "NFR-REL-03-AC1")
 def test_ten_reports_during_an_outage_none_are_lost(client):
     """NFR-REL-03: 10 reports submitted offline, 0 lost, all processed after."""
     tc, db = client

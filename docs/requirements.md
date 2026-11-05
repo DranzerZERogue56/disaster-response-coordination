@@ -11,7 +11,7 @@
 > *shape* of a good requirement — not to be copied, adapted, or reworded
 > into your own requirements. Delete the example boxes as you go.
 
-**Author:** Dranzer Rogue  **Version:** 1.3  **Date:** 2026-09-11 (created), last revised 2026-10-10
+**Author:** Dranzer Rogue  **Version:** 1.4  **Date:** 2026-09-11 (created), last revised 2026-11-05 (CR-003)
 **Status:** Baselined 2026-10-18 — see `docs/baseline.md`; changes from here go through `docs/change-requests/`
 
 
@@ -282,19 +282,21 @@ of detail that belongs in the technical specification (Week 6).
 **Requirement:** The system shall run all agent reasoning, entirely on local hardware, zero calls out to an external api or cloud model, even if internet happens to be available.
 **Rationale:** this is the other core differentiator besides the multi agent part, if it phones home its just another cloud tool
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given the system is running, when a reviewer inspects the console logs (or the `.env` file, if the reviewer is trusted with it), then no calls to an external API appear.
+- `[ TODO — Ben has not yet written the failure-case criterion for this requirement (CR-003) ]`
+*Criteria wording: from Ben's answers of 2026-11-05 (CR-003), put into Given/when/then form by the assistant; Ben to confirm the wording.*
 
 **Source:** proposal, core architecture decision
 
 ### FR-INFER-02 — Response latency bound
 
 **Priority:** Must
-**Requirement:** The system shall return an agent response, either a classification or a proposal, within [X] seconds on the target hardware (RTX 3090 or 4090, 24gb vram), not counting network time since its local anyway.
+**Requirement:** The system shall return an agent response, either a classification or a proposal, within 5 seconds on the target hardware (RTX 3090 or 4090, 24gb vram), not counting network time since its local anyway.
 **Rationale:** needs an actual number here I can test against during a demo, "fast" isnt a requirement
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given a report, when the agent returns a classification or a proposal, then it returns within 5 seconds on the target hardware (RTX 3090 or 4090, 24 GB VRAM).
+- `[ TODO — Ben has not yet written the failure-case criterion for this requirement (CR-003) ]`
+*Criteria wording: from Ben's answers of 2026-11-05 (CR-003), put into Given/when/then form by the assistant; Ben to confirm the wording.*
 
 **Source:** local ai server spec
 
@@ -326,11 +328,12 @@ of detail that belongs in the technical specification (Week 6).
 ### FR-ALERT-01 — Responder notification dispatch
 
 **Priority:** Must
-**Requirement:** The system shall notify responders assigned to an incident, within [X] seconds of the assignment being finalized.
+**Requirement:** The system shall notify responders assigned to an incident, within 10 seconds of the assignment being finalized.
 **Rationale:** an assignment nobody gets told about didnt actually happen
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given an assignment has been finalized, when the system notifies the assigned responder, then the notification is sent within 10 seconds of the assignment being finalized.
+- `[ TODO — Ben has not yet written the failure-case criterion for this requirement (CR-003) ]`
+*Criteria wording: from Ben's answers of 2026-11-05 (CR-003), put into Given/when/then form by the assistant; Ben to confirm the wording.*
 
 **Source:** proposal, basic notification need
 
@@ -378,8 +381,9 @@ of detail that belongs in the technical specification (Week 6).
 **Requirement:** The system shall log every proposal an agent generates, including what data it used and its confidence score, at the moment the proposal is generated, before its approved or rejected, so the log reflects the agents actual reasoning and not just the final outcome.
 **Rationale:** probably the single most important requirement for the defense, if I cant show why an agent did something the whole "trustworthy AI in emergencies" argument falls apart
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given an agent generates a proposal, when the proposal is logged (at the moment it is generated, before it is approved or rejected), then the log entry includes the input data the agent used and its confidence score.
+- `[ TODO — Ben has not yet written the failure-case criterion for this requirement (CR-003) ]`
+*Criteria wording: from Ben's answers of 2026-11-05 (CR-003), put into Given/when/then form by the assistant; Ben to confirm the wording.*
 
 **Source:** came out of thinking about what a reviewer would push back on, explainability
 
@@ -389,8 +393,9 @@ of detail that belongs in the technical specification (Week 6).
 **Requirement:** The system shall log any time a dispatcher overrides an agent decision, capturing who did it, when, and what the original agent proposal was so its comparable later.
 **Rationale:** same reasoning as above, and it also gives me real data afterward to see how often the agents were actually right
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given a dispatcher overrides an agent decision, when the override is logged, then the log records who did it, when, and the original agent proposal.
+- Given an override has been logged, when its log entry is edited afterwards, then data can only be added to it and never taken away.
+*Criteria wording: from Ben's answers of 2026-11-05 (CR-003), put into Given/when/then form by the assistant; Ben to confirm the wording.*
 
 **Source:** derived from FR-RES-02
 
@@ -415,8 +420,9 @@ of detail that belongs in the technical specification (Week 6).
 **Requirement:** The system shall replay a prewritten sequence of incident reports at a controlled pace, on demand, so I can run the same scenario reliably for the capstone defense demo instead of hoping live data behaves.
 **Rationale:** not walking into my defense relying on live data working right the first time, this is basically insurance for demo day
 **Acceptance criteria:**
-- `[ TODO — Given..., when..., then... ]`
-- `[ TODO — Given <failure case>..., when..., then... ]`
+- Given the same scenario is run three times with no training between runs, when each run finishes, then the confidence scores are the same, or very similar.
+- `[ TODO — Ben has not yet written the failure-case criterion for this requirement (CR-003) ]`
+*Criteria wording: from Ben's answers of 2026-11-05 (CR-003), put into Given/when/then form by the assistant; Ben to confirm the wording.*
 
 **Source:** personal experience, dont trust live demos
 

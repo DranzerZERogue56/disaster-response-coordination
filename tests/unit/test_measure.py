@@ -1,3 +1,5 @@
+import pytest
+
 from src.classify_propose.measure import SEED_REPORTS, measure, percentile, render
 from src.classify_propose.model import FakeModel
 
@@ -13,6 +15,7 @@ def test_percentile_is_nearest_rank():
     assert percentile([7], 0.95) == 7
 
 
+@pytest.mark.covers("FR-AGENT-01-AC1")
 def test_measure_runs_all_twenty_and_reports_the_spread():
     result = measure(FakeModel())
 

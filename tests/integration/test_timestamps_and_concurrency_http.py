@@ -47,6 +47,7 @@ def report(stamp, location):
     }
 
 
+@pytest.mark.covers("FR-INTAKE-01-AC2")
 def test_offline_queue_orders_by_real_time_across_time_zones(client):
     tc, _db = client
     tc.post("/connectivity", json={"connected": False})
@@ -60,6 +61,7 @@ def test_offline_queue_orders_by_real_time_across_time_zones(client):
     assert [d["report_id"] for d in drained] == [earlier["report_id"], later["report_id"]]
 
 
+@pytest.mark.covers("FR-INTAKE-02-AC1")
 def test_an_invalid_time_is_rejected_and_nothing_is_stored(client):
     tc, db = client
     resp = tc.post("/reports", json=report("sometime tuesday", "x"))

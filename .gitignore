@@ -30,3 +30,7 @@ build/
 
 # Local SQLite database (created by script/setup; never committed)
 data/*.sqlite
+
+# Test results recorded by tests/conftest.py (rebuilt on every run)
+.pytest_criteria.json
+.coverage

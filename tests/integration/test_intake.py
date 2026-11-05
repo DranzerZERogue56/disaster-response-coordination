@@ -29,6 +29,7 @@ def test_healthz(client):
     assert resp.get_json() == {"status": "ok"}
 
 
+@pytest.mark.covers("FR-INTAKE-01-AC1")
 def test_submit_and_list_report_round_trip(client):
     resp = client.post(
         "/reports",
@@ -49,6 +50,7 @@ def test_submit_and_list_report_round_trip(client):
     assert b"123 Test St" in page.data
 
 
+@pytest.mark.covers("FR-INTAKE-02-AC2")
 def test_submit_report_missing_field_rejected(client):
     resp = client.post("/reports", json={"location": "123 Test St"})
     assert resp.status_code == 400

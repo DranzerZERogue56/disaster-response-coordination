@@ -39,6 +39,7 @@ def post_report(client, text):
     )
 
 
+@pytest.mark.covers("FR-AGENT-03-AC2")
 def test_demo_escalation_beat_through_the_routes(client):
     vague = post_report(client, "something happened, not sure how bad, no one's answering")
     assert vague.status_code == 201

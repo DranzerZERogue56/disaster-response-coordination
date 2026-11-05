@@ -75,6 +75,7 @@ def test_pending_lists_undecided_and_drops_decided(conn):
     assert list_pending(conn) == []
 
 
+@pytest.mark.covers("FR-RES-01-AC1")
 def test_approve_records_the_dispatcher_not_auto_and_assigns_the_unit(conn):
     pid, _ = held_proposal(conn)
     dispatcher = stub_dispatcher_id(conn)
@@ -87,6 +88,7 @@ def test_approve_records_the_dispatcher_not_auto_and_assigns_the_unit(conn):
     assert row(conn, "units", 1)["status"] == "assigned"
 
 
+@pytest.mark.covers("NFR-REL-02-AC1")
 def test_reject_frees_the_unit_and_leaves_the_report_for_a_person(conn):
     pid, report_id = held_proposal(conn)
     result = decide_human(conn, pid, "reject", stub_dispatcher_id(conn))
@@ -120,6 +122,7 @@ def test_second_decision_changes_nothing(conn):
     assert row(conn, "units", 1)["status"] == "assigned"
 
 
+@pytest.mark.covers("FR-RES-03-AC4", "NFR-REL-02-AC1")
 def test_a_held_proposal_whose_clock_runs_out_times_out_and_leaves_the_pending_list(conn):
     pid, _ = held_proposal(conn)
     assert [p["proposal_id"] for p in list_pending(conn)] == [pid]

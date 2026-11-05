@@ -1,0 +1,226 @@
+[
+ {
+  "expect": "accept",
+  "family": "boundary",
+  "name": "one-character-location",
+  "payload": {
+   "location": "a",
+   "reporting_unit": "synthetic-unit-2",
+   "severity_raw": "driver hurt after a crash, pain in the neck",
+   "timestamp_reported": "2026-11-01T12:00:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "boundary",
+  "name": "one-character-severity-text",
+  "payload": {
+   "location": "931 Example Ave",
+   "reporting_unit": "synthetic-unit-2",
+   "severity_raw": "x",
+   "timestamp_reported": "2026-11-01T12:00:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "boundary",
+  "name": "one-character-reporting-unit",
+  "payload": {
+   "location": "931 Example Ave",
+   "reporting_unit": "u",
+   "severity_raw": "driver hurt after a crash, pain in the neck",
+   "timestamp_reported": "2026-11-01T12:00:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "boundary",
+  "name": "255-character-location",
+  "payload": {
+   "location": "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL",
+   "reporting_unit": "synthetic-unit-2",
+   "severity_raw": "driver hurt after a crash, pain in the neck",
+   "timestamp_reported": "2026-11-01T12:00:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "reject",
+  "family": "boundary",
+  "name": "empty-location",
+  "payload": {
+   "location": "",
+   "reporting_unit": "synthetic-unit-2",
+   "severity_raw": "driver hurt after a crash, pain in the neck",
+   "timestamp_reported": "2026-11-01T12:00:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "reject",
+  "family": "boundary",
+  "name": "empty-severity-text",
+  "payload": {
+   "location": "931 Example Ave",
+   "reporting_unit": "synthetic-unit-2",
+   "severity_raw": "",
+   "timestamp_reported": "2026-11-01T12:00:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "reject",
+  "family": "boundary",
+  "name": "empty-reporting-unit",
+  "payload": {
+   "location": "931 Example Ave",
+   "reporting_unit": "",
+   "severity_raw": "driver hurt after a crash, pain in the neck",
+   "timestamp_reported": "2026-11-01T12:00:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "reject",
+  "family": "boundary",
+  "name": "empty-timestamp",
+  "payload": {
+   "location": "931 Example Ave",
+   "reporting_unit": "synthetic-unit-2",
+   "severity_raw": "driver hurt after a crash, pain in the neck",
+   "timestamp_reported": ""
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "boundary",
+  "name": "earliest-unix-time",
+  "payload": {
+   "location": "931 Example Ave",
+   "reporting_unit": "synthetic-unit-2",
+   "severity_raw": "driver hurt after a crash, pain in the neck",
+   "timestamp_reported": "1970-01-01T00:00:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "boundary",
+  "name": "leap-day",
+  "payload": {
+   "location": "931 Example Ave",
+   "reporting_unit": "synthetic-unit-2",
+   "severity_raw": "driver hurt after a crash, pain in the neck",
+   "timestamp_reported": "2028-02-29T23:59:59+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "reject",
+  "family": "boundary",
+  "name": "not-a-real-day",
+  "payload": {
+   "location": "931 Example Ave",
+   "reporting_unit": "synthetic-unit-2",
+   "severity_raw": "driver hurt after a crash, pain in the neck",
+   "timestamp_reported": "2027-02-29T10:00:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "boundary",
+  "name": "latest-offset",
+  "payload": {
+   "location": "931 Example Ave",
+   "reporting_unit": "synthetic-unit-2",
+   "severity_raw": "driver hurt after a crash, pain in the neck",
+   "timestamp_reported": "2026-11-01T12:00:00+14:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "boundary",
+  "name": "earliest-offset",
+  "payload": {
+   "location": "931 Example Ave",
+   "reporting_unit": "synthetic-unit-2",
+   "severity_raw": "driver hurt after a crash, pain in the neck",
+   "timestamp_reported": "2026-11-01T12:00:00-12:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "boundary",
+  "name": "microseconds",
+  "payload": {
+   "location": "931 Example Ave",
+   "reporting_unit": "synthetic-unit-2",
+   "severity_raw": "driver hurt after a crash, pain in the neck",
+   "timestamp_reported": "2026-11-01T12:00:00.123456+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "boundary",
+  "name": "no-offset-means-utc",
+  "payload": {
+   "location": "931 Example Ave",
+   "reporting_unit": "synthetic-unit-2",
+   "severity_raw": "driver hurt after a crash, pain in the neck",
+   "timestamp_reported": "2026-11-01T12:00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "reject",
+  "family": "boundary",
+  "name": "missing-location",
+  "payload": {
+   "reporting_unit": "synthetic-unit-2",
+   "severity_raw": "driver hurt after a crash, pain in the neck",
+   "timestamp_reported": "2026-11-01T12:00:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "reject",
+  "family": "boundary",
+  "name": "missing-severity_raw",
+  "payload": {
+   "location": "931 Example Ave",
+   "reporting_unit": "synthetic-unit-2",
+   "timestamp_reported": "2026-11-01T12:00:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "reject",
+  "family": "boundary",
+  "name": "missing-timestamp_reported",
+  "payload": {
+   "location": "931 Example Ave",
+   "reporting_unit": "synthetic-unit-2",
+   "severity_raw": "driver hurt after a crash, pain in the neck"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "reject",
+  "family": "boundary",
+  "name": "missing-reporting_unit",
+  "payload": {
+   "location": "931 Example Ave",
+   "severity_raw": "driver hurt after a crash, pain in the neck",
+   "timestamp_reported": "2026-11-01T12:00:00+00:00"
+  },
+  "synthetic": true
+ }
+]

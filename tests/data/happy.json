@@ -1,0 +1,242 @@
+[
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-01",
+  "payload": {
+   "location": "132 Example Ave",
+   "reporting_unit": "synthetic-unit-2",
+   "severity_raw": "something happened, not sure how bad",
+   "timestamp_reported": "2026-11-01T12:00:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-02",
+  "payload": {
+   "location": "421 Mock Lane",
+   "reporting_unit": "synthetic-unit-7",
+   "severity_raw": "driver hurt after a crash, pain in the neck",
+   "timestamp_reported": "2026-11-01T12:01:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-03",
+  "payload": {
+   "location": "889 Sample Rd",
+   "reporting_unit": "synthetic-unit-8",
+   "severity_raw": "driver hurt after a crash, pain in the neck",
+   "timestamp_reported": "2026-11-01T12:02:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-04",
+  "payload": {
+   "location": "620 Sample Rd",
+   "reporting_unit": "synthetic-unit-3",
+   "severity_raw": "driver hurt after a crash, pain in the neck",
+   "timestamp_reported": "2026-11-01T12:03:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-05",
+  "payload": {
+   "location": "28 Sample Rd",
+   "reporting_unit": "synthetic-unit-6",
+   "severity_raw": "worker injured by falling equipment, bleeding",
+   "timestamp_reported": "2026-11-01T12:04:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-06",
+  "payload": {
+   "location": "892 Synthetic St",
+   "reporting_unit": "synthetic-unit-2",
+   "severity_raw": "woman fainted, now conscious, no visible injury",
+   "timestamp_reported": "2026-11-01T12:05:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-07",
+  "payload": {
+   "location": "490 Mock Lane",
+   "reporting_unit": "synthetic-unit-8",
+   "severity_raw": "driver hurt after a crash, pain in the neck",
+   "timestamp_reported": "2026-11-01T12:06:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-08",
+  "payload": {
+   "location": "167 Mock Lane",
+   "reporting_unit": "synthetic-unit-2",
+   "severity_raw": "cyclist injured, conscious and talking, arm injury",
+   "timestamp_reported": "2026-11-01T12:07:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-09",
+  "payload": {
+   "location": "510 Sample Rd",
+   "reporting_unit": "synthetic-unit-7",
+   "severity_raw": "child hurt at the playground, crying, leg pain",
+   "timestamp_reported": "2026-11-01T12:08:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-10",
+  "payload": {
+   "location": "48 Mock Lane",
+   "reporting_unit": "synthetic-unit-8",
+   "severity_raw": "something happened, not sure how bad",
+   "timestamp_reported": "2026-11-01T12:09:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-11",
+  "payload": {
+   "location": "675 Synthetic St",
+   "reporting_unit": "synthetic-unit-8",
+   "severity_raw": "woman fainted, now conscious, no visible injury",
+   "timestamp_reported": "2026-11-01T12:10:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-12",
+  "payload": {
+   "location": "447 Mock Lane",
+   "reporting_unit": "synthetic-unit-3",
+   "severity_raw": "bystander hurt in a fall on the stairs",
+   "timestamp_reported": "2026-11-01T12:11:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-13",
+  "payload": {
+   "location": "236 Synthetic St",
+   "reporting_unit": "synthetic-unit-1",
+   "severity_raw": "elderly person dizzy, chest pain, conscious",
+   "timestamp_reported": "2026-11-01T12:12:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-14",
+  "payload": {
+   "location": "727 Mock Lane",
+   "reporting_unit": "synthetic-unit-1",
+   "severity_raw": "child hurt at the playground, crying, leg pain",
+   "timestamp_reported": "2026-11-01T12:13:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-15",
+  "payload": {
+   "location": "737 Example Ave",
+   "reporting_unit": "synthetic-unit-2",
+   "severity_raw": "child hurt at the playground, crying, leg pain",
+   "timestamp_reported": "2026-11-01T12:14:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-16",
+  "payload": {
+   "location": "871 Testfield Blvd",
+   "reporting_unit": "synthetic-unit-7",
+   "severity_raw": "worker injured by falling equipment, bleeding",
+   "timestamp_reported": "2026-11-01T12:15:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-17",
+  "payload": {
+   "location": "43 Example Ave",
+   "reporting_unit": "synthetic-unit-5",
+   "severity_raw": "woman fainted, now conscious, no visible injury",
+   "timestamp_reported": "2026-11-01T12:16:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-18",
+  "payload": {
+   "location": "531 Sample Rd",
+   "reporting_unit": "synthetic-unit-5",
+   "severity_raw": "bystander hurt in a fall on the stairs",
+   "timestamp_reported": "2026-11-01T12:17:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-19",
+  "payload": {
+   "location": "411 Sample Rd",
+   "reporting_unit": "synthetic-unit-4",
+   "severity_raw": "child fell from a bike, bleeding from the knee",
+   "timestamp_reported": "2026-11-01T12:18:00+00:00"
+  },
+  "synthetic": true
+ },
+ {
+  "expect": "accept",
+  "family": "happy",
+  "name": "happy-20",
+  "payload": {
+   "location": "75 Synthetic St",
+   "reporting_unit": "synthetic-unit-1",
+   "severity_raw": "cyclist injured, conscious and talking, arm injury",
+   "timestamp_reported": "2026-11-01T12:19:00+00:00"
+  },
+  "synthetic": true
+ }
+]

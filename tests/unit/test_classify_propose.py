@@ -57,6 +57,7 @@ class BadModel:
         return self.output
 
 
+@pytest.mark.covers("FR-AGENT-01-AC1", "FR-AGENT-02-AC1")
 def test_clear_medical_report_gets_severity_and_proposal(conn):
     rid = add_report(conn, "person fell, visible leg injury, conscious and talking")
     result = classify_and_propose(conn, rid, FakeModel())
@@ -83,6 +84,7 @@ def test_vague_report_still_proposes_with_low_confidence(conn):
     assert conn.execute("SELECT count(*) FROM agent_proposals").fetchone()[0] == 1
 
 
+@pytest.mark.covers("FR-AGENT-02-AC2")
 def test_out_of_service_units_are_not_proposed(conn):
     conn.execute("UPDATE units SET status = 'out_of_service' WHERE id = 1")
     conn.commit()
@@ -93,6 +95,7 @@ def test_out_of_service_units_are_not_proposed(conn):
     assert result["alternatives"] == []
 
 
+@pytest.mark.covers("FR-AGENT-01-AC2")
 def test_invalid_model_output_leaves_report_for_a_human(conn):
     rid = add_report(conn, "chest pain")
     bad = BadModel({"severity": "Catastrophic", "unit_type": "Medical", "confidence": 90, "reasoning": "x"})

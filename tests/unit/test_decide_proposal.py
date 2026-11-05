@@ -67,6 +67,7 @@ def unit_status(conn, unit_id=1):
         (100, "Severe", True),
     ],
 )
+@pytest.mark.covers("FR-AGENT-03-AC1", "FR-AGENT-03-AC2", "NFR-SEC-02-AC1")
 def test_safety_rule(confidence, severity, held):
     assert needs_human(confidence, severity) is held
 
@@ -81,6 +82,7 @@ def test_safety_rule(confidence, severity, held):
         (95, "Critical", True),
     ],
 )
+@pytest.mark.covers("FR-AGENT-03-AC1", "FR-AGENT-03-AC2", "NFR-SEC-02-AC1")
 def test_dispatch_follows_the_safety_rule_end_to_end(conn, confidence, severity, held):
     pid = reserved_proposal(conn, confidence, severity)
     result = decide_auto(conn, pid)
