@@ -11,6 +11,7 @@ escalating the proposal by confidence (slices 3-4).
 import json
 from datetime import UTC, datetime
 
+from src.classify_propose.chain import ChainExhausted
 from src.classify_propose.model import SEVERITIES, UNIT_TYPES
 
 # The report fields the agent is given; recorded with the proposal (FR-AUDIT-01, CR-004).
@@ -46,6 +47,18 @@ def _validate(output):
         raise ClassifyError("MODEL_OUTPUT_INVALID", f"Model output failed validation: {output!r}")
 
 
+def _escalate(conn, report_id, reason):
+    open_already = conn.execute(
+        "SELECT 1 FROM human_escalations WHERE report_id = ? AND reason = ? AND resolved_at IS NULL", (report_id, reason)
+    ).fetchone()
+    if open_already is None:
+        conn.execute(
+            "INSERT INTO human_escalations (report_id, proposal_id, reason, created_at) VALUES (?, NULL, ?, ?)",
+            (report_id, reason, datetime.now(UTC).isoformat()),
+        )
+        conn.commit()
+
+
 def classify_and_propose(conn, report_id, model):
     report = conn.execute(
         "SELECT * FROM incident_reports WHERE id = ?", (report_id,)
@@ -58,7 +71,13 @@ def classify_and_propose(conn, report_id, model):
             "ALREADY_CLASSIFIED", f"Report {report_id} is already {report['status']}"
         )
 
-    output = model.classify(dict(report))
+    try:
+        output = model.classify(dict(report))
+    except ChainExhausted as exc:
+        # FR-DEGRADE-02: every model failed, even after the retries. The report stays 'created' and a person
+        # is put in front of it (the manual workflow); one open escalation per report, however often it is tried.
+        _escalate(conn, report_id, "MODEL_CHAIN_EXHAUSTED")
+        raise ClassifyError("MODEL_CHAIN_EXHAUSTED", f"No model could classify this report; a person must handle it. {exc}") from exc
     _validate(output)
 
     # Prefer free units; if none are free, still propose the best of the
@@ -92,8 +111,8 @@ def classify_and_propose(conn, report_id, model):
             best["id"],
             output["reasoning"],
             json.dumps([u["id"] for u in others]),
-            model.identifier,
-            model.version,
+            output.get("model_identifier", model.identifier),
+            output.get("model_version", model.version),
             now,
             json.dumps(
                 {k: report[k] for k in INPUT_FIELDS},

@@ -15,7 +15,7 @@ from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request
 
-from src.classify_propose.model import get_model
+from src.classify_propose.chain import build_chain
 from src.classify_propose.service import ClassifyError, classify_and_propose
 from src.db import connect, ensure_scenario_run
 from src.decide_proposal.service import (
@@ -111,7 +111,7 @@ def process_report(conn, result):
     # Architecture 5: creating a report triggers Classify & Propose.
     # If it cannot classify, the report stays created for a human.
     try:
-        result["proposal"] = classify_and_propose(conn, result["report_id"], get_model())
+        result["proposal"] = classify_and_propose(conn, result["report_id"], build_chain())
     except ClassifyError as exc:
         result["proposal"] = None
         result["needs_human"] = {"code": exc.code, "message": str(exc)}
