@@ -1,0 +1,32 @@
+[
+  {
+    "reported_at": "2026-11-01T12:00:00+00:00",
+    "payload": {
+      "synthetic": true,
+      "location": "4th & Main St",
+      "severity_raw": "person fell, visible leg injury, conscious and talking",
+      "timestamp_reported": "2026-11-01T12:00:00+00:00",
+      "reporting_unit": "field-unit-7"
+    }
+  },
+  {
+    "reported_at": "2026-11-01T12:01:00+00:00",
+    "payload": {
+      "synthetic": true,
+      "location": "Oak Street shelter",
+      "severity_raw": "something happened, not sure how bad, no one is answering",
+      "timestamp_reported": "2026-11-01T12:01:00+00:00",
+      "reporting_unit": "field-unit-3"
+    }
+  },
+  {
+    "reported_at": "2026-11-01T12:02:00+00:00",
+    "payload": {
+      "synthetic": true,
+      "location": "9th & Pine",
+      "severity_raw": "man collapsed, chest pain, not breathing well",
+      "timestamp_reported": "2026-11-01T12:02:00+00:00",
+      "reporting_unit": "field-unit-5"
+    }
+  }
+]
