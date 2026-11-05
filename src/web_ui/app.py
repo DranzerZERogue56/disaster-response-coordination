@@ -21,7 +21,6 @@ from src.db import connect, ensure_scenario_run
 from src.decide_proposal.service import (
     DecideError,
     decide_auto,
-    decide_human,
     list_pending,
     stub_dispatcher_id,
 )
@@ -46,15 +45,9 @@ from src.intake_gateway.service import (
 )
 from src.negotiation.reconcile import ReconcileError, override_reconciliation
 from src.negotiation.service import contest
-from src.notify_responder.service import (
-    NotifyError,
-    notify_for_decision,
-    notify_responder,
-)
 from src.override_assignment.service import (
     OverrideError,
     add_follow_up,
-    override_assignment,
 )
 from src.unit_registry.service import (
     RegistryError,
@@ -62,17 +55,10 @@ from src.unit_registry.service import (
     reserve_for_proposal,
     unit_clock,
 )
+from src.web_ui.actions import decide_with_retry, override_with_notice, try_notify
+from src.web_ui.dispatcher import bp as dispatcher_bp
 
 TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
-
-
-def try_notify(conn, decision):
-    """Notify after an approval. A failed notification never undoes the
-    decision; it is reported next to it so a person can see it."""
-    try:
-        return notify_for_decision(conn, decision)
-    except NotifyError as exc:
-        return {"error": {"code": exc.code, "message": str(exc)}}
 
 
 class UnitLostBeforeApproval(Exception):
@@ -215,6 +201,8 @@ def create_app():
     if watch:
         start_node_watcher(float(watch))
 
+    app.register_blueprint(dispatcher_bp)
+
     @app.get("/healthz")
     def healthz():
         conn = connect()
@@ -333,21 +321,13 @@ def create_app():
         body = request.get_json(silent=True) or {}
         conn = connect()
         try:
-            dispatcher = stub_dispatcher_id(conn)
-            try:
-                result = decide_human(
-                    conn, proposal_id, body.get("decision"), dispatcher, modified_unit_id=body.get("modified_unit_id")
-                )
-            except RegistryError as exc:
-                if exc.code != "UNIT_NO_LONGER_AVAILABLE" or body.get("decision") != "approve":
-                    raise
-                # FR-RES-01-AC2: the held unit was lost before the dispatcher decided. Give the
-                # incident a second path to a responder (the proposal's alternatives) and approve
-                # that; only if no unit can be had does the dispatcher get the error.
-                reserve_for_proposal(conn, proposal_id, on_conflict=contest)
-                result = decide_human(conn, proposal_id, "approve", dispatcher)
-                result["retried_after_unit_loss"] = True
-            result["notification"] = try_notify(conn, result)
+            result = decide_with_retry(
+                conn,
+                proposal_id,
+                body.get("decision"),
+                stub_dispatcher_id(conn),
+                modified_unit_id=body.get("modified_unit_id"),
+            )
         except DecideError as exc:
             status = {
                 "PROPOSAL_NOT_FOUND": 404,
@@ -369,20 +349,13 @@ def create_app():
         body = request.get_json(silent=True) or {}
         conn = connect()
         try:
-            result = override_assignment(
+            result = override_with_notice(
                 conn,
                 proposal_id,
                 body.get("new_unit_id"),
                 body.get("reason"),
                 stub_dispatcher_id(conn),
             )
-            # Tell the unit that now holds the assignment.
-            try:
-                result["notification"] = notify_responder(
-                    conn, proposal_id, result["new_unit_id"]
-                )
-            except NotifyError as exc:
-                result["notification"] = {"error": {"code": exc.code, "message": str(exc)}}
         except OverrideError as exc:
             status = {
                 "REASON_REQUIRED": 400,

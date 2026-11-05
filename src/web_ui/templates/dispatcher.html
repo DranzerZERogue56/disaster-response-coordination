@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dispatcher console</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='dispatcher.css') }}">
+</head>
+<body>
+<a class="skip" href="#proposals">Skip to the proposals waiting for a decision</a>
+
+<header>
+  <h1>Dispatcher console</h1>
+  <p class="muted">You are acting as the demo dispatcher (a stand-in account; real sign-in is not built yet).
+    This page does not reload by itself. <a href="/dispatcher">Refresh this page</a></p>
+</header>
+
+<main>
+{% if notice %}
+  {% if ok %}
+  <div class="notice notice-ok" role="status">{{ notice }}</div>
+  {% else %}
+  <div class="notice notice-error" role="alert">{{ notice }}</div>
+  {% endif %}
+{% endif %}
+
+<nav aria-label="Sections of this page">
+  <ul>
+    <li><a href="#proposals">Proposals waiting</a></li>
+    <li><a href="#assignments">Assignments in force</a></li>
+    <li><a href="#units">Units</a></li>
+    <li><a href="#alerts">Node alerts</a></li>
+    <li><a href="#escalations">Needs a person</a></li>
+    <li><a href="#legend">Severity levels</a></li>
+  </ul>
+</nav>
+
+<section id="proposals" aria-labelledby="h-proposals">
+  <h2 id="h-proposals">Proposals waiting for a decision</h2>
+  {% for p in pending %}
+  <article class="incident" data-proposal-id="{{ p.proposal_id }}" aria-labelledby="inc-{{ p.proposal_id }}">
+    <h3 id="inc-{{ p.proposal_id }}">Incident {{ p.report_id }}: {{ p.location }}</h3>
+    <p>Severity:
+      <span class="severity sev-{{ p.slug }}"><span aria-hidden="true">{{ p.symbol }}</span> {{ p.severity_label }}</span>
+      &middot; confidence {{ p.confidence }} out of 100
+      &middot; unit {{ p.recommended_unit_id }} proposed{% if p.seconds_left is not none %}, held for {{ p.seconds_left }} more seconds{% endif %}</p>
+    <p class="muted">Reasoning: {{ p.reasoning }}</p>
+    <div class="actions">
+      <form method="post" action="/dispatcher/proposals/{{ p.proposal_id }}/approve">
+        <button type="submit">Approve proposal {{ p.proposal_id }}</button>
+      </form>
+      <form method="post" action="/dispatcher/proposals/{{ p.proposal_id }}/modify">
+        <div>
+          <label for="modify-unit-{{ p.proposal_id }}">Unit number to send instead</label>
+          <input id="modify-unit-{{ p.proposal_id }}" name="modified_unit_id" type="number" min="1" inputmode="numeric" required>
+        </div>
+        <button type="submit">Modify proposal {{ p.proposal_id }}</button>
+      </form>
+      <form method="post" action="/dispatcher/proposals/{{ p.proposal_id }}/reject">
+        <button type="submit">Reject proposal {{ p.proposal_id }}</button>
+      </form>
+    </div>
+  </article>
+  {% else %}
+  <p>No proposals are waiting.</p>
+  {% endfor %}
+</section>
+
+<section id="assignments" aria-labelledby="h-assignments">
+  <h2 id="h-assignments">Assignments in force</h2>
+  {% for a in assignments %}
+  <article class="incident" data-assignment-id="{{ a.proposal_id }}" aria-labelledby="asg-{{ a.proposal_id }}">
+    <h3 id="asg-{{ a.proposal_id }}">Incident {{ a.report_id }}: {{ a.location }}</h3>
+    <p>Severity:
+      <span class="severity sev-{{ a.slug }}"><span aria-hidden="true">{{ a.symbol }}</span> {{ a.severity_label }}</span>
+      &middot; unit {{ a.unit_id }} is assigned ({{ a.final_status }})</p>
+    <div class="actions">
+      <form method="post" action="/dispatcher/assignments/{{ a.proposal_id }}/override">
+        <div>
+          <label for="override-unit-{{ a.proposal_id }}">New unit number</label>
+          <input id="override-unit-{{ a.proposal_id }}" name="new_unit_id" type="number" min="1" inputmode="numeric" required>
+        </div>
+        <div>
+          <label for="override-reason-{{ a.proposal_id }}">Reason (required)</label>
+          <input id="override-reason-{{ a.proposal_id }}" name="reason" type="text" required size="40">
+        </div>
+        <button type="submit">Override assignment {{ a.proposal_id }}</button>
+      </form>
+    </div>
+  </article>
+  {% else %}
+  <p>No assignments are in force.</p>
+  {% endfor %}
+</section>
+
+<section id="units" aria-labelledby="h-units">
+  <h2 id="h-units">Units</h2>
+  <table>
+    <caption>Every unit and its status. A reserved unit is freed when its clock runs out.</caption>
+    <thead><tr><th scope="col">Unit</th><th scope="col">Type</th><th scope="col">Status</th><th scope="col">Seconds left</th></tr></thead>
+    <tbody>
+    {% for u in units %}
+      <tr><td>{{ u.unit_id }}</td><td>{{ u.unit_type }}</td><td>{{ u.status }}</td><td>{{ u.seconds_left if u.seconds_left is not none else "none" }}</td></tr>
+    {% else %}
+      <tr><td colspan="4">No units yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section id="alerts" aria-labelledby="h-alerts">
+  <h2 id="h-alerts">Node alerts</h2>
+  {% for n in alerts %}
+  <article class="incident" aria-labelledby="alert-{{ n.id }}">
+    <h3 id="alert-{{ n.id }}">Node {{ n.node_id }} has not responded</h3>
+    <p>Flagged at {{ n.raised_at }} after {{ n.silent_seconds|round|int }} seconds of silence.
+      {% if n.recovered_at %}It started responding again at {{ n.recovered_at }}: this was a late recovery.
+      {% else %}It is still not responding; the system is waiting for the node to respond again.{% endif %}</p>
+    {% if n.recovered_at %}
+    <form method="post" action="/dispatcher/nodes/{{ n.node_id }}/confirm-recovery">
+      <button type="submit">Confirm node {{ n.node_id }} has recovered and its information is intact</button>
+    </form>
+    {% endif %}
+  </article>
+  {% else %}
+  <p>No node needs attention.</p>
+  {% endfor %}
+</section>
+
+<section id="escalations" aria-labelledby="h-escalations">
+  <h2 id="h-escalations">Needs a person</h2>
+  <p class="muted">Incidents the system could not place or classify by itself.</p>
+  <ul>
+  {% for e in escalations %}
+    <li>Incident {{ e.report_id }}: {{ e.reason }} (raised {{ e.created_at }})</li>
+  {% else %}
+    <li>Nothing is waiting for a person.</li>
+  {% endfor %}
+  </ul>
+</section>
+
+<section id="legend" aria-labelledby="h-legend">
+  <h2 id="h-legend">Severity levels</h2>
+  <p class="muted">Every level is shown as a word and a symbol, never by colour alone.</p>
+  <ul class="legend">
+  {% for level in levels %}
+    <li class="legend-item"><span aria-hidden="true">{{ level.symbol }}</span> {{ level.label }}</li>
+  {% endfor %}
+  </ul>
+</section>
+</main>
+</body>
+</html>

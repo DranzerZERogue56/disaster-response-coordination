@@ -1,0 +1,59 @@
+/* Dispatcher console. Every colour is declared once, in :root, and tests/unit/test_dispatcher_accessibility.py
+   checks each text/background pair against 4.5:1 (and the focus ring against 3:1). Severity is never carried by
+   colour: each level is its own word plus its own symbol, and differs in border weight and style as well. */
+:root {
+  --bg: #ffffff;
+  --panel: #f3f4f6;
+  --fg: #111827;
+  --muted: #4b5563;
+  --link: #1d4ed8;
+  --button-fg: #ffffff;
+  --button-bg: #1e3a8a;
+  --focus: #b45309;
+  --notice-ok-fg: #064e3b;
+  --notice-ok-bg: #d1fae5;
+  --notice-error-fg: #7f1d1d;
+  --notice-error-bg: #fee2e2;
+}
+
+body { margin: 0; padding: 1rem 1.5rem 3rem; background: var(--bg); color: var(--fg); font: 1rem/1.5 system-ui, sans-serif; max-width: 70rem; }
+h1, h2, h3 { line-height: 1.25; }
+a { color: var(--link); }
+.muted { color: var(--muted); }
+
+a:focus, button:focus, input:focus, summary:focus { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+.skip { position: absolute; left: -999px; top: 0; background: var(--bg); padding: 0.5rem 1rem; }
+.skip:focus { left: 0.5rem; top: 0.5rem; z-index: 10; }
+
+nav ul { display: flex; flex-wrap: wrap; gap: 1rem; list-style: none; padding: 0; }
+
+section { margin-top: 2rem; }
+.incident { background: var(--panel); border: 1px solid var(--fg); border-radius: 4px; padding: 0.75rem 1rem; margin: 1rem 0; }
+.incident h3 { margin-top: 0; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; margin-top: 0.75rem; }
+.actions form { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: flex-end; }
+label { display: block; font-weight: 600; }
+input { font: inherit; padding: 0.35rem 0.5rem; border: 2px solid var(--fg); border-radius: 3px; background: var(--bg); color: var(--fg); }
+button { font: inherit; font-weight: 600; padding: 0.45rem 0.9rem; border: 2px solid var(--button-bg); border-radius: 3px; background: var(--button-bg); color: var(--button-fg); cursor: pointer; }
+
+.severity { display: inline-block; padding: 0 0.5rem; border: 2px solid var(--fg); border-radius: 3px; font-weight: 700; }
+.sev-minor { border-style: solid; border-width: 1px; font-weight: 400; }
+.sev-moderate { border-style: solid; border-width: 2px; }
+.sev-serious { border-style: dashed; border-width: 3px; }
+.sev-severe { border-style: double; border-width: 5px; }
+.sev-critical { border-style: solid; border-width: 5px; text-transform: uppercase; }
+.sev-unclassified { border-style: dotted; font-weight: 400; }
+
+table { border-collapse: collapse; width: 100%; }
+caption { text-align: left; font-weight: 600; padding-bottom: 0.25rem; }
+th, td { border: 1px solid var(--fg); padding: 0.35rem 0.6rem; text-align: left; }
+th { background: var(--panel); }
+
+.notice { padding: 0.6rem 1rem; border: 2px solid var(--fg); border-radius: 4px; margin: 1rem 0; font-weight: 600; }
+.notice-ok { background: var(--notice-ok-bg); color: var(--notice-ok-fg); }
+.notice-error { background: var(--notice-error-bg); color: var(--notice-error-fg); }
+
+.legend { display: flex; flex-wrap: wrap; gap: 1rem; list-style: none; padding: 0; }
+.legend-item { display: inline-block; padding: 0.15rem 0.6rem; border: 2px solid var(--fg); border-radius: 3px; }
