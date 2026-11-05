@@ -67,7 +67,7 @@ The build at the commit above and the requirement IDs in `docs/requirements.md` 
 
 Numbers, written before the matrix was first run (Ben's choices):
 
-- [ ] **Verified-Must coverage is at least 60%**, measured by `tools/coverage_report.py` on `docs/traceability.csv`. *(Ben's number.)*
+- [ ] **Verified-Must coverage is at least 90%**, measured by `tools/coverage_report.py` on `docs/traceability.csv`. *(Ben's number. It was 60% when this plan was signed on 2026-11-05; the first measurements were 32% and then 42%. After the failure-case criteria it stood at 52%, and Ben raised the bar to 90% on 2026-11-05 and chose to build the missing requirements rather than keep the lower target. The change is dated here so it is not mistaken for a quiet edit; it is an increase, not a softening. The work plan is `docs/superpowers/plans/2026-11-05-reach-90-percent-verified-must.md`.)*
 - [ ] **0 open defects at severity S1 or S2** in `docs/defect-log.md`.
 - [ ] Every open S3/S4 defect appears in the defect log with a documented workaround.
 - [ ] **Every defect fixed this iteration has a named regression test that fails on the pre-fix commit** (checked by `tools/verify_regression.py`).

@@ -35,6 +35,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 REQUIREMENTS = ROOT / "docs" / "requirements.md"
 RESULTS = ROOT / ".pytest_criteria.json"
+MANUAL_RESULTS = ROOT / "tests" / "manual" / "results.csv"
 OUT = ROOT / "docs" / "traceability.csv"
 COLUMNS = ["req_id", "req_priority", "acceptance_criterion_id", "test_case_id", "level", "status", "defect_id"]
 
@@ -68,8 +69,26 @@ def load_results():
     return json.loads(RESULTS.read_text(encoding="utf-8"))["tests"]
 
 
+def load_manual():
+    """Manual test results (tests/manual/results.csv), shaped like automated ones. A row names one or
+    more criteria separated by a semicolon; its status is exactly what the tester recorded."""
+    if not MANUAL_RESULTS.exists():
+        return []
+    with MANUAL_RESULTS.open(newline="", encoding="utf-8") as f:
+        return [
+            {
+                "id": r["test_id"],
+                "level": r["level"] or "acceptance",
+                "criteria": [c.strip() for c in r["criteria"].split(";") if c.strip()],
+                "defects": [],
+                "status": r["status"],
+            }
+            for r in csv.DictReader(f)
+        ]
+
+
 def build_rows():
-    tests = load_results()
+    tests = load_results() + load_manual()
     by_criterion = {}
     for t in tests:
         for c in t["criteria"]:

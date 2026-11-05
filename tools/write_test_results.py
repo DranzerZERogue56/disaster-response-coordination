@@ -21,7 +21,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "test-results.md"
-THRESHOLD_VERIFIED_MUST = 60
+THRESHOLD_VERIFIED_MUST = 90
 THRESHOLD_LINE_COVERAGE = 90
 
 # Why a Must requirement is not yet verified: a short reason per requirement, for the matrix reader.
