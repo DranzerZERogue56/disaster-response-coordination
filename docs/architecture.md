@@ -502,7 +502,7 @@ Every Must-priority requirement appears below with a component and an interface.
 | NFR-REL-04 | Should | Intake Gateway | Same mechanism as NFR-REL-03, not separately interfaced | — |
 | NFR-SEC-01 | Must | LLM Client | LLM Generate | — |
 | NFR-SEC-02 | Must | Approval Gateway | Decide Proposal | Flow 1 |
-| NFR-SEC-03 | Must | — | Enforced by repo convention (`data/synthetic/` + marker + check script), not a runtime interface | — |
+| NFR-SEC-03 | Must | — | Enforced by repo convention (`tests/data/` and `seed/` + marker + `tools/check_synthetic.py`, CR-005), not a runtime interface | — |
 | NFR-SEC-04 | Must | Dispatcher Accounts (entity, §6) | — (schema-level: `password_hash`/`password_salt`, never in the repo) | — |
 | NFR-PRIV-01 | Must | — | Purge Job | — |
 | NFR-ACC-01 | Must | Dispatcher Web UI | — (UI-layer requirement, not a backend interface) | — |

@@ -1,1 +1,1 @@
-{"location": "near the old warehouse on 2nd", "severity_raw": "something happened, not sure how bad, no one is answering", "timestamp_reported": "2026-11-01T12:05:00+00:00", "reporting_unit": "field-unit-7"}
+{"synthetic": true, "location": "near the old warehouse on 2nd", "severity_raw": "something happened, not sure how bad, no one is answering", "timestamp_reported": "2026-11-01T12:05:00+00:00", "reporting_unit": "field-unit-7"}
