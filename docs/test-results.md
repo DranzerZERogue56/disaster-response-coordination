@@ -4,11 +4,11 @@ The record of the last full run, written by `python tools/write_test_results.py`
 
 | Item | Value |
 |---|---|
-| Commit tested | `48b1865` (working tree had uncommitted changes to tracked files) |
-| Date | 2026-11-05 17:51 UTC |
+| Commit tested | `63fa39a` (working tree had uncommitted changes to tracked files) |
+| Date | 2026-11-05 20:01 UTC |
 | Command | `./script/test` (equivalent: `python -m pytest --cov=src --cov-report=term-missing:skip-covered --cov-fail-under=90`) |
-| Result | 540 passed, 1 xfailed |
-| Duration | 216.52 s |
+| Result | 547 passed, 1 xfailed |
+| Duration | 235.15 s |
 | Plan | `docs/test-plan.md` v1.0 |
 
 ## The four coverage numbers (`tools/coverage_report.py` on `docs/traceability.csv`)
@@ -22,7 +22,7 @@ The record of the last full run, written by `python tools/write_test_results.py`
 | Verified Must requirements | 28 |
 | **Verified-Must coverage** | **90%** |
 
-For comparison, and beneath the number that matters: line coverage of `src/` is **95.72%**. High line coverage with low verified-requirement coverage is the course's own warning: the code that exists is well exercised, but many promises in the specification have nothing built behind them yet.
+For comparison, and beneath the number that matters: line coverage of `src/` is **95.85%**. High line coverage with low verified-requirement coverage is the course's own warning: the code that exists is well exercised, but many promises in the specification have nothing built behind them yet.
 
 A requirement is *verified* only if every one of its acceptance criteria has at least one passing test. A criterion that was never written, or that no test covers, counts against it.
 
@@ -33,9 +33,9 @@ A requirement is *verified* only if every one of its acceptance criteria has at 
 | Verified-Must coverage at least 90% | MET | 28 of 31 = 90% |
 | 0 open defects at severity S1 or S2 | **MISSED** | open: DEF-018 (S2) |
 | Every open S3/S4 defect has a documented workaround | MET | all documented |
-| Every fixed defect has a regression test that fails on the pre-fix commit | MET | Result: 25 of 25 fixed defects proven |
-| The suite runs from one command (`./script/test`) and passes | MET | 540 passed, 1 xfailed; CI: the latest completed CI run on GitHub is on commit `c90eb0e` with result **success** (the run for the commit that contains this file is checked after it is pushed) |
-| Line coverage of src/ at least 90% | MET | 95.72% |
+| Every fixed defect has a regression test that fails on the pre-fix commit | MET | Result: 28 of 28 fixed defects proven |
+| The suite runs from one command (`./script/test`) and passes | MET | 547 passed, 1 xfailed; CI: the latest completed CI run on GitHub is on commit `c90eb0e` with result **success** (the run for the commit that contains this file is checked after it is pushed) |
+| Line coverage of src/ at least 90% | MET | 95.85% |
 
 ### Misses, annotated (not edited away)
 
@@ -55,9 +55,6 @@ A requirement is *verified* only if every one of its acceptance criteria has at 
 - DEF-018: Anyone who can reach the server can approve or override; there is no login (S2/P2, Open)
 - DEF-019: No length limit: a 100,000-character location is accepted and stored (S4/P4, Will not fix)
 - DEF-020: A report timestamped in the year 2099 is accepted (S4/P3, Open)
-- DEF-026: Agents' proposals do not consult the broadcast view: a reserved unit can still be proposed when none is free (S3/P3, Open)
-- DEF-027: The tiebreak is applied only to same-unit conflicts; FR-COORD-03-AC1 ("other kinds of conflict") is shown by a test of the function alone (S3/P3, Open)
-- DEF-028: The console's success or error banner is read from the address, so a link can display a false "approved" message (S4/P4, Open)
 
 ## What this run does not show
 
