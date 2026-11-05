@@ -10,6 +10,7 @@ Baseline declared 2026-10-18 (`docs/baseline.md`). No change requests have been 
 | CR-004 | 2026-11-05 | Proposals record the input data the agent used (`agent_proposals.input_data`, final once written; migration 0004) | FR-AUDIT-01 | +0.5 | approved |
 | CR-005 | 2026-11-05 | NFR-SEC-03: synthetic reports live in `tests/data/` and `seed/` (not `data/synthetic/`); check script `tools/check_synthetic.py` | NFR-SEC-03 | +0.5 | approved |
 | CR-006 | 2026-11-05 | Tiebreak log (append-only, both richness scores) and human-escalation queue (migration 0006) | FR-COORD-01, FR-COORD-03 | +0.5 | approved |
+| CR-007 | 2026-11-05 | Incident versions and an append-only reconciliation log (migration 0007) | FR-COORD-02 | +0.5 | approved |
 | CR-009 | 2026-11-05 | Purge Job: units are reset not deleted, nodes untouched; success shape lists purged and reset tables (NFR-PRIV-01) | NFR-PRIV-01 | +0.25 | approved |
 
 ### The threshold rule — when a change needs a CR

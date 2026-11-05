@@ -38,6 +38,7 @@ from src.intake_gateway.service import (
     list_reports,
     submit_report,
 )
+from src.negotiation.reconcile import ReconcileError, override_reconciliation
 from src.negotiation.service import contest
 from src.notify_responder.service import (
     NotifyError,
@@ -376,6 +377,27 @@ def create_app():
             return jsonify({"error": {"code": exc.code, "message": str(exc)}}), status
         except DecideError as exc:
             return jsonify({"error": {"code": exc.code, "message": str(exc)}}), 500
+        finally:
+            conn.close()
+        return jsonify(result)
+
+    @app.post("/reconciliations/<int:report_id>/override")
+    def reconciliation_override(report_id):
+        """FR-COORD-02-AC2. Same stand-in dispatcher as the other human actions; the caller cannot name one."""
+        body = request.get_json(silent=True)
+        body = body if isinstance(body, dict) else {}
+        version_id = body.get("version_id")
+        if not isinstance(version_id, int) or isinstance(version_id, bool):
+            error = {"code": "VERSION_REQUIRED", "message": "version_id must be a whole number."}
+            return jsonify({"error": error}), 400
+        conn = connect()
+        try:
+            result = override_reconciliation(conn, report_id, version_id, body.get("reason"), stub_dispatcher_id(conn))
+        except ReconcileError as exc:
+            status = {"REASON_REQUIRED": 400, "NOT_A_DISPATCHER": 403, "VERSION_NOT_FOUND": 404}.get(exc.code, 400)
+            return jsonify({"error": {"code": exc.code, "message": str(exc)}}), status
+        except LookupError as exc:
+            return jsonify({"error": {"code": "REPORT_NOT_FOUND", "message": str(exc)}}), 404
         finally:
             conn.close()
         return jsonify(result)

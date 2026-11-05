@@ -2,7 +2,7 @@
 
 Incident data is hard-deleted 24 hours after receipt. "Hard" matters: NFR-PRIV-01's own test asks for
 zero rows when it queries every data store for the seeded report ids, which a soft-delete flag would not
-satisfy. Deleted, in foreign-key order: escalations, tiebreak log, follow-ups, overrides, notifications, proposals, reports.
+satisfy. Deleted, in foreign-key order: reconciliation log, incident versions, escalations, tiebreak log, follow-ups, overrides, notifications, proposals, reports.
 
 Retention clocks: `received_at` (reports), `generated_at` (proposals), `overridden_at` (overrides),
 `added_at` (follow-ups), `sent_at` (notifications). A row whose parent is being purged goes with it even
@@ -25,6 +25,9 @@ RETENTION_HOURS = 24
 EXPIRED_REPORTS = "SELECT id FROM incident_reports WHERE received_at <= :cutoff"
 EXPIRED_PROPOSALS = (
     "SELECT id FROM agent_proposals WHERE generated_at <= :cutoff OR report_id IN (" + EXPIRED_REPORTS + ")"
+)
+EXPIRED_VERSIONS = (
+    "SELECT id FROM incident_versions WHERE recorded_at <= :cutoff OR report_id IN (" + EXPIRED_REPORTS + ")"
 )
 EXPIRED_OVERRIDES = (
     "SELECT id FROM dispatcher_overrides WHERE overridden_at <= :cutoff OR assignment_id IN (" + EXPIRED_PROPOSALS + ")"
@@ -49,6 +52,17 @@ def purge(conn, now=None, retention_hours=RETENTION_HOURS):
         ).rowcount
         # children before parents, each deletion using subqueries that are still intact
         steps = [
+            (
+                "reconciliation_log",
+                "decided_at <= :cutoff OR report_id IN ("
+                + EXPIRED_REPORTS
+                + ") OR original_version_id IN ("
+                + EXPIRED_VERSIONS
+                + ") OR chosen_version_id IN ("
+                + EXPIRED_VERSIONS
+                + ")",
+            ),
+            ("incident_versions", "id IN (" + EXPIRED_VERSIONS + ")"),
             (
                 "human_escalations",
                 "created_at <= :cutoff OR report_id IN (" + EXPIRED_REPORTS + ") OR proposal_id IN (" + EXPIRED_PROPOSALS + ")",
@@ -83,6 +97,8 @@ def purge(conn, now=None, retention_hours=RETENTION_HOURS):
             "notifications",
             "tiebreak_log",
             "human_escalations",
+            "reconciliation_log",
+            "incident_versions",
         )
     }
     return {"purged": ordered, "reset": {"units": reset}, "run_at": now.isoformat()}
