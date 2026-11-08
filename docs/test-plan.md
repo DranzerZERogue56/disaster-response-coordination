@@ -1,26 +1,29 @@
 # Test Plan — Disaster Response Coordination
 
-**Version:** 1.0  ·  **Author:** Ben (Dranzer Rogue), with the assistant drafting the facts  ·  **Date:** 2026-11-05  ·  **Baseline commit:** `9607340` (the final run's commit is recorded in `docs/test-results.md`)
+**Version:** 1.0  ·  **Author:** Ben (Dranzer Rogue), with the assistant drafting the facts  ·  **Date:** 2026-11-05  ·  **Baseline commit:** `9310c4a` (amended 2026-11-06; the first version named `9607340`; the exact commit of the final run is recorded in `docs/test-results.md`)
 
 > **Status.** Written by the assistant from the repository and from Ben's decisions of 2026-11-05; read, confirmed and signed by Ben on 2026-11-05. The exit-criteria numbers in section 6 are Ben's. The AI policy for this milestone lets an assistant propose test material; Ben approves every assertion (he approved the test-to-criterion claims on 2026-11-05), and `docs/ai-usage.md` records what was proposed.
+
+> **Amendment 1, 2026-11-06 (facts only; the exit criteria in section 6 are unchanged).** After this plan was signed the build grew: the plan to reach 90% verified-Must coverage built negotiation and tiebreaks, reconciliation, the Scenario Reader, node heartbeats and alerts, the model fallback chain, the modify action, a dispatcher console, a unit-status broadcast, the 24-hour purge job, a synthetic-data check and a clean-machine test (migrations 0005 to 0008, change requests CR-005 to CR-010). Sections 1 to 5 and 8 were rewritten so they describe the build that is actually tested. Nothing in section 6 was lowered; the only change to it was the earlier, dated rise from 60% to 90%. Ben to confirm this amendment (he signed the original on 2026-11-05).
 
 ---
 
 ## 1. Scope — what is under test
 
-The build at the commit above and the requirement IDs in `docs/requirements.md` v1.4: all 30 functional requirements (FR-*) and all 14 non-functional requirements (NFR-*), 44 in total (31 Must, 6 Should... see the matrix for the exact split). Every one has a row in `docs/traceability.csv`, whether or not anything is built for it. The test plan covers what is **built**: intake and its offline queue, classify and propose (with the fake model), the unit registry and its clock, the decide-proposal safety rule, notification records, override assignment, the database rules (migrations 0002 to 0004), and the secrets scan. What is not built is shown in the matrix as a gap, not removed from it.
+The build at the commit above and the requirement IDs in `docs/requirements.md` v1.4: all 30 functional requirements (FR-*) and all 14 non-functional requirements (NFR-*), 44 in total (31 Must, 6 Should... see the matrix for the exact split). Every one has a row in `docs/traceability.csv`, whether or not anything is built for it. The test plan covers what is **built**: intake and its offline queue, classify and propose (the fake model, behind a fallback chain), the unit registry and its 4-minute clock, the decide-proposal safety rule and the modify action, notification records, override assignment, negotiation (tiebreak, its log, the escalation queue, reconciliation of incident versions), the Scenario Reader, node heartbeats and alerts, the unit-status broadcast, the 24-hour purge job, the dispatcher console, the database rules (migrations 0002 to 0008), the synthetic-data check, the clean-machine test and the secrets scan. What is not built or not verifiable is shown in the matrix as a gap, not removed from it.
 
 ## 2. Out of scope — what is NOT under test, and why
 
 | Not tested | Reason |
 |---|---|
-| Real language-model behaviour (Ollama, `phi4-mini`) | Not wired in; a rules-based fake model stands in. Accuracy, latency and prompt behaviour of a real model are untested, and `docs/measurements.md` says so |
+| Real language-model behaviour (Ollama, `phi4-mini`) | Not wired in; a rules-based fake stands in. Accuracy, latency and prompt behaviour of a real model are untested, and `docs/measurements.md` says so |
 | Performance on the target hardware (RTX 3090/4090) | No such machine in the test environment. FR-INFER-02-AC1 and NFR-PERF-01-AC1 name that hardware, so they stay unverified rather than being marked passed on a laptop |
-| Multi-agent negotiation, conflict tiebreaks (FR-COORD-*), node heartbeats and the fallback chain (FR-DEGRADE-*, NFR-REL-01) | Not built this iteration; scheduled Milestones 12 and later |
-| Scenario replay (FR-SIM-01 pace), map output (FR-MAP-*), login (FR-AUTH-01), acknowledgment tracking (FR-ALERT-02), agent timeout (FR-AGENT-04) | Not built; Should/Could/Won't, or deferred |
-| Accessibility and usability (NFR-ACC-01/02, NFR-USE-01) | Need a real dispatcher UI; today there is one plain page. Manual checks belong to the milestone that builds the UI |
-| Clean-machine setup (NFR-MNT-01) and the 24-hour purge job (NFR-PRIV-01) | Clean-machine test is the Week 13 deliverable; the purge job does not exist yet |
-| Load beyond one process (many concurrent users), a network between machines | One SQLite database in one process is the design; the 8-thread reservation test is the concurrency evidence |
+| The primary and smaller tiers of the fallback chain against real models | Those tiers are empty slots until Ollama is wired. The chain's order, retries and escalation are tested with simulated failing models; a real model failing to load is not |
+| A real notification channel (FR-ALERT-01 beyond "a row is recorded") | The requirement names no channel (DEF-017); a database row is what is tested |
+| Login, roles and CSRF (FR-AUTH-01); map output (FR-MAP-*); acknowledgment tracking (FR-ALERT-02); agent timeout (FR-AGENT-04) | Not built: Should, Could or Won't priority, or deferred. DEF-018 records the missing login at S2 |
+| Browser and screen-reader behaviour of the dispatcher console (NFR-PORT-01, NFR-USE-01) | Only structure (native labelled controls, focus outline, contrast figures) is checked by tests, plus one manual keyboard-only pass; no automated accessibility checker, no second browser, no screen reader |
+| Nodes as separate machines, and a real network between them | Heartbeat detection is measured with real separate processes on one machine sharing one SQLite file; network loss between machines is not tested |
+| Load beyond one process (many concurrent users) | One SQLite database in one process is the design; the 8-thread reservation test is the concurrency evidence |
 | The correctness of SQLite, Flask, Python, GitHub Actions | Not ours to verify |
 | Security testing beyond input handling, secrets and the no-outbound-network checks | No login exists yet; a penetration test would be premature |
 
@@ -28,9 +31,10 @@ The build at the commit above and the requirement IDs in `docs/requirements.md` 
 
 | Level | What it covers here | How it runs | Roughly how many |
 |---|---|---|---|
-| Unit | Module logic against a temporary SQLite database: classify, registry, decide, notify, override, intake validation, measurement, plus property-based tests (below) | `./script/test` (whole suite) or `pytest tests/unit` | 103 (at the baseline commit; more with the property tests) |
-| Integration | Real seams: the HTTP routes against a real database, real threads and the background sweeper, the migration runner and database triggers, the three test-data families through the real intake route | `pytest tests/integration` | 136 |
-| Acceptance | One test per acceptance criterion of a built Must requirement, named after the criterion, driving the running app on a freshly seeded database | `pytest tests/acceptance` | 24 |
+| Unit | Module logic against a temporary SQLite database: classify, registry, decide, notify, override, intake validation, measurement, plus property-based tests (below) | `./script/test` (whole suite) or `pytest tests/unit` | 328 (includes the property tests) |
+| Integration | Real seams: the HTTP routes against a real database, real threads and the background sweeper, the migration runner and database triggers, the three test-data families through the real intake route | `pytest tests/integration` | 191 (includes a 33-second test that kills five real node processes) |
+| Acceptance | One test per acceptance criterion of a built Must requirement, named after the criterion, driving the running app on a freshly seeded database | `pytest tests/acceptance` | 29 |
+| Manual | Two criteria are manual by their own wording: a keyboard-only pass with the mouse unplugged (NFR-ACC-01) and a clean-machine run (NFR-MNT-01) | A written numbered script (`tests/manual/scripts/`), the result recorded with `tools/record_manual_result.py` and an evidence file; counted in the matrix only if on the record | 2 |
 
 **One command for everything:** `./script/test`. It runs all three levels and the coverage gate, and is the same command CI runs.
 
@@ -49,7 +53,7 @@ The build at the commit above and the requirement IDs in `docs/requirements.md` 
 |---|---|
 | Runtime / language version | Python 3.11.8 locally; CI runs 3.11 and 3.12 (matrix) |
 | Operating system(s) | Windows 11 locally; Ubuntu (GitHub Actions `ubuntu-latest`) in CI |
-| Database / storage | SQLite 3.43.1, a fresh temporary file per test; migrations 0001 to 0004 applied by `tools/migrate.py` |
+| Database / storage | SQLite 3.43.1, a fresh temporary file per test; migrations 0001 to 0008 applied by `tools/migrate.py` |
 | Third-party services | None. The model is a rules-based fake; the network is not used (a test blocks outbound connections to prove it) |
 | Test data set | `tests/data/*.json`, generated by `tests/data/generate.py` (seed 20261105) |
 | Where it runs | Local `./script/test`, and the GitHub Actions workflow named **CI** on every push |
@@ -57,11 +61,11 @@ The build at the commit above and the requirement IDs in `docs/requirements.md` 
 
 ## 5. Entry criteria — we may begin testing when
 
-- [x] The build under test is pushed and CI is green on the pipeline from Milestone 9 (green on `bbcae34` before this milestone's changes).
+- [x] The build under test is pushed and CI is green on the pipeline from Milestone 9 (green on `bbcae34` before this milestone's changes, and green on the build under test, `9310c4a`).
 - [x] Every Must requirement that is built has at least one written test case (the matrix lists the ones that are not).
 - [x] The test data set is checked in and loads without manual steps (`./script/seed-test-data`).
 - [x] Acceptance criteria exist for the built Must requirements (CR-003 wrote six that were missing).
-- [x] The requirements baseline is known and changes go through change requests (CR-001 to CR-004 so far).
+- [x] The requirements baseline is known and changes go through change requests (CR-001 to CR-010).
 
 ## 6. Exit criteria — verification is DONE when
 
@@ -89,14 +93,15 @@ Results against these are in `docs/test-results.md`; any miss is annotated there
 
 ## 8. Schedule
 
+What was planned, and what happened (kept honest; the plan changed on Thursday when the exit criterion was raised):
+
 | When | What |
 |---|---|
 | Mon Nov 2 | Decisions: folder layout, matrix rename, Medium and Hard tiers, exit-criteria numbers |
 | Tue to Wed | Test plan, traceability tooling, first honest coverage number (23% of requirements, 32% of Musts) |
-| Thu Nov 5 | Test data, hostile-input testing, acceptance tests; defects DEF-009 to DEF-014 logged, then fixed |
-| Fri Nov 6 | Property tests, coverage gate, regression-proof check, defect log, results |
-| Sat Nov 7 | Fresh-clone run, results recorded against the exit criteria |
-| Sun Nov 8 | Submit by 11:59 PM Central |
+| Thu Nov 5 | Test data, hostile-input testing, acceptance tests; defects DEF-009 to DEF-014 logged, then fixed. Evening: exit criterion raised from 60% to 90% verified-Must; the missing requirements built (Tasks 0 to 14 of the work plan), an independent review run, its findings logged as DEF-021 to DEF-028 and fixed |
+| Fri Nov 6 | Push, CI fix, keyboard-only pass (Ben), results regenerated |
+| Sat Nov 7 to Sun Nov 8 | Documents brought up to date, fresh-clone check, final commit; submit by 11:59 PM Central Sun Nov 8 |
 
 ## 9. Approval
 

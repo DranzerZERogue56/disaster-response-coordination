@@ -39,6 +39,16 @@ immediately.
 Other verbs: `./script/lint`, `./script/test`, `./script/build`,
 `./script/smoke` — the same four stages CI runs on every push.
 
+## Run the tests
+
+One command runs the whole suite (unit, integration and acceptance, with the 90% line-coverage gate), and it is the command CI runs:
+
+```
+./script/test
+```
+
+The test plan is `docs/test-plan.md`; the last full run is `docs/test-results.md`; the requirement-to-test matrix is `docs/traceability.csv` (rebuild it with `python tools/build_traceability.py` after a test run); defects are in `docs/defect-log.md`. The dispatcher console is at `http://127.0.0.1:8080/dispatcher` once the app is running. Test data: `./script/seed-test-data`.
+
 ## Current status
 
 Concept and scope locked (Week 1), then pivoted in Week 2 away from an
@@ -80,14 +90,18 @@ cut order if the schedule slips.
 
 ## What's intentionally not here yet
 
-- Most application code — Week 9 built only the one walking-skeleton
-  vertical slice (incident intake). Mesa, the negotiation engine,
-  classification, and the dispatcher web console's real decision flow
-  start in Milestone 10 (see `docs/skeleton-trace.md`'s stub list)
-- No finalized license — see `LICENSE` for the deferral status
-- No LLM integration — Ollama backend work starts Week 9+
-- No scenario reader or report generator yet — both new pieces from the
-  Week 2 pivot, also starting Week 9+
+- No real language model: Ollama is not wired in. A rules-based fake model stands in, behind a fallback chain whose
+  primary and smaller slots are empty until it is. Two requirements that name the target GPU (FR-INFER-02,
+  NFR-PERF-01) are therefore unverified on purpose.
+- No login (FR-AUTH-01): the dispatcher console uses a seeded stand-in account (DEF-018).
+- No real notification channel: "notify" records a row (DEF-017).
+- No map output, no report generator, no Mesa simulation of team sizes yet.
+- No finalized license — see `LICENSE` for the deferral status.
+
+Built since the walking skeleton (Milestones 10 and 11): intake with an offline queue, classification and
+proposals, the unit registry with its 4-minute clock, the human-approval safety rule, override, negotiation with
+a logged tiebreak, reconciliation, the Scenario Reader (`python tools/play_scenario.py FILE --speed N`), node
+heartbeats and alerts, the model fallback chain, the 24-hour purge, and a dispatcher console.
 
 ---
 

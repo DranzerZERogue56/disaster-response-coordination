@@ -1,2 +1,3 @@
 test_id,criteria,level,status,date,tester,evidence
 MANUAL-MNT-01,NFR-MNT-01-AC1,acceptance,pass,2026-11-05,clean_machine_test.py,tests/manual/evidence/mnt-01-clean-machine-2026-11-05.md
+MANUAL-ACC-01,NFR-ACC-01-AC1,acceptance,pass,2026-11-08,Ben,tests/manual/evidence/acc-01-keyboard-only-2026-11-06.md

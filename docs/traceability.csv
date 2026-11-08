@@ -161,7 +161,7 @@ NFR-PRIV-01,Must,NFR-PRIV-01-AC1,tests/unit/test_purge.py::test_everything_older
 NFR-PRIV-01,Must,NFR-PRIV-01-AC1,tests/unit/test_purge.py::test_exactly_24_hours_old_is_purged_and_one_second_younger_is_kept,unit,pass,
 NFR-PRIV-01,Must,NFR-PRIV-01-AC1,tests/unit/test_purge.py::test_nothing_newer_than_24_hours_is_deleted,unit,pass,
 NFR-PRIV-01,Must,NFR-PRIV-01-AC1,tests/unit/test_purge.py::test_purge_with_the_clock_overridden_does_not_wait_24_hours,unit,pass,
-NFR-ACC-01,Must,NFR-ACC-01-AC1,,,,
+NFR-ACC-01,Must,NFR-ACC-01-AC1,MANUAL-ACC-01,acceptance,pass,
 NFR-ACC-02,Must,NFR-ACC-02-AC1,tests/unit/test_dispatcher_accessibility.py::test_each_level_also_has_its_own_symbol_so_the_levels_differ_by_shape_not_just_by_word,unit,pass,
 NFR-ACC-02,Must,NFR-ACC-02-AC1,tests/unit/test_dispatcher_accessibility.py::test_five_incidents_one_per_level_are_each_named_in_text_without_colour,unit,pass,
 NFR-USE-01,Should,NFR-USE-01-AC1,,,,
