@@ -34,7 +34,7 @@ A requirement is *verified* only if every one of its acceptance criteria has at 
 | 0 open defects at severity S1 or S2 | **MISSED** | open: DEF-018 (S2) |
 | Every open S3/S4 defect has a documented workaround | MET | all documented |
 | Every fixed defect has a regression test that fails on the pre-fix commit | MET | Result: 28 of 28 fixed defects proven |
-| The suite runs from one command (`./script/test`) and passes | MET | 547 passed, 1 xfailed; CI: the latest completed CI run on GitHub is on commit `9310c4a` with result **success** (the run for the commit that contains this file is checked after it is pushed) |
+| The suite runs from one command (`./script/test`) and passes | MET | 547 passed, 1 xfailed; CI: green on `b83c828`, the commit that holds these numbers (Python 3.11 and 3.12), checked 2026-11-08 after the push |
 | Line coverage of src/ at least 90% | MET | 95.85% |
 
 ### Misses, annotated (not edited away)
@@ -59,4 +59,4 @@ A requirement is *verified* only if every one of its acceptance criteria has at 
 
 - The classifier is a rules-based fake. Nothing here says a real language model will classify correctly or fast enough (`docs/measurements.md`).
 - Several "fails before the fix" proofs for the older defects are collection errors because the fixed feature did not exist yet; for DEF-009 to DEF-012 the hostile-data cases give the assertion-level proof (see `docs/regression-proof.md`).
-- CI on the final pushed commit is checked after pushing: the latest completed CI run on GitHub is on commit `9310c4a` with result **success** (the run for the commit that contains this file is checked after it is pushed).
+- CI on the final pushed commit: the run on `b83c828` finished **success** for both Python versions (added by hand on 2026-11-08, after the run above; later commits changed documents only, not code or tests).

@@ -95,7 +95,7 @@ def main():
     gh = run(["gh", "run", "list", "--limit", "1", "--json", "conclusion,headSha,status"]).stdout
     try:
         last = json.loads(gh)[0]
-        ci = f"the latest completed CI run on GitHub is on commit `{last['headSha'][:7]}` with result **{last['conclusion'] or last['status']}** (the run for the commit that contains this file is checked after it is pushed)"
+        ci = f"the latest completed CI run on GitHub is on commit `{last['headSha'][:7]}` with result **{last['conclusion'] or last['status']}**"
     except (ValueError, IndexError):
         ci = "not checked (the GitHub CLI was unavailable); check the CI run on the pushed commit"
 
