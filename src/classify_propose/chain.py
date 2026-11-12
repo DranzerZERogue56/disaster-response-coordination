@@ -15,10 +15,18 @@ The answer carries `model_identifier` and `model_version` of the tier that gave 
 names the model that really answered, and `tier`. When an earlier tier failed in the pass that succeeded,
 the reasoning starts with a note saying so, so a person reviewing it can see it came from a fallback.
 """
+import os
+import sys
 import time
 from dataclasses import dataclass
 
 from src.classify_propose.model import get_model
+from src.classify_propose.ollama_client import (
+    DEFAULT_MODEL,
+    DEFAULT_TIMEOUT,
+    DEFAULT_URL,
+    OllamaModel,
+)
 
 TIER_NAMES = ("primary", "smaller", "rules")
 
@@ -88,7 +96,39 @@ class ModelChain:
         return answer
 
 
+def _timeout_from_environment():
+    raw = os.environ.get("OLLAMA_TIMEOUT")
+    if raw is None:
+        return DEFAULT_TIMEOUT
+    try:
+        value = float(raw)
+        if value > 0:
+            return value
+    except ValueError:
+        pass
+    print(f"OLLAMA_TIMEOUT={raw!r} is not a positive number of seconds; using {DEFAULT_TIMEOUT}", file=sys.stderr)
+    return DEFAULT_TIMEOUT
+
+
 def build_chain():
-    """The chain the app uses. Only the rules tier exists today (the model chosen by CLASSIFY_MODEL, the fake
-    rules model); the primary and smaller slots take the Ollama models when they are wired."""
-    return ModelChain(primary=None, smaller=None, rules=get_model())
+    """The chain the app uses, read from the environment on every call so a change takes effect on the next
+    report with no restart.
+
+    The rules tier (the model chosen by CLASSIFY_MODEL, the fake rules model) is always last. The Ollama model
+    is the primary tier only when OLLAMA_ENABLED is 1: that variable is the kill switch (set it to 0, or
+    unset it, and the integration is off without a redeploy). OLLAMA_URL (default http://127.0.0.1:11434),
+    OLLAMA_MODEL (default qwen3:1.7b) and OLLAMA_TIMEOUT (default 60 s) configure it; OLLAMA_SMALLER_MODEL, if
+    set, adds a second Ollama model as the smaller tier. A URL that is not this machine is refused with a
+    message on stderr and the chain carries on without the model."""
+    primary = smaller = None
+    if os.environ.get("OLLAMA_ENABLED") == "1":
+        url = os.environ.get("OLLAMA_URL", DEFAULT_URL)
+        timeout = _timeout_from_environment()
+        try:
+            primary = OllamaModel(os.environ.get("OLLAMA_MODEL", DEFAULT_MODEL), url, timeout)
+            if os.environ.get("OLLAMA_SMALLER_MODEL"):
+                smaller = OllamaModel(os.environ["OLLAMA_SMALLER_MODEL"], url, timeout)
+        except ValueError as exc:
+            print(f"model integration not used: {exc}", file=sys.stderr)
+            primary = smaller = None
+    return ModelChain(primary=primary, smaller=smaller, rules=get_model())

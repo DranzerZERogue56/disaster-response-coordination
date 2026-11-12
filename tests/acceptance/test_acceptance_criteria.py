@@ -394,11 +394,20 @@ def test_NFR_SEC_01_AC1_a_full_scenario_runs_with_outbound_network_blocked_and_c
     assert [a for a in attempts if a not in ("127.0.0.1", "localhost", "::1")] == []  # zero external hosts
 
 
-def test_the_source_imports_no_network_client_library():
-    """Supports FR-INFER-01 and NFR-SEC-01 from the other side: nothing in src/ could call out."""
+# The one module allowed to open a network connection (CR-011): the client for the model server on this machine.
+NETWORK_ALLOWED = {"src/classify_propose/ollama_client.py"}
+
+
+def test_the_source_imports_no_network_client_library_except_the_one_local_model_client():
+    """Supports FR-INFER-01 and NFR-SEC-01 from the other side: nothing in src/ could call out, apart from the model
+    client, which is allowed to exist only because it refuses every host that is not this machine."""
     forbidden = re.compile(r"^\s*(import|from)\s+(requests|httpx|aiohttp|urllib\.request|http\.client|socket|ftplib|smtplib)\b", re.MULTILINE)
-    offenders = [str(p.relative_to(REPO)) for p in (REPO / "src").rglob("*.py") if forbidden.search(p.read_text(encoding="utf-8"))]
-    assert offenders == []
+    offenders = sorted(
+        p.relative_to(REPO).as_posix() for p in (REPO / "src").rglob("*.py") if forbidden.search(p.read_text(encoding="utf-8"))
+    )
+    assert set(offenders) <= NETWORK_ALLOWED, f"a network library is imported outside the allowed module: {offenders}"
+    client = (REPO / "src" / "classify_propose" / "ollama_client.py").read_text(encoding="utf-8")
+    assert 'LOOPBACK_HOSTS = {"127.0.0.1", "localhost", "::1"}' in client and "_check_local(base_url)" in client
 
 
 @pytest.mark.covers("NFR-SEC-04-AC1")
