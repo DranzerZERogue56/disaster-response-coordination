@@ -53,6 +53,8 @@ DEFECTS = [
     ("DEF-027", "eb522c9", "tests/unit/test_def026_027.py::test_two_live_proposals_on_one_incident_are_settled_by_the_same_tiebreak_and_logged"),
     ("DEF-028", "eb522c9", "tests/integration/test_dispatcher_ui_http.py::test_a_banner_forged_in_the_address_is_not_shown"),
     ("DEF-029", "b7030ae", "tests/unit/test_def029.py::test_decide_auto_holds_a_real_model_proposal_at_75_but_approves_a_rules_proposal_at_75"),
+    ("DEF-030", "3c4513b", "tests/unit/test_def030_031.py::test_the_scheduled_run_deletes_what_is_older_than_24_hours_and_keeps_the_rest"),
+    ("DEF-031", "3c4513b", "tests/unit/test_def030_031.py::test_every_response_carries_the_browser_security_headers[/healthz]"),
 ]
 
 
