@@ -19,7 +19,7 @@
 | Field | Value |
 |---|---|
 | Disposition | **DEFER** |
-| Destination | The next build period, about two weeks from 2026-11-15 (roughly the week of 2026-11-29, Milestone 14), as backlog item **B-nn** in `docs/backlog.md` (id assigned when the backlog is final) |
+| Destination | The next build period, about two weeks from 2026-11-15 (roughly the week of 2026-11-29, Milestone 14), as backlog item **B-11** in `docs/backlog.md` (id assigned when the backlog is final) |
 | Decided by | Ben (Dranzer Rogue) |
 | Date | 2026-11-15 (draft date; Ben to confirm) |
 | Rationale | This is a big change, not a tweak, and I do not want to rush it into the release candidate. The next period is when most of the building happens. Because the model is reached through one small function, I expect to make a clean swap then. |
@@ -41,5 +41,5 @@
 ## Applied
 - [ ] Ben rewrites and confirms
 - [ ] Row in the `CHANGELOG.md` change table
-- [ ] Item added to `docs/backlog.md` (B-nn) with its estimate and acceptance criteria
+- [ ] Item added to `docs/backlog.md` (B-11) with its estimate and acceptance criteria
 - [ ] Listed in `docs/security-review.md` area 5 as an accepted, deferred finding
