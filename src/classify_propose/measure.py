@@ -88,7 +88,7 @@ def measure(model=None, texts=None):
             result = classify_and_propose(conn, report["report_id"], model)
             seconds.append(time.perf_counter() - start)
             confidences.append(result["confidence"])
-            human += needs_human(result["confidence"], result["severity"])
+            human += needs_human(result["confidence"], result["severity"], model.identifier)
         conn.close()
 
     p95 = percentile(seconds, 0.95)
@@ -98,6 +98,7 @@ def measure(model=None, texts=None):
         "p50_seconds": percentile(seconds, 0.50),
         "p95_seconds": p95,
         "max_seconds": max(seconds),
+        "seconds": seconds,
         "within_limit": p95 <= LIMIT_SECONDS,
         "confidence_min": min(confidences),
         "confidence_mean": sum(confidences) / len(confidences),
