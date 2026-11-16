@@ -430,12 +430,13 @@ def test_NFR_SEC_04_AC1_the_secret_scan_finds_nothing_in_this_repo_and_catches_a
 
 @pytest.mark.covers("FR-AUTH-01-AC2")
 @pytest.mark.defect("DEF-018")
-@pytest.mark.xfail(strict=True, reason="open defect DEF-018: there is no login, so an unauthenticated caller can approve")
-def test_FR_AUTH_01_AC2_an_unauthenticated_caller_cannot_approve(world):
-    client, _ = world
+def test_FR_AUTH_01_AC2_an_unauthenticated_caller_cannot_approve(world, monkeypatch):
+    client, db = world
     held = post(client, report(VAGUE)).get_json()
+    monkeypatch.setenv("AUTH_ENFORCED", "1")  # script/start turns the gate on; the fixture app is the same app
     resp = client.post(f"/proposals/{held['proposal']['proposal_id']}/decision", json={"decision": "approve"})
     assert resp.status_code in (401, 403)
+    assert query(db, "SELECT final_status FROM agent_proposals WHERE id = ?", (held["proposal"]["proposal_id"],))[0]["final_status"] is None
 
 
 # ---- second-round criteria (CR-003): the failure and abuse cases --------------------------------------

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in: Dispatcher console</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='dispatcher.css') }}">
+</head>
+<body>
+<main>
+  <h1>Sign in</h1>
+  <p class="muted">Use your username, your password, and the six-digit code from the authenticator app on your own phone.</p>
+  {% if message %}
+  <div class="notice notice-error" role="alert">{{ message }}</div>
+  {% endif %}
+  <form method="post" action="/login" class="actions">
+    <div>
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" autocomplete="username" required>
+    </div>
+    <div>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+    </div>
+    <div>
+      <label for="code">Six-digit code from your phone</label>
+      <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>
+    </div>
+    <button type="submit">Sign in</button>
+  </form>
+</main>
+</body>
+</html>

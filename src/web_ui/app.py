@@ -22,7 +22,6 @@ from src.decide_proposal.service import (
     DecideError,
     decide_auto,
     list_pending,
-    stub_dispatcher_id,
 )
 from src.heartbeat.service import (
     HeartbeatError,
@@ -57,6 +56,7 @@ from src.unit_registry.service import (
     unit_clock,
 )
 from src.web_ui.actions import decide_with_retry, override_with_notice, try_notify
+from src.web_ui.auth_gate import current_dispatcher_id, install_gate
 from src.web_ui.dispatcher import bp as dispatcher_bp
 
 TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
@@ -236,6 +236,7 @@ def create_app():
     if watch:
         start_node_watcher(float(watch))
 
+    install_gate(app)  # sessions, two-factor sign-in and the forgery token; off unless AUTH_ENFORCED=1
     app.register_blueprint(dispatcher_bp)
 
     @app.after_request
@@ -367,7 +368,7 @@ def create_app():
                 conn,
                 proposal_id,
                 body.get("decision"),
-                stub_dispatcher_id(conn),
+                current_dispatcher_id(conn),
                 modified_unit_id=body.get("modified_unit_id"),
             )
         except DecideError as exc:
@@ -396,7 +397,7 @@ def create_app():
                 proposal_id,
                 body.get("new_unit_id"),
                 body.get("reason"),
-                stub_dispatcher_id(conn),
+                current_dispatcher_id(conn),
             )
         except OverrideError as exc:
             status = {
@@ -418,7 +419,7 @@ def create_app():
         body = json_object()
         conn = connect()
         try:
-            result = add_follow_up(conn, override_id, body.get("text"), stub_dispatcher_id(conn))
+            result = add_follow_up(conn, override_id, body.get("text"), current_dispatcher_id(conn))
         except OverrideError as exc:
             status = 404 if exc.code == "OVERRIDE_NOT_FOUND" else 400
             return jsonify({"error": {"code": exc.code, "message": str(exc)}}), status
@@ -439,7 +440,7 @@ def create_app():
             return jsonify({"error": error}), 400
         conn = connect()
         try:
-            result = override_reconciliation(conn, report_id, version_id, body.get("reason"), stub_dispatcher_id(conn))
+            result = override_reconciliation(conn, report_id, version_id, body.get("reason"), current_dispatcher_id(conn))
         except ReconcileError as exc:
             status = {"REASON_REQUIRED": 400, "NOT_A_DISPATCHER": 403, "VERSION_NOT_FOUND": 404}.get(exc.code, 400)
             return jsonify({"error": {"code": exc.code, "message": str(exc)}}), status
@@ -465,7 +466,7 @@ def create_app():
         """Same stand-in dispatcher as the other human actions; the caller cannot name one."""
         conn = connect()
         try:
-            result = confirm_recovery(conn, node_id, stub_dispatcher_id(conn))
+            result = confirm_recovery(conn, node_id, current_dispatcher_id(conn))
         except HeartbeatError as exc:
             status = {"NOT_A_DISPATCHER": 403, "NODE_NOT_FLAGGED": 409, "NODE_NOT_RESUMED": 409}.get(exc.code, 400)
             return jsonify({"error": {"code": exc.code, "message": str(exc)}}), status

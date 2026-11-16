@@ -22,11 +22,12 @@ from flask import (
 from itsdangerous import BadSignature, URLSafeTimedSerializer
 
 from src.db import connect
-from src.decide_proposal.service import DecideError, list_pending, stub_dispatcher_id
+from src.decide_proposal.service import DecideError, list_pending
 from src.heartbeat.service import HeartbeatError, confirm_recovery
 from src.override_assignment.service import OverrideError
 from src.unit_registry.service import RegistryError, unit_clock
 from src.web_ui.actions import decide_with_retry, override_with_notice
+from src.web_ui.auth_gate import current_dispatcher_id
 
 bp = Blueprint("dispatcher", __name__)
 
@@ -137,7 +138,7 @@ def decide(proposal_id, action):
             conn,
             proposal_id,
             decision,
-            stub_dispatcher_id(conn),
+            current_dispatcher_id(conn),
             modified_unit_id=_whole_number(request.form.get("modified_unit_id")) if decision == "modify" else None,
         )
     except ERRORS as exc:
@@ -163,7 +164,7 @@ def override(proposal_id):
             proposal_id,
             _whole_number(request.form.get("new_unit_id")),
             request.form.get("reason"),
-            stub_dispatcher_id(conn),
+            current_dispatcher_id(conn),
         )
     except ERRORS as exc:
         return _refused(f"Assignment for proposal {proposal_id}", exc)
@@ -176,7 +177,7 @@ def override(proposal_id):
 def confirm_node(node_id):
     conn = connect()
     try:
-        confirm_recovery(conn, node_id, stub_dispatcher_id(conn))
+        confirm_recovery(conn, node_id, current_dispatcher_id(conn))
     except ERRORS as exc:
         return _refused(f"Node {node_id}", exc)
     finally:

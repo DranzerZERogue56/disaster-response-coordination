@@ -13,6 +13,12 @@
   <h1>Dispatcher console</h1>
   <p class="muted">You are acting as the demo dispatcher (a stand-in account; real sign-in is not built yet).
     This page does not reload by itself. <a href="/dispatcher">Refresh this page</a></p>
+  {% if signed_in %}
+  <form method="post" action="/logout">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button type="submit">Sign out</button>
+  </form>
+  {% endif %}
 </header>
 
 <main>
@@ -47,9 +53,11 @@
     <p class="muted">Reasoning: {{ p.reasoning }}</p>
     <div class="actions">
       <form method="post" action="/dispatcher/proposals/{{ p.proposal_id }}/approve">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <button type="submit">Approve proposal {{ p.proposal_id }}</button>
       </form>
       <form method="post" action="/dispatcher/proposals/{{ p.proposal_id }}/modify">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <div>
           <label for="modify-unit-{{ p.proposal_id }}">Unit number to send instead</label>
           <input id="modify-unit-{{ p.proposal_id }}" name="modified_unit_id" type="number" min="1" inputmode="numeric" required>
@@ -57,6 +65,7 @@
         <button type="submit">Modify proposal {{ p.proposal_id }}</button>
       </form>
       <form method="post" action="/dispatcher/proposals/{{ p.proposal_id }}/reject">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <button type="submit">Reject proposal {{ p.proposal_id }}</button>
       </form>
     </div>
@@ -76,6 +85,7 @@
       &middot; unit {{ a.unit_id }} is assigned ({{ a.final_status }})</p>
     <div class="actions">
       <form method="post" action="/dispatcher/assignments/{{ a.proposal_id }}/override">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <div>
           <label for="override-unit-{{ a.proposal_id }}">New unit number</label>
           <input id="override-unit-{{ a.proposal_id }}" name="new_unit_id" type="number" min="1" inputmode="numeric" required>
@@ -118,6 +128,7 @@
       {% else %}It is still not responding; the system is waiting for the node to respond again.{% endif %}</p>
     {% if n.recovered_at %}
     <form method="post" action="/dispatcher/nodes/{{ n.node_id }}/confirm-recovery">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <button type="submit">Confirm node {{ n.node_id }} has recovered and its information is intact</button>
     </form>
     {% endif %}
