@@ -6,12 +6,18 @@ Anything else is left untouched for a human (slice 4). Marking the unit
 'assigned' is the Unit Registry's job (FR-RES-01), so this module never
 writes to the units table.
 """
+import os
 from datetime import UTC, datetime
 
 from src.unit_registry.service import RegistryError, assign_unit, release_for_proposal
 
 CONFIDENCE_THRESHOLD = 75
 HIGH_SEVERITIES = ("Severe", "Critical")
+# DEF-029: a real language model's confidence is not calibrated (it scored an almost empty report 75, exactly the
+# bar), so its answers need a stricter bar than the specified 75 before a unit is dispatched with no human. The
+# rules tier keeps 75. Adjustable with MODEL_AUTO_APPROVE_MIN, never below 75; a bad value falls back to this default.
+MODEL_AUTO_APPROVE_DEFAULT = 85
+REAL_MODEL_PREFIX = "ollama/"
 
 
 class DecideError(Exception):
@@ -23,9 +29,20 @@ class DecideError(Exception):
         super().__init__(message)
 
 
-def needs_human(confidence, severity):
+def auto_approve_minimum(model_identifier=None):
+    """The confidence at or above which a proposal may be approved without a person."""
+    if not (model_identifier or "").startswith(REAL_MODEL_PREFIX):
+        return CONFIDENCE_THRESHOLD
+    try:
+        value = int(os.environ.get("MODEL_AUTO_APPROVE_MIN", MODEL_AUTO_APPROVE_DEFAULT))
+    except ValueError:
+        return MODEL_AUTO_APPROVE_DEFAULT
+    return value if value >= CONFIDENCE_THRESHOLD else MODEL_AUTO_APPROVE_DEFAULT
+
+
+def needs_human(confidence, severity, model_identifier=None):
     """The safety rule. Kept as its own function so it is tested on its own."""
-    return confidence < CONFIDENCE_THRESHOLD or severity in HIGH_SEVERITIES
+    return confidence < auto_approve_minimum(model_identifier) or severity in HIGH_SEVERITIES
 
 
 def decide_auto(conn, proposal_id, now=None):
@@ -48,7 +65,7 @@ def decide_auto(conn, proposal_id, now=None):
     row = conn.execute(
         """
         SELECT p.confidence, p.recommended_unit_id, p.final_status, p.decided_by,
-               p.decided_at, r.severity
+               p.decided_at, p.model_identifier, r.severity
         FROM agent_proposals p JOIN incident_reports r ON r.id = p.report_id
         WHERE p.id = ?
         """,
@@ -66,7 +83,7 @@ def decide_auto(conn, proposal_id, now=None):
             "already_decided": True,
         }
 
-    if needs_human(row["confidence"], row["severity"]):
+    if needs_human(row["confidence"], row["severity"], row["model_identifier"]):
         return {"proposal_id": proposal_id, "final_status": None, "held_for_human": True}
 
     decided_at = (now or datetime.now(UTC)).isoformat()
