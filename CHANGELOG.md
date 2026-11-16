@@ -46,7 +46,7 @@ History before this file's first release section: tag `milestone-3` (2026-09-13)
 - Draft change request CR-012, a retroactive record of the Milestone 7 deferrals (FR-INTAKE-03, FR-INFER-03, FR-MAP-01), and a Status line under each of those three requirements.
 
 ### Changed
-- Decisions waiting on Ben: CR-011, CR-013 and CR-014 (drafted from Ben's notes) and CR-012 dispositions, to rewrite and confirm; the confidence bar of 85 for real-model answers (DEF-029), which is the assistant's provisional number.
+- Decisions waiting on Ben: CR-011, CR-013 and CR-014 (drafted from Ben's notes) and CR-012 dispositions, to rewrite and confirm. The confidence bar of 85 for real-model answers (DEF-029) was confirmed by Ben on 2026-11-15.
 
 ## [0.9.0-rc.1] - 2026-11-15
 
@@ -71,7 +71,7 @@ Release candidate. Exit criteria are in `docs/rc-exit-criteria.md` (written 2026
 - Test suite in `tests/unit`, `tests/integration`, `tests/acceptance`, `tests/data` (happy, boundary and hostile families, fixed seed 20261105), property-based tests P1 to P4 with Hypothesis, a 90% line-coverage gate in `./script/test`, and `docs/traceability.csv` built from `@pytest.mark.covers` markers (NFR-MNT-01, DEF-015).
 
 ### Changed
-- Real-model answers need a confidence of at least 85 before automatic dispatch; the rules tier keeps the spec's 75. Adjustable with `MODEL_AUTO_APPROVE_MIN`, never below 75. The 85 is provisional (FR-AGENT-03, NFR-SEC-02, DEF-029).
+- Real-model answers need a confidence of at least 85 before automatic dispatch; the rules tier keeps the spec's 75. Adjustable with `MODEL_AUTO_APPROVE_MIN`, never below 75. Ben confirmed the 85 on 2026-11-15 (FR-AGENT-03, NFR-SEC-02, DEF-029).
 - The no-network-library rule in the acceptance tests now exempts only `src/classify_propose/ollama_client.py`, and checks that it contains the loopback-only test (NFR-SEC-01, CR-011 pending).
 - `docs/requirements-traceability.csv` is the Week-4 requirement-level file renamed; `docs/traceability.csv` is the criterion-level matrix (CR-003).
 - Intake accepts only a JSON object whose text fields are non-blank strings (FR-INTAKE-02, DEF-009 to DEF-012).

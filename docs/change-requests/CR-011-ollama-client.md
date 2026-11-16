@@ -40,10 +40,10 @@
 
 ### What "accept almost all" covers (facts, assistant)
 - Accepted as built: `src/classify_propose/ollama_client.py`; the `build_chain()` wiring and kill switch in `src/classify_propose/chain.py`; the five environment variables in `.env.example`; the narrowed acceptance test; 45 new tests (24 client, 7 wiring, 14 chaos) and the whole suite at 595 passed when committed (`d8d0bcb`).
-- Accepted with a safeguard added afterwards: DEF-029 (a real model scored a vague report at exactly the auto-dispatch bar of 75). Answers from a real model now need confidence 85 or more (`MODEL_AUTO_APPROVE_MIN`, never below 75) before a unit is dispatched without a person. The 85 is a provisional number picked by the assistant because Ben gave none **(assistant, Ben to confirm)**.
+- Accepted with a safeguard added afterwards: DEF-029 (a real model scored a vague report at exactly the auto-dispatch bar of 75). Answers from a real model now need confidence 85 or more (`MODEL_AUTO_APPROVE_MIN`, never below 75) before a unit is dispatched without a person. The 85 was proposed by the assistant and confirmed by Ben on 2026-11-15.
 
-### Point of tension to settle **(assistant, Ben to confirm)**
-Ben's notes reject "multiple local hosted models", but on 2026-11-12 Ben also asked for `smollm2:360m` as a smaller second tier. The code supports an optional second model (`OLLAMA_SMALLER_MODEL`, empty and therefore off by default). Ben to say which it is: keep it as a disabled option, or remove it from `.env.example` and the chain wiring.
+### Point of tension, settled by Ben on 2026-11-15
+Ben's notes reject "multiple local hosted models", but on 2026-11-12 Ben also asked for `smollm2:360m` as a smaller second tier. The code supports an optional second model (`OLLAMA_SMALLER_MODEL`, empty and therefore off by default). **Ben's decision (2026-11-15, in chat, to be rewritten in his words): `smollm2:360m` stays as a disabled option.** It was a one-time-use model, so it stays off by default and the one demo model is `qwen3:1.7b`.
 
 ## Applied
 - [x] Code and tests committed (see the commit that adds this file)

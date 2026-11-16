@@ -33,8 +33,8 @@
 | Blast radius | **Ben** (facts above) |
 | Risk if rejected, and risk if accepted | **Ben** |
 
-## Point to settle **(assistant, Ben to confirm)**
-On 2026-11-12 Ben asked for `smollm2:360m` as a smaller second tier. That fits "one demo model" only if the second tier stays a disabled option. Ben to say whether it stays in `.env.example` and the chain wiring or is removed.
+## Point settled by Ben on 2026-11-15
+On 2026-11-12 Ben asked for `smollm2:360m` as a smaller second tier. That fits "one demo model" only if the second tier stays a disabled option. **Ben's decision (2026-11-15, in chat, to be rewritten in his words): it stays as a disabled option** (`OLLAMA_SMALLER_MODEL`, empty by default; it was a one-time-use model).
 
 ## Ben's notes as written (verbatim, 2026-11-15)
 

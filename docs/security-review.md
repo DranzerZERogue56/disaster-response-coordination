@@ -1,11 +1,52 @@
 # Security Review: v0.9.0-rc.1
 
-> **STATUS: SCAFFOLD, NOT YET A REVIEW.** Under the Milestone 12 AI policy the claims, findings, dispositions and reasons in this file must be Ben's. The assistant ran the tools and recorded facts in `docs/security-review-facts.md` (observation ids F1.1 to F8.10, each with a file:line and a command to re-run). This file arranges those facts into the seven required areas. Every cell marked **Ben** is empty on purpose. A finding is "fixed" or "accepted with a reason"; there is no third state. Dependency advisory ids must be opened and verified by Ben at https://github.com/advisories or https://osv.dev/.
-> **Date written / reviewer:** **Ben** (date) / Ben (Dranzer Rogue)
+> **STATUS: NOT YET A REVIEW. Ben's input is needed in every cell marked "Ben".** Under the Milestone 12 AI policy the claims, findings, severities, dispositions and reasons in this file must be Ben's. The assistant ran the tools and recorded facts in `docs/security-review-facts.md` (observation ids F1.1 to F8.10, each with a file:line and a command to re-run). The "Assistant recommendation" column is the assistant's opinion, **not a decision**: change any of them. Dependency advisory ids must be opened and verified by Ben at https://github.com/advisories or https://osv.dev/. A finding ends either FIXED or ACCEPTED with a reason; there is no third state.
+> **Reviewer / date:** Ben (Dranzer Rogue) / **Ben** (the day you finish)
 
-## The seven areas
+---
 
-| # | Area | What was checked and how to re-run it (facts) | Evidence (fact ids in `docs/security-review-facts.md`) | Result | Findings |
+## PART A. Where Ben's input is needed (the checklist: about 60 to 75 minutes in total)
+
+Do these in order. Each item says what to write and where, how long it takes, and what to read first.
+
+### A1. Header (1 minute)
+- Fill in the date line above.
+
+### A2. The seven area results (7 areas x about 4 minutes = 28 minutes)
+For each area in Part B: (1) read the fact ids listed, (2) optionally run the one re-run command to see it for yourself, (3) write in the **Result** cell one of **Pass**, **Pass with findings**, or **Fail**, plus one sentence saying what you checked and what you saw. The assistant's facts are not your evidence until you have looked.
+
+| Area | Read | Re-run command (copy and paste in the repo folder, Git Bash) | What you are deciding |
+|---|---|---|---|
+| 1 Secrets | F1.1 to F1.8 | `./script/secrets-check` (expect "0 matches") | Is it true that no key, token or password is in the repository or its history? |
+| 2 Input handling | F2.1 to F2.19, the route table | `grep -n "@app\.\(get\|post\)\|@bp\.\(get\|post\)" src/web_ui/app.py src/web_ui/dispatcher.py` (lists every route) | Is every route's input checked well enough for a demo that listens only on this machine? Finding S-05 lives here |
+| 3 Authentication | F3.1 to F3.7 | `grep -rn "stub_dispatcher_id" src \| head` | Anyone who reaches the server acts as the dispatcher. This area will almost certainly be **Fail** or **Pass with findings**: that is allowed and honest |
+| 4 Authorization | F4.1 to F4.10 | `./.venv/Scripts/python -m pytest tests/unit/test_human_decision.py -q -p no:cacheprovider` | Are roles enforced where they can be? Findings S-01, S-03 |
+| 5 Transport | F5.1 to F5.6 | `./.venv/Scripts/python -c "from src.web_ui.app import create_app; print(dict(create_app().test_client().get('/healthz').headers))"` (shows the four security headers) | Plain HTTP on this machine only, no CSRF, headers now present. Findings S-02, S-04, S-11 |
+| 6 Dependencies | F6.1 to F6.4 | `./.venv/Scripts/pip-audit -r requirements.txt` (expect "No known vulnerabilities") | Are the project's pinned packages clean, and what do you make of the venv-only `setuptools` advisories? Finding S-07 |
+| 7 Logging | F7.1 to F7.16 | `grep -n "print(" src -r \| head -20` | What is logged, is any personal data in it, is the purge on? Findings S-08, S-10 |
+
+### A3. The eight open findings S-01 to S-08 (8 findings x about 5 minutes = 40 minutes)
+For each finding in Part C write three things in your own words: **Severity** (S1 to S4, same scale as the defect log), **Disposition** (FIXED or ACCEPTED) and **Reason** (one to three sentences). Read the assistant's recommendation and reasoning first, then agree or choose differently: either is fine as long as the reason is yours. Two of them change something else, so read the "if you choose differently" notes.
+
+### A4. Confirm the three already-fixed findings S-09, S-10, S-11 (3 minutes)
+Read the defect-log entry (DEF-029, DEF-030, DEF-031) and write "confirmed" or what you disagree with in the **Reason** cell. S-09 already carries your decision (the 85 bar, 2026-11-15).
+
+### A5. The five advisories (5 x about 4 minutes = 20 minutes; **only you can do this**)
+For each row in Part D: open the link, check that the id exists and says what package and versions it affects, check that the installed version (`setuptools 65.5.0`) is in the affected range, write **verified** in the verification cell with the date, and write your **reachability judgment** (can the vulnerable code run from this app?). Assistant facts to help: `setuptools` is not in `requirements.txt`, is not imported anywhere in the repository, and is installer tooling that CI does not install from a pin. Those are facts, not your judgment.
+
+### A6. Anything the assistant did not know (3 minutes)
+In Part E, add any security-relevant fact only you know (a shared laptop, a real token you have used for this project, an account that is not fictional, anything about GitHub access). If there is nothing, write "nothing known".
+
+### A7. Sign off (1 minute)
+Write the closing line in Part F.
+
+**What your answers change elsewhere:** if S-01 is ACCEPTED, `docs/rc-exit-criteria.md` line 2 (zero open S1/S2) is a recorded **MISS** (that is allowed; hiding it is not). If S-05 is FIXED, DEF-019 changes from Will not fix to Fixed and one hostile-data test must change. If you write all of Part A, exit-criteria line 4 (the security pass) passes.
+
+---
+
+## PART B. The seven areas
+
+| # | Area | What was checked and how to re-run it (facts) | Evidence (fact ids) | Result (Ben) | Findings |
 |---|---|---|---|---|---|
 | 1 | Secrets | `./script/secrets-check` (0 matches in 259 tracked files); a scan of the added lines of `git log --all -p` against the same patterns (184 commits, 0 matches); `.env` is ignored, `.env.example` holds no secret; `BANNER_SIGNER` is a random per-start key | F1.1 to F1.8 | **Ben** | none recorded by the assistant |
 | 2 | Input handling | 18 routes reviewed for what input each takes and how it is validated; the hostile-data family (`tests/data/hostile.json`, `tests/integration/test_data_families_http.py`); DEF-009 to DEF-012 and DEF-023 (non-object JSON bodies) fixed with regression tests; no request-size limit exists | F2.1 to F2.19 | **Ben** | S-05 |
@@ -15,32 +56,90 @@
 | 6 | Dependencies | `pip-audit -r requirements.txt`: no known vulnerabilities in the 16 pinned packages; `pip-audit` on the whole virtual environment: 5 advisories against `setuptools 65.5.0`, which is not in `requirements.txt` and is not imported by the repo | F6.1 to F6.4 | **Ben** | S-07 |
 | 7 | Logging | Append-only tables (`dispatcher_overrides`, `override_follow_ups`, `tiebreak_log`, `reconciliation_log`, `node_alerts`, `unit_events`) and stderr prints are what is recorded; no personal data field exists; no `debug=True`; the 24-hour purge now runs hourly (DEF-030) but does not cover the node alert and notice tables | F7.1 to F7.16 | **Ben** | S-08, S-10 |
 
-## Findings (one row per finding; every row ends fixed or accepted with a reason)
+---
 
-Severity uses the defect-log scale (S1 to S4). "Facts" are quoted from the fact sheet and the repo; everything in a **Ben** cell is yours to write.
+## PART C. Findings (one row each; every row ends FIXED or ACCEPTED with a reason)
 
-| ID | Area | Facts | Options and cost (assistant, for reference) | Severity | Disposition (FIXED or ACCEPTED) | Reason |
-|---|---|---|---|---|---|---|
-| S-01 | 3, 4 | No login: anyone who can reach the server can approve or override, always as the stand-in dispatcher. DEF-018, open, logged S2. Bound to 127.0.0.1 only (F3.1 to F3.5) | build a login (sessions, hashed passwords, roles, a one-time demo password printed by the seed script: about 4 to 6 hours); or accept with the localhost bind. The exit criterion "zero open S1/S2" fails while this is open | **Ben** | **Ben** | **Ben** |
-| S-02 | 5 | No CSRF protection; a POST with `Origin: http://evil.example` approved a proposal in a test-client run (F5.3). The console's docstring says the protection arrives with sign-in | token per form (depends on a session, so on S-01); or accept while there is no login | **Ben** | **Ben** | **Ben** |
-| S-03 | 3, 4 | `POST /nodes/<id>/heartbeat` has no caller check of any kind (F2.12): any local process can keep a node "alive" or mark a silent one as responding | a shared secret per node; or accept while everything is local | **Ben** | **Ben** | **Ben** |
-| S-04 | 5 | Plain HTTP only (F5.1) | **DEFERRED** by Ben: `docs/change-requests/CR-013-https-transport.md`, backlog B-11, about 2026-11-29 | **Ben** | ACCEPTED as a deferral per CR-013 (**Ben to confirm**) | **Ben** (his CR-013 rationale may be reused) |
-| S-05 | 2 | No request-size cap (`MAX_CONTENT_LENGTH` unset, F2.19); DEF-019 (a 100,000-character location is accepted and stored) is logged Will not fix | set a cap (a few lines and a test, changes DEF-019); or keep Will not fix | **Ben** | **Ben** | **Ben** |
-| S-06 | 8 | The model client's 60 s limit is applied to each socket read, not as one total deadline (F8.5), so a server that drips bytes could hold a report longer. The server is on this machine only | a thread-based total deadline; or accept | **Ben** | **Ben** | **Ben** |
-| S-07 | 6 | Five advisories against `setuptools 65.5.0` in the virtual environment: PYSEC-2022-43012, PYSEC-2025-49, PYSEC-2026-1918, PYSEC-2026-3447, GHSA-xmj3-9gf7-h52w; the package is not in `requirements.txt` and is not imported (F6.2 to F6.4). `pip-audit` prints no descriptions | upgrade `setuptools` in the venv (it is installer tooling); or accept as not reachable | **Ben** | **Ben** | **Ben** |
-| S-08 | 7 | `node_alerts` and `node_notices` are not in the purge list (`src/purge/job.py`); they hold node health and unit ids, not incident data (F7.5) | add them to the purge; or accept because they hold no incident data | **Ben** | **Ben** | **Ben** |
-| S-09 | 5, 8 | A real model scored a barely informative report at exactly the auto-dispatch confidence of 75 (DEF-029) | answers from a real model now need 85 (`MODEL_AUTO_APPROVE_MIN`, never below 75) | S2 (logged) | FIXED: DEF-029, `b7030ae` | the log's reason; the 85 is a provisional number, **Ben to confirm** |
-| S-10 | 7 | The 24-hour purge never ran by itself (DEF-030) | an hourly job started by `script/start` | S2 (logged) | FIXED: DEF-030, `3c4513b` | the log's reason |
-| S-11 | 5 | No browser security headers were sent (DEF-031) | four headers on every response | S3 (logged) | FIXED: DEF-031, `3c4513b` | the log's reason |
+Severity uses the defect-log scale: S1 data loss or system will not run; S2 a Must requirement unmet with no acceptable workaround; S3 partly met or a real workaround; S4 cosmetic or negligible. The "Assistant recommendation" column is an opinion with the reasoning, so that you can agree or choose differently.
 
-## Dependency findings
+### S-01. No login (DEF-018, open, logged S2). Areas 3, 4
+- **Facts:** Anyone who can reach the server can approve or override, always as the stand-in dispatcher. The server binds to 127.0.0.1 only. F3.1 to F3.5.
+- **Assistant recommendation: ACCEPT for the release candidate; build the login in the next build period (backlog B-07), together with S-02 and S-03.**
+- **Why:** A login (sessions, hashed passwords, roles, a one-time demo password, CSRF tokens) is about 4 to 6 hours of build plus a second review, and it changes the data model. Tonight is the deadline and the Normal-tier rows come first. The exposure is bounded by the localhost bind: only someone already on this machine can reach it. It must not ship as v1.0.
+- **If you choose FIXED instead:** it cannot be done safely tonight; say so in the reason if you choose to defer it in time.
+- **What it does to the exit criteria:** while open, line 2 (zero open S1/S2) is a recorded miss. That is honest and allowed.
+- Severity (Ben): **Ben** | Disposition (Ben): **Ben** | Reason (Ben): **Ben**
 
-| Advisory id | Package and installed version | Fixed in | Verified by Ben at osv.dev / GitHub advisories? | Reachability judgment (Ben) |
+### S-02. No CSRF protection. Area 5
+- **Facts:** A POST carrying `Origin: http://evil.example` approved a proposal in a test-client run (F5.3). The console's own docstring says the protection arrives with sign-in.
+- **Assistant recommendation: ACCEPT, tied to S-01.** CSRF tokens need a session to be tied to, so they cannot sensibly exist before a login. Fixing S-01 fixes this.
+- **Why it is lower than it sounds:** an attack needs a browser on this machine to visit a hostile page while the app is running.
+- Severity (Ben): **Ben** | Disposition (Ben): **Ben** | Reason (Ben): **Ben**
+
+### S-03. `POST /nodes/<id>/heartbeat` has no caller check. Areas 3, 4
+- **Facts:** Any local process can send a heartbeat and so keep a node "alive" or make a silent node look responsive (F2.12).
+- **Assistant recommendation: ACCEPT, folded into B-07** (a shared secret per node arrives with logins).
+- **Why:** nodes are local processes today; the heartbeat is health data; it cannot dispatch a unit.
+- Severity (Ben): **Ben** | Disposition (Ben): **Ben** | Reason (Ben): **Ben**
+
+### S-04. Plain HTTP only. Area 5
+- **Facts:** the app and the model client use `http` on this machine (F5.1). You already decided this: **DEFER**, CR-013, backlog B-11, about 2026-11-29.
+- **Assistant recommendation: ACCEPT as a deferral, citing CR-013;** you may reuse your CR-013 rationale as the reason.
+- Severity (Ben): **Ben** | Disposition (Ben): **Ben** | Reason (Ben): **Ben**
+
+### S-05. No request-size cap. Area 2
+- **Facts:** `MAX_CONTENT_LENGTH` is unset (F2.19). DEF-019 (a 100,000-character location is accepted and stored) is logged Will not fix.
+- **Assistant recommendation: FIX (about 15 minutes with a test): a 64 KB request cap that answers HTTP 413.**
+- **Why:** it is small, visible to a grader, and removes a free way to fill the database with junk.
+- **If you choose FIXED:** DEF-019 becomes Fixed, and the hostile-data entry `100k-character-location` (which today expects the report to be accepted) must change to expect a refusal. Tell the assistant and it will log the change first and then do it. **If you choose ACCEPTED:** keep DEF-019 as Will not fix and reuse its reason (no requirement sets a limit).
+- Severity (Ben): **Ben** | Disposition (Ben): **Ben** | Reason (Ben): **Ben**
+
+### S-06. The model client's 60 s limit is per socket read, not a total deadline. Area 8 (model integration)
+- **Facts:** the limit is passed to `urlopen` as a timeout, which applies to each read (F8.5). A server that sends a byte at a time could hold one report longer than 60 s. The server must be on this machine (the client refuses any other host).
+- **Assistant recommendation: ACCEPT.** The only party that could drip bytes is a process already on this machine; the fallback chain still serves other reports; a total deadline would need a thread per call.
+- Severity (Ben): **Ben** | Disposition (Ben): **Ben** | Reason (Ben): **Ben**
+
+### S-07. Five advisories against `setuptools 65.5.0` in the virtual environment. Area 6
+- **Facts:** PYSEC-2022-43012, PYSEC-2025-49, PYSEC-2026-1918, PYSEC-2026-3447, GHSA-xmj3-9gf7-h52w. `setuptools` is not in `requirements.txt`, is not imported by the repository, and CI installs only `requirements.txt`. `pip-audit` prints no descriptions, so the advisory text must be read at osv.dev (Part D).
+- **Assistant recommendation: ACCEPT as not reachable, after you have verified the advisories (Part D). Optionally also run `./.venv/Scripts/python -m pip install --upgrade setuptools` (one minute) so the local audit is clean.**
+- **Why:** it is installer tooling, outside the application's runtime path. The decision on reachability is yours.
+- Severity (Ben): **Ben** | Disposition (Ben): **Ben** | Reason (Ben): **Ben**
+
+### S-08. `node_alerts` and `node_notices` are not purged. Area 7
+- **Facts:** the purge list in `src/purge/job.py` omits them; they hold node health and unit numbers, no incident data and no personal data (F7.5).
+- **Assistant recommendation: ACCEPT**, and say in the reason that they would need to be added to the purge if an alert ever carried incident text.
+- Severity (Ben): **Ben** | Disposition (Ben): **Ben** | Reason (Ben): **Ben**
+
+### S-09. A real model scored a vague report at exactly the auto-dispatch bar (DEF-029). Areas 5, 8
+- **Fixed in `b7030ae`:** answers from a real model need confidence 85 or more (`MODEL_AUTO_APPROVE_MIN`, never below 75). **Your decision, 2026-11-15: keep 85.**
+- Assistant recommendation: confirm FIXED. | Severity: S2 (logged) | Disposition: FIXED | Reason (Ben): **Ben** (your 85 decision may be reused)
+
+### S-10. The 24-hour purge never ran by itself (DEF-030). Area 7
+- **Fixed in `3c4513b`:** an hourly job started by `script/start`; a failed purge is reported on stderr and the job keeps running.
+- Assistant recommendation: confirm FIXED. | Severity: S2 (logged) | Disposition: FIXED | Reason (Ben): **Ben**
+
+### S-11. No browser security headers (DEF-031). Area 5
+- **Fixed in `3c4513b`:** four headers on every response; the policy allows no inline script or style.
+- Assistant recommendation: confirm FIXED. | Severity: S3 (logged) | Disposition: FIXED | Reason (Ben): **Ben**
+
+---
+
+## PART D. Dependency findings (Ben verifies every id)
+
+| Advisory id | Package and installed version | Fixed in | Verified by Ben at the source? (write "verified" and the date) | Reachability judgment (Ben) |
 |---|---|---|---|---|
-| PYSEC-2022-43012 | setuptools 65.5.0 | 65.5.1 | **Ben** (link: https://osv.dev/PYSEC-2022-43012) | **Ben** |
+| PYSEC-2022-43012 | setuptools 65.5.0 | 65.5.1 | **Ben** (open https://osv.dev/PYSEC-2022-43012) | **Ben** |
 | PYSEC-2025-49 | setuptools 65.5.0 | 78.1.1 | **Ben** (https://osv.dev/PYSEC-2025-49) | **Ben** |
 | PYSEC-2026-1918 | setuptools 65.5.0 | 70.0.0 | **Ben** (https://osv.dev/PYSEC-2026-1918) | **Ben** |
 | PYSEC-2026-3447 | setuptools 65.5.0 | 83.0.0 | **Ben** (https://osv.dev/PYSEC-2026-3447) | **Ben** |
 | GHSA-xmj3-9gf7-h52w | setuptools 65.5.0 | 84.1.0 | **Ben** (https://github.com/advisories/GHSA-xmj3-9gf7-h52w) | **Ben** |
 
-`requirements.txt` itself (16 pinned packages) reported no known vulnerabilities.
+`requirements.txt` itself (16 pinned packages) reported no known vulnerabilities (re-run: `./.venv/Scripts/pip-audit -r requirements.txt`).
+
+## PART E. Anything else only Ben knows
+
+**Ben:** (write "nothing known" if there is nothing)
+
+## PART F. Sign-off
+
+**Ben:** (one sentence: what you conclude about the security of this release candidate, and what you would fix first.)
