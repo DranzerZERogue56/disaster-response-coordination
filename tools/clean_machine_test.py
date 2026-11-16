@@ -67,8 +67,28 @@ def stop(app):
     pid = getattr(app, "pid", None)
     if sys.platform == "win32" and pid:
         subprocess.run(["taskkill", "/T", "/F", "/PID", str(pid)], capture_output=True, check=False)
+        _stop_leftover_servers()
     else:
         app.terminate()
+
+
+def _stop_leftover_servers():
+    """On Windows the server can outlive the tree kill (it is re-parented while the tree is being walked) and keep
+    the port. `run` refuses to start unless the port is free, so whatever listens on it afterwards is the server this
+    run started; end that listener and nothing else."""
+    script = (
+        f"Get-NetTCPConnection -LocalPort {PORT} -State Listen -ErrorAction SilentlyContinue | "
+        "ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }"
+    )
+    subprocess.run(["powershell", "-NoProfile", "-Command", script], capture_output=True, check=False)
+
+
+def port_in_use():
+    import socket
+
+    with socket.socket() as probe:
+        probe.settimeout(1)
+        return probe.connect_ex(("127.0.0.1", PORT)) == 0
 
 
 def default_wait_healthy(timeout=60):
@@ -86,6 +106,8 @@ def default_wait_healthy(timeout=60):
 def run(readme_text, workdir, run_command=default_run, start_app=default_start, wait_healthy=default_wait_healthy, clock=time.monotonic):
     """Follow the README in `workdir`. Returns {"seconds", "steps", "ok", "failed_step"}."""
     steps = readme_steps(readme_text)
+    if port_in_use():
+        return {"seconds": 0.0, "steps": [], "ok": False, "failed_step": f"port {PORT} is already in use by another process; stop it and run again"}
     started = clock()
     done = []
     app = None
