@@ -297,6 +297,7 @@ of detail that belongs in the technical specification (Week 6).
 - Given a report, when the agent returns a classification or a proposal, then it returns within 5 seconds on the target hardware (RTX 3090 or 4090, 24 GB VRAM).
 - `[ TODO — left blank on purpose (CR-003): a failure-case criterion for the 5-second limit needs a real model on the target hardware (RTX 3090 or 4090), which is neither wired in nor available yet. Ben to write it when the model is connected (Milestone 12). ]`
 *Criteria wording: from Ben's answers of 2026-11-05 (CR-003), put into Given/when/then form by the assistant; Ben to confirm the wording.*
+**Scope decision (2026-11-15):** the target-hardware part (a 24 GB RTX 3090 or 4090 and a model that large) is **Rejected for this release** in favour of one demo model, `qwen3:1.7b` (CR-014, draft from Ben's notes, Ben to confirm); the requirement stays here unverified and is recorded in `docs/backlog.md` B-10. Nothing was deleted.
 
 **Source:** local ai server spec
 
@@ -453,6 +454,8 @@ you'd measure it in an afternoon, it's not a requirement yet.
 | ID | Requirement (metric · threshold · condition) | Priority | How it is measured |
 |---|---|---|---|
 | NFR-PERF-01 | Report classification (FR-AGENT-01) completes within 5 s of intake, p95 over 20 seeded reports, on the target hardware (24 GB GPU, local model) | Must | Script timestamps intake to severity tag for 20 runs; p95 recorded in `docs/measurements.md` |
+
+**Scope decision (2026-11-15), NFR-PERF-01:** the target-hardware condition (24 GB GPU) is **Rejected for this release** (CR-014, draft, Ben to confirm); the row stays unverified on target, measured on a laptop with `qwen3:1.7b` in `docs/performance.md`, and is recorded in `docs/backlog.md` B-10.
 
 ### 6.2 Reliability & Availability
 
