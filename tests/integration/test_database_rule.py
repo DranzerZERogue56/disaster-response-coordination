@@ -123,5 +123,6 @@ def test_migration_runner_applies_the_triggers_on_a_fresh_database(tmp_path):
         "incident_versions_data_is_final",
         "reconciliation_log_no_edit",
         "units_status_published",
+        "auth_events_no_edit",
     }
 
