@@ -48,6 +48,32 @@ History before this file's first release section: tag `milestone-3` (2026-09-13)
 ### Changed
 - Decisions waiting on Ben: CR-011, CR-013 and CR-014 (drafted from Ben's notes) and CR-012 dispositions, to rewrite and confirm. The confidence bar of 85 for real-model answers (DEF-029) was confirmed by Ben on 2026-11-15.
 
+## [0.9.0-rc.2] - 2026-11-15
+
+Second release candidate, made the same night as rc.1 (which stays tagged and unchanged). It adds the two-factor sign-in that rc.1 listed as its biggest known issue.
+
+### Added
+- Two-factor sign-in: a password plus a six-digit time-based code from an authenticator app on the person's own phone (works offline; Duo Mobile's third-party account option can hold it). Scrypt-hashed passwords, one-use codes, five failed attempts lock the account for five minutes without saying so, an append-only `auth_events` log, server-tracked sessions (FR-AUTH-01, DEF-018, backlog B-07, migration 0009).
+- A sign-in page, a sign-out button, a per-session forgery token on every form and POST (`X-CSRF-Token` for scripts), and `tools/enrol_dispatcher.py` to create or reset an account (shows the password and phone key once).
+
+### Changed
+- `script/start` turns the sign-in on by default (`AUTH_ENFORCED=1`). Every route except `/healthz` and `/login` needs a signed-in dispatcher. With the variable unset the app behaves as before, which is how the test suite runs.
+- The seeded `demo-dispatcher` is turned into a real account by enrolment (reset it with the tool).
+- **Consequence Ben chose ("dispatcher sign-in only"):** field reports, the scenario tool and node heartbeats over HTTP are refused while the sign-in is on (DEF-032). Run with `AUTH_ENFORCED=0` for those.
+
+### Fixed
+- Anyone who could reach the server could approve or override as the stand-in dispatcher (FR-AUTH-01-AC2, DEF-018, S2).
+
+### Security
+- Cross-site forged requests are refused (security review S-02); the heartbeat route is no longer open (S-03); copied session cookies stop working after sign-out or a restart.
+- Not yet: a trusted private-computer rule, a station IP allow-list, a QR code for the phone app, role levels beyond admin/dispatcher/observer, a password-change page (backlog B-07); HTTPS (CR-013, B-11).
+
+### Known issues in 0.9.0-rc.2
+- DEF-032 (S3) - with the sign-in on, field reports, the scenario tool and node heartbeats over HTTP are refused (they have no account). Workaround: run with `AUTH_ENFORCED=0` for those, or sign in and send the session token. Planned: a service key, backlog B-07.
+- DEF-017 (S3) - the software only writes a notification row; nothing is sent to a responder. Workaround: the dispatcher notifies the responder outside the software. Planned: backlog B-04.
+- DEF-019 (S4) - a 100,000-character location is accepted and stored. Workaround: none needed, it is stored safely. Planned: with the input filtering Ben wants.
+- DEF-020 (S4) - a report stamped in the year 2099 is accepted and sorts last. Workaround: the dispatcher reads the report time on the page. Planned: backlog B-08.
+
 ## [0.9.0-rc.1] - 2026-11-15
 
 Release candidate. Exit criteria are in `docs/rc-exit-criteria.md` (written 2026-11-11, results pending). At the last full run recorded in `docs/test-results.md` (commit `f2d477c`, 2026-11-08): 547 passed, 1 expected failure, line coverage 95.85%, verified-Must 29 of 31 (94%), regression proof 28 of 28. Later commits (DEF-029, the Ollama client) are not in that run.
