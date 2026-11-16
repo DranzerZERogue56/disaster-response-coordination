@@ -30,7 +30,7 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 | DEF-015 | The model-answer validator accepts non-text reasoning and boolean confidence | FR-AGENT-01-AC2 | S3 | P2 | property test (M11) | Fixed | `4a0afc2` | `test_reasoning_must_be_non_empty_text` |
 | DEF-016 | Unit status changes and reservations are not sent to "every agent" (no agents exist) | FR-RES-03-AC1..AC3 | S3 | P3 | traceability gap (M11) | Fixed | `b0fd744` | `test_every_agent_sees_a_status_change` |
 | DEF-017 | "Notify" only records a row; there is no way to notify a responder from the software | FR-ALERT-01 | S3 | P3 | peer reviewer (M10, Q10) | Open | none | none (needs a channel decision) |
-| DEF-018 | Anyone who can reach the server can approve or override; there is no login | FR-AUTH-01-AC2 | S2 | P2 | acceptance test (M11) | Open | none | `test_FR_AUTH_01_AC2_an_unauthenticated_caller_cannot_approve` (expected to fail) |
+| DEF-018 | Anyone who can reach the server can approve or override; there is no login | FR-AUTH-01-AC2 | S2 | P2 | acceptance test (M11) | Fixed | `6eb890b` | `test_FR_AUTH_01_AC2_an_unauthenticated_caller_cannot_approve` |
 | DEF-019 | No length limit: a 100,000-character location is accepted and stored | FR-INTAKE-02 | S4 | P4 | hostile test data (M11) | Will not fix | none | `test_hostile_text_that_is_accepted_is_stored_exactly_as_sent[100k-character-location]` (passes: stored safely) |
 | DEF-020 | A report timestamped in the year 2099 is accepted | FR-INTAKE-02 | S4 | P3 | hostile test data (M11) | Open | none | `test_hostile_text_that_is_accepted_is_stored_exactly_as_sent[far-future-time]` (passes: stored safely) |
 | DEF-021 | Updates cached for a node are stranded if a human confirms its recovery before its next heartbeat | FR-RES-03-AC2 | S3 | P2 | independent review (M11) | Fixed | `6c470be` | `test_confirming_recovery_leaves_nothing_cached_behind` |
@@ -44,6 +44,7 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 | DEF-029 | A real model can score a barely informative report at exactly the auto-dispatch confidence (75) and send a unit with no human review | FR-AGENT-03 | S2 | P1 | real-model run (M12) | Fixed | `b7030ae` | `test_decide_auto_holds_a_real_model_proposal_at_75_but_approves_a_rules_proposal_at_75` |
 | DEF-030 | The 24-hour purge never runs by itself: nothing in the app or its start script calls it | NFR-PRIV-01 | S2 | P1 | security fact sheet (M12) | Fixed | `3c4513b` | `test_the_scheduled_run_deletes_what_is_older_than_24_hours_and_keeps_the_rest` |
 | DEF-031 | No browser security headers are sent (CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy) | NFR-SEC-01 (transport/browser hardening) | S3 | P2 | security fact sheet (M12) | Fixed | `3c4513b` | `test_every_response_carries_the_browser_security_headers` |
+| DEF-032 | With the sign-in on, field reports, the scenario tool and node heartbeats over HTTP are refused: they have no account | FR-INTAKE-01, FR-SIM-01, FR-DEGRADE-01 | S3 | P3 | login build (M12) | Open | none | none (needs a service key; backlog B-07) |
 
 ---
 
@@ -191,7 +192,7 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 - **Expected vs actual:** Expected (FR-AUTH-01-AC2): an action outside the caller's role is refused. Actual: it is accepted, always as the stand-in dispatcher.
 - **Evidence:** `tests/acceptance/test_acceptance_criteria.py::test_FR_AUTH_01_AC2_an_unauthenticated_caller_cannot_approve` (strict xfail).
 - **Severity S2:** a decision that dispatches a unit with no authentication; **Priority P2:** FR-AUTH-01 is Should this release, the app listens only on 127.0.0.1, and the demo says so aloud; real login is planned before Milestone 12.
-- **Traceability and status:** FR-AUTH-01-AC2; Open; workaround: bind to localhost only. Must not ship v1.0 like this. Owner: Ben.
+- **Traceability and status:** FR-AUTH-01-AC2; Fixed in `6eb890b`: a two-factor sign-in (password plus a six-digit code from the person's own phone, `src/auth/`, migration 0009) gates every route except `/healthz` and `/login` when `AUTH_ENFORCED=1`, which `script/start` sets by default; every POST needs a per-session forgery token; sessions end on logout and on restart. Not in this version: a trusted-computer rule, a station IP allow-list, a QR code (the key is typed into the app), role levels beyond the three existing roles. Owner: Ben.
 
 ### DEF-019 — No length limit on text fields
 - **Environment:** commit `4a0afc2`; hostile data family.
@@ -296,3 +297,11 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 - **Evidence:** the fact sheet's area 5; a test-client request showed no such headers.
 - **Severity S3:** clickjacking and sniffing are possible against a console that has no login; the app listens only on 127.0.0.1; **Priority P2:** small and testable.
 - **Traceability and status:** security review area 5; Fixed in `3c4513b` (all four headers on every response; the policy allows no inline script or style). Owner: Ben.
+
+### DEF-032 — With the sign-in on, field reports, the scenario tool and heartbeats over HTTP are refused
+- **Environment:** commit `7d31997`; found while building the login (Ben chose "dispatcher sign-in only" on 2026-11-15).
+- **Steps:** 1. Start the app with `./script/start` (the sign-in is on by default). 2. Run `python tools/play_scenario.py seed/scenarios/demo-scenario.json`, or `POST /reports`, or `POST /nodes/1/heartbeat`, with no session.
+- **Expected vs actual:** Expected (FR-INTAKE-01, FR-SIM-01, FR-DEGRADE-01): reports and heartbeats are accepted. Actual: HTTP 401, because only a signed-in dispatcher is allowed through.
+- **Evidence:** `tests/integration/test_login_http.py::test_every_route_except_health_and_login_refuses_a_caller_with_no_session_and_changes_nothing`.
+- **Severity S3:** field intake over HTTP and the scenario tool do not work while the gate is on, but the workaround is real; **Priority P3:** a shared service key for these callers is planned with the rest of the login work.
+- **Traceability and status:** FR-INTAKE-01, FR-SIM-01, FR-DEGRADE-01; Open; workaround: run with `AUTH_ENFORCED=0` (field-intake and scenario demos, tests), or sign in and use the session token. Owner: Ben.

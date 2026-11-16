@@ -55,6 +55,16 @@ down, slow, busy or answers badly, the report is still classified by the next ti
 a real model need confidence 85 or more (`MODEL_AUTO_APPROVE_MIN`, never below 75) before a unit is dispatched without a
 person. The dispatcher console is at http://127.0.0.1:8080/dispatcher.
 
+### First sign-in (two-factor)
+
+`./script/start` turns the sign-in on (`AUTH_ENFORCED=1`): every page and action except `/healthz` and `/login` needs a signed-in dispatcher, and every form carries a forgery token. To create the first account (or reset the seeded `demo-dispatcher`):
+
+```
+python tools/enrol_dispatcher.py demo-dispatcher dispatcher
+```
+
+It prints a random password and a phone setup key **once**. Type the key into an authenticator app on your own phone (any app that takes time-based codes; Duo Mobile's third-party account option works), then sign in at http://127.0.0.1:8080/login with the password and the six-digit code. While the sign-in is on, field reports, the scenario tool and node heartbeats over HTTP are refused (DEF-032); run with `AUTH_ENFORCED=0` for those demos.
+
 ## Run the tests
 
 One command runs the whole suite (unit, integration and acceptance, with the 90% line-coverage gate), and it is the command CI runs:

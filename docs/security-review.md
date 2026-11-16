@@ -71,18 +71,21 @@ Severity uses the defect-log scale: S1 data loss or system will not run; S2 a Mu
 - **If you choose FIXED instead:** it cannot be done safely tonight; say so in the reason if you choose to defer it in time.
 - **What it does to the exit criteria:** while open, line 2 (zero open S1/S2) is a recorded miss. That is honest and allowed.
 - Severity (Ben): S2 | Disposition (Ben): ACCEPTED for the release candidate (planned: backlog B-07) | Reason (Ben): I want a login with two-factor sign-in built in, using my own phone and a private computer, quick and secure. It is too big to build and prove safely before this deadline, so it is planned first for the next build period. Until then the server listens on 127.0.0.1 only. This is a known miss against the exit criterion of zero open S2, and I am recording it as a miss.
+- **Update for v0.9.0-rc.2 (2026-11-15, after the login was built):** now FIXED in `6eb890b`: a two-factor sign-in (password plus a six-digit code from the person's own phone) gates every route except `/healthz` and `/login`; DEF-018 is Fixed. Not yet: a trusted-computer rule, a station IP allow-list, a QR code, further role levels (backlog B-07). Ben to confirm.
 
 ### S-02. No CSRF protection. Area 5
 - **Facts:** A POST carrying `Origin: http://evil.example` approved a proposal in a test-client run (F5.3). The console's own docstring says the protection arrives with sign-in.
 - **Assistant recommendation: ACCEPT, tied to S-01.** CSRF tokens need a session to be tied to, so they cannot sensibly exist before a login. Fixing S-01 fixes this.
 - **Why it is lower than it sounds:** an attack needs a browser on this machine to visit a hostile page while the app is running.
 - Severity (Ben): S3 | Disposition (Ben): ACCEPTED (planned with the login, B-07) | Reason (Ben): Forgery protection needs a signed-in session to attach to, so it comes with the login.
+- **Update for v0.9.0-rc.2:** now FIXED in `6eb890b`: every POST carries a per-session forgery token and is refused without it. Ben to confirm.
 
 ### S-03. `POST /nodes/<id>/heartbeat` has no caller check. Areas 3, 4
 - **Facts:** Any local process can send a heartbeat and so keep a node "alive" or make a silent node look responsive (F2.12).
 - **Assistant recommendation: ACCEPT, folded into B-07** (a shared secret per node arrives with logins).
 - **Why:** nodes are local processes today; the heartbeat is health data; it cannot dispatch a unit.
 - Severity (Ben): S3 | Disposition (Ben): ACCEPTED (planned with the login, B-07) | Reason (Ben): Nodes are local processes today and the heartbeat cannot dispatch a unit; it gets a key when the login work is done.
+- **Update for v0.9.0-rc.2:** now FIXED in `6eb890b`: the heartbeat route needs a session like the others (consequence: nodes cannot send heartbeats over HTTP while the gate is on, DEF-032). Ben to confirm.
 
 ### S-04. Plain HTTP only. Area 5
 - **Facts:** the app and the model client use `http` on this machine (F5.1). You already decided this: **DEFER**, CR-013, backlog B-11, about 2026-11-29.
