@@ -132,7 +132,7 @@ def main():
         f"- README steps followed: {', '.join(f'`{s}`' for s in result['steps'])}\n"
         f"- Time from first step to a healthy app: **{result['seconds']:.1f} s** (limit {LIMIT_SECONDS} s)\n"
         f"- Result: **{'PASS' if result['ok'] else 'FAIL'}**" + (f" (failed at: {result['failed_step']})" if result["failed_step"] else "") + "\n"
-        "- Model download time: not applicable (no model is downloaded in this release).\n",
+        "- Model download time: not applicable (the README's Run it steps need no model; the optional Ollama model is a separate step).\n"
         "- Limits: run on the developer's laptop from a fresh clone, with Python already installed and a warm pip cache. It proves the README's steps work from a clean checkout; the Week 13 clean-machine test repeats it on a machine that has never seen the project.\n",
         encoding="utf-8",
     )
