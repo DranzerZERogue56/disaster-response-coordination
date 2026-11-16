@@ -52,7 +52,7 @@ def test_the_scheduled_run_deletes_what_is_older_than_24_hours_and_keeps_the_res
 
 
 def test_a_failed_scheduled_purge_is_reported_loudly_and_does_not_kill_the_job(db, monkeypatch):
-    conn, path = db
+    _conn, path = db
     messages = []
 
     def broken(*args, **kwargs):

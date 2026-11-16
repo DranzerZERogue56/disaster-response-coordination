@@ -18,6 +18,7 @@ a failed purge is a privacy failure, not an ordinary one, so it is never retried
 `now` and `retention_hours` can be overridden so a test does not wait 24 hours.
 """
 import sqlite3
+import sys
 from datetime import UTC, datetime, timedelta
 
 RETENTION_HOURS = 24
@@ -111,3 +112,18 @@ def purge(conn, now=None, retention_hours=RETENTION_HOURS):
         )
     }
     return {"purged": ordered, "reset": {"units": reset}, "run_at": now.isoformat()}
+
+
+def run_once(conn_factory, log=None):
+    """One scheduled purge (DEF-030). Opens its own connection, runs the purge, closes it. A failed purge is reported
+    loudly through `log` (stderr by default) and returns None; it never raises, so the timer thread that calls this
+    stays alive and tries again at the next interval, and it is never a silent failure."""
+    log = log or (lambda message: print(message, file=sys.stderr))
+    conn = conn_factory()
+    try:
+        return purge(conn)
+    except PurgeFailed as exc:
+        log(f"PURGE FAILED (nothing was deleted, will try again at the next interval): {exc}")
+        return None
+    finally:
+        conn.close()

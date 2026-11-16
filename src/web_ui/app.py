@@ -49,6 +49,7 @@ from src.override_assignment.service import (
     OverrideError,
     add_follow_up,
 )
+from src.purge.job import run_once
 from src.unit_registry.service import (
     RegistryError,
     release_expired,
@@ -195,6 +196,29 @@ def start_node_watcher(interval_seconds):
     threading.Thread(target=loop, daemon=True, name="node-watcher").start()
 
 
+def start_purge_job(interval_seconds):
+    """NFR-PRIV-01 / DEF-030: every interval, delete incident data older than 24 hours. Off unless PURGE_CHECK_SECONDS is
+    set (script/start sets it), so tests and imports start nothing."""
+
+    def loop():
+        while True:
+            time.sleep(interval_seconds)
+            try:
+                run_once(connect)
+            except sqlite3.Error as exc:  # keep the job alive; say what went wrong
+                print(f"purge job error: {exc}", file=sys.stderr)
+
+    threading.Thread(target=loop, daemon=True, name="purge-job").start()
+
+
+SECURITY_HEADERS = {
+    "Content-Security-Policy": "default-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'none'",
+    "X-Frame-Options": "DENY",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
+}
+
+
 def create_app():
     app = Flask(__name__, template_folder=str(TEMPLATE_DIR))
     # signs the console banner messages; a new random key per start is fine (a banner lives for two minutes)
@@ -205,11 +229,21 @@ def create_app():
     sweep = os.environ.get("SWEEP_SECONDS")
     if sweep:
         start_sweeper(float(sweep))
+    purge_every = os.environ.get("PURGE_CHECK_SECONDS")
+    if purge_every:
+        start_purge_job(float(purge_every))
     watch = os.environ.get("HEARTBEAT_CHECK_SECONDS")
     if watch:
         start_node_watcher(float(watch))
 
     app.register_blueprint(dispatcher_bp)
+
+    @app.after_request
+    def add_security_headers(response):
+        """DEF-031: every response says it must not be framed, sniffed or sent a referrer, and loads only same-origin resources."""
+        for name, value in SECURITY_HEADERS.items():
+            response.headers.setdefault(name, value)
+        return response
 
     @app.get("/healthz")
     def healthz():

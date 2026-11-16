@@ -6,5 +6,6 @@ mkdir -p "$(dirname "$DB_PATH")"
 if [ ! -f "$DB_PATH" ]; then
   "$PYTHON" tools/migrate.py "$DB_PATH"
 fi
-export SWEEP_SECONDS="${SWEEP_SECONDS:-5}"   # the clock that frees expired reservations
+export SWEEP_SECONDS="${SWEEP_SECONDS:-1}"   # the clock that frees expired reservations (1 s since the NFR-REL-02 re-measure)
+export PURGE_CHECK_SECONDS="${PURGE_CHECK_SECONDS:-3600}"   # delete incident data older than 24 hours, hourly (NFR-PRIV-01)
 "$PYTHON" -m flask --app src.web_ui.app run --host 127.0.0.1 --port 8080
