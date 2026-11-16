@@ -6,6 +6,8 @@
 
 > **Amendment 1, 2026-11-06 (facts only; the exit criteria in section 6 are unchanged).** After this plan was signed the build grew: the plan to reach 90% verified-Must coverage built negotiation and tiebreaks, reconciliation, the Scenario Reader, node heartbeats and alerts, the model fallback chain, the modify action, a dispatcher console, a unit-status broadcast, the 24-hour purge job, a synthetic-data check and a clean-machine test (migrations 0005 to 0008, change requests CR-005 to CR-010). Sections 1 to 5 and 8 were rewritten so they describe the build that is actually tested. Nothing in section 6 was lowered; the only change to it was the earlier, dated rise from 60% to 90%. Ben to confirm this amendment (he signed the original on 2026-11-05).
 
+> **Amendment 2, 2026-11-15 (facts only; the exit criteria in section 6 are unchanged).** Milestone 12 added a local Ollama model client behind the existing fallback chain (CR-011), with a kill switch, tested against a stub HTTP server on 127.0.0.1 (`tests/ollama_stub.py`, `tests/unit/test_ollama_client.py`, `tests/unit/test_chain_wiring.py`, `tests/integration/test_ollama_chaos_http.py`); regression tests for DEF-029 to DEF-031; a measurement tool for the timing and loss targets (`tools/measure_nfrs.py`, results in `docs/performance.md`); the release-candidate exit criteria (`docs/rc-exit-criteria.md`, written before evaluation); a seam map and integration evidence (`docs/architecture.md` 9.1, `docs/integration-evidence.md`). Out of scope is unchanged except that the real model is now tested through the client against a stub, and by hand on this laptop with `qwen3:1.7b`; nothing is tested on the target GPU (CR-014). The test counts in section 3 are updated to the current build.
+
 ---
 
 ## 1. Scope — what is under test
@@ -31,8 +33,8 @@ The build at the commit above and the requirement IDs in `docs/requirements.md` 
 
 | Level | What it covers here | How it runs | Roughly how many |
 |---|---|---|---|
-| Unit | Module logic against a temporary SQLite database: classify, registry, decide, notify, override, intake validation, measurement, plus property-based tests (below) | `./script/test` (whole suite) or `pytest tests/unit` | 328 (includes the property tests) |
-| Integration | Real seams: the HTTP routes against a real database, real threads and the background sweeper, the migration runner and database triggers, the three test-data families through the real intake route | `pytest tests/integration` | 191 (includes a 33-second test that kills five real node processes) |
+| Unit | Module logic against a temporary SQLite database: classify, registry, decide, notify, override, intake validation, measurement, plus property-based tests (below) | `./script/test` (whole suite) or `pytest tests/unit` | 382 (includes the property tests; counted 2026-11-15) |
+| Integration | Real seams: the HTTP routes against a real database, real threads and the background sweeper, the migration runner and database triggers, the three test-data families through the real intake route | `pytest tests/integration` | 205 (includes a 33-second test that kills five real node processes) |
 | Acceptance | One test per acceptance criterion of a built Must requirement, named after the criterion, driving the running app on a freshly seeded database | `pytest tests/acceptance` | 29 |
 | Manual | Two criteria are manual by their own wording: a keyboard-only pass with the mouse unplugged (NFR-ACC-01) and a clean-machine run (NFR-MNT-01) | A written numbered script (`tests/manual/scripts/`), the result recorded with `tools/record_manual_result.py` and an evidence file; counted in the matrix only if on the record | 2 |
 

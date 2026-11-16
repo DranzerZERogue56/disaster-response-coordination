@@ -1,0 +1,32 @@
+{
+  "target": "NFR-REL-02: a reserved unit whose proposal is rejected or times out returns to available within 4 min (240 s)",
+  "rejection_path_ms": [
+    7.97,
+    20.66,
+    6.91,
+    6.79,
+    8.9
+  ],
+  "timeout_path_seconds": [
+    240.94,
+    240.93,
+    240.91,
+    240.89,
+    240.85
+  ],
+  "sweeper_interval_seconds": 1.0,
+  "n": 5,
+  "p50": 240.91,
+  "p95": 240.94,
+  "max": 240.94,
+  "within_240s": false,
+  "environment": {
+    "os": "Windows-10-10.0.26300-SP0",
+    "python": "3.11.8",
+    "cpu": "12th Gen Intel(R) Core(TM) i5-12450H",
+    "gpu": "Intel(R) UHD Graphics | NVIDIA GeForce GTX 1650",
+    "ram_gb": 63.7,
+    "run": "fresh temp database, started from the terminal outside the editor, real wall clock"
+  },
+  "measured_at": "2026-11-16T03:56:00.270744+00:00"
+}
