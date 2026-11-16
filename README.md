@@ -39,6 +39,22 @@ immediately.
 Other verbs: `./script/lint`, `./script/test`, `./script/build`,
 `./script/smoke` — the same four stages CI runs on every push.
 
+### Optional: use the local language model (Ollama)
+
+By default the app classifies reports with a rules-based stand-in, so it runs with no model installed. To use a
+real local model instead (kill switch: unset or `0` turns it off again, with no restart):
+
+```
+ollama pull qwen3:1.7b                 # once; about 1.4 GB
+OLLAMA_ENABLED=1 ./script/start        # the model becomes the first tier; the rules tier stays behind it as the fallback
+```
+
+Settings (`OLLAMA_URL`, `OLLAMA_MODEL`, `OLLAMA_TIMEOUT`, `OLLAMA_SMALLER_MODEL`) are listed in `.env.example`. The model
+server must be on this machine over plain `http` (127.0.0.1, localhost or ::1); anything else is refused. If the model is
+down, slow, busy or answers badly, the report is still classified by the next tier and its reasoning says so. Answers from
+a real model need confidence 85 or more (`MODEL_AUTO_APPROVE_MIN`, never below 75) before a unit is dispatched without a
+person. The dispatcher console is at http://127.0.0.1:8080/dispatcher.
+
 ## Run the tests
 
 One command runs the whole suite (unit, integration and acceptance, with the 90% line-coverage gate), and it is the command CI runs:
@@ -90,10 +106,11 @@ cut order if the schedule slips.
 
 ## What's intentionally not here yet
 
-- No real language model: Ollama is not wired in. A rules-based fake model stands in, behind a fallback chain whose
-  primary and smaller slots are empty until it is. Two requirements that name the target GPU (FR-INFER-02,
-  NFR-PERF-01) are therefore unverified on purpose.
-- No login (FR-AUTH-01): the dispatcher console uses a seeded stand-in account (DEF-018).
+- Language model: an optional local Ollama client exists (see "Optional" above); the rules-based stand-in is the default
+  and the last fallback. Only one small demo model (`qwen3:1.7b`) is supported on this laptop; the two requirements that
+  name the 24 GB target GPU (FR-INFER-02, NFR-PERF-01) stay unverified on purpose (CR-014).
+- No login (FR-AUTH-01): the dispatcher console uses a seeded stand-in account, and there is no CSRF protection (DEF-018).
+- Plain HTTP only; HTTPS is deferred (CR-013).
 - No real notification channel: "notify" records a row (DEF-017).
 - No map output, no report generator, no Mesa simulation of team sizes yet.
 - No finalized license — see `LICENSE` for the deferral status.
