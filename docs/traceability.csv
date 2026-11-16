@@ -174,3 +174,5 @@ NFR-ACC-02,Must,NFR-ACC-02-AC1,tests/unit/test_dispatcher_accessibility.py::test
 NFR-ACC-02,Must,NFR-ACC-02-AC1,tests/unit/test_dispatcher_accessibility.py::test_five_incidents_one_per_level_are_each_named_in_text_without_colour,unit,pass,
 NFR-USE-01,Should,NFR-USE-01-AC1,,,,
 NFR-MNT-01,Must,NFR-MNT-01-AC1,MANUAL-MNT-01,acceptance,pass,
+NFR-MNT-01,Must,NFR-MNT-01-AC1,MANUAL-MNT-01,acceptance,pass,
+NFR-MNT-01,Must,NFR-MNT-01-AC1,MANUAL-MNT-01,acceptance,pass,

@@ -4,11 +4,11 @@ The record of the last full run, written by `python tools/write_test_results.py`
 
 | Item | Value |
 |---|---|
-| Commit tested | `605bc99` (working tree had uncommitted changes to tracked files) |
-| Date | 2026-11-16 04:04 UTC |
+| Commit tested | `6493c71` (working tree had uncommitted changes to tracked files) |
+| Date | 2026-11-16 04:43 UTC |
 | Command | `./script/test` (equivalent: `python -m pytest --cov=src --cov-report=term-missing:skip-covered --cov-fail-under=90`) |
-| Result | 615 passed, 1 xfailed |
-| Duration | 264.52 s |
+| Result | 616 passed, 1 xfailed |
+| Duration | 361.08 s |
 | Plan | `docs/test-plan.md` v1.0 |
 
 ## The four coverage numbers (`tools/coverage_report.py` on `docs/traceability.csv`)
@@ -34,7 +34,7 @@ A requirement is *verified* only if every one of its acceptance criteria has at 
 | 0 open defects at severity S1 or S2 | **MISSED** | open: DEF-018 (S2) |
 | Every open S3/S4 defect has a documented workaround | MET | all documented |
 | Every fixed defect has a regression test that fails on the pre-fix commit | MET | Result: 31 of 31 fixed defects proven |
-| The suite runs from one command (`./script/test`) and passes | MET | 615 passed, 1 xfailed; CI: the latest completed CI run on GitHub is on commit `605bc99` with result **success** |
+| The suite runs from one command (`./script/test`) and passes | MET | 616 passed, 1 xfailed; CI: the latest completed CI run on GitHub is on commit `605bc99` with result **success** |
 | Line coverage of src/ at least 90% | MET | 95.63% |
 
 ### Misses, annotated (not edited away)
