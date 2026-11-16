@@ -1,7 +1,7 @@
 # Security Review: v0.9.0-rc.1
 
-> **STATUS: NOT YET A REVIEW. Ben's input is needed in every cell marked "Ben".** Under the Milestone 12 AI policy the claims, findings, severities, dispositions and reasons in this file must be Ben's. The assistant ran the tools and recorded facts in `docs/security-review-facts.md` (observation ids F1.1 to F8.10, each with a file:line and a command to re-run). The "Assistant recommendation" column is the assistant's opinion, **not a decision**: change any of them. Dependency advisory ids must be opened and verified by Ben at https://github.com/advisories or https://osv.dev/. A finding ends either FIXED or ACCEPTED with a reason; there is no third state.
-> **Reviewer / date:** Ben (Dranzer Rogue) / **Ben** (the day you finish)
+> **STATUS: COMPLETE DRAFT, drafted from Ben's input and confirmed by him on 2026-11-15; Ben may still edit any cell.** (Earlier status: Ben's input was needed in every cell marked "Ben".) Under the Milestone 12 AI policy the claims, findings, severities, dispositions and reasons in this file must be Ben's. The assistant ran the tools and recorded facts in `docs/security-review-facts.md` (observation ids F1.1 to F8.10, each with a file:line and a command to re-run). The "Assistant recommendation" column is the assistant's opinion, **not a decision**: change any of them. Dependency advisory ids must be opened and verified by Ben at https://github.com/advisories or https://osv.dev/. A finding ends either FIXED or ACCEPTED with a reason; there is no third state.
+> **Reviewer / date:** Ben (Dranzer Rogue) / 2026-11-15
 
 ---
 
@@ -48,17 +48,19 @@ Write the closing line in Part F.
 
 | # | Area | What was checked and how to re-run it (facts) | Evidence (fact ids) | Result (Ben) | Findings |
 |---|---|---|---|---|---|
-| 1 | Secrets | `./script/secrets-check` (0 matches in 259 tracked files); a scan of the added lines of `git log --all -p` against the same patterns (184 commits, 0 matches); `.env` is ignored, `.env.example` holds no secret; `BANNER_SIGNER` is a random per-start key | F1.1 to F1.8 | **Ben** | none recorded by the assistant |
-| 2 | Input handling | 18 routes reviewed for what input each takes and how it is validated; the hostile-data family (`tests/data/hostile.json`, `tests/integration/test_data_families_http.py`); DEF-009 to DEF-012 and DEF-023 (non-object JSON bodies) fixed with regression tests; no request-size limit exists | F2.1 to F2.19 | **Ben** | S-05 |
-| 3 | Authentication | No login, session or credential check exists; every acting route uses the seeded stand-in dispatcher (`stub_dispatcher_id`); the server binds to 127.0.0.1 only | F3.1 to F3.7 | **Ben** | S-01 |
-| 4 | Authorization | Roles `admin`, `dispatcher`, `observer` are checked in the decide, override, reconciliation and recovery functions against the stand-in account; there is no per-record ownership; an observer id is refused (`NOT_A_DISPATCHER`); because the caller cannot name an account, role checks cannot be exercised through the routes | F4.1 to F4.10 | **Ben** | S-01, S-03 |
-| 5 | Transport | Plain HTTP on 127.0.0.1:8080; the model client talks plain HTTP to a server on this machine only; no CSRF token (a POST with a foreign `Origin` header approved a proposal in a test-client run); security headers were absent before DEF-031 and are now sent on every response | F5.1 to F5.6 | **Ben** | S-02, S-04, S-11 |
-| 6 | Dependencies | `pip-audit -r requirements.txt`: no known vulnerabilities in the 16 pinned packages; `pip-audit` on the whole virtual environment: 5 advisories against `setuptools 65.5.0`, which is not in `requirements.txt` and is not imported by the repo | F6.1 to F6.4 | **Ben** | S-07 |
-| 7 | Logging | Append-only tables (`dispatcher_overrides`, `override_follow_ups`, `tiebreak_log`, `reconciliation_log`, `node_alerts`, `unit_events`) and stderr prints are what is recorded; no personal data field exists; no `debug=True`; the 24-hour purge now runs hourly (DEF-030) but does not cover the node alert and notice tables | F7.1 to F7.16 | **Ben** | S-08, S-10 |
+| 1 | Secrets | `./script/secrets-check` (0 matches in 259 tracked files); a scan of the added lines of `git log --all -p` against the same patterns (184 commits, 0 matches); `.env` is ignored, `.env.example` holds no secret; `BANNER_SIGNER` is a random per-start key | F1.1 to F1.8 | **Pass.** `.env` is ignored and `.env.example` holds only placeholders; no secret found (Ben, 2026-11-15) | none recorded by the assistant |
+| 2 | Input handling | 18 routes reviewed for what input each takes and how it is validated; the hostile-data family (`tests/data/hostile.json`, `tests/integration/test_data_families_http.py`); DEF-009 to DEF-012 and DEF-023 (non-object JSON bodies) fixed with regression tests; no request-size limit exists | F2.1 to F2.19 | **Pass with findings.** Bad input is refused rather than crashing; no size cap (S-05, accepted) | S-05 |
+| 3 | Authentication | No login, session or credential check exists; every acting route uses the seeded stand-in dispatcher (`stub_dispatcher_id`); the server binds to 127.0.0.1 only | F3.1 to F3.7 | **Fail.** There is no login; I want one with two-factor sign-in built in (S-01, backlog B-07) | S-01 |
+| 4 | Authorization | Roles `admin`, `dispatcher`, `observer` are checked in the decide, override, reconciliation and recovery functions against the stand-in account; there is no per-record ownership; an observer id is refused (`NOT_A_DISPATCHER`); because the caller cannot name an account, role checks cannot be exercised through the routes | F4.1 to F4.10 | **Pass with findings.** Role checks exist and are tested but cannot be exercised through the routes without a login (S-01, S-03) | S-01, S-03 |
+| 5 | Transport | Plain HTTP on 127.0.0.1:8080; the model client talks plain HTTP to a server on this machine only; no CSRF token (a POST with a foreign `Origin` header approved a proposal in a test-client run); security headers were absent before DEF-031 and are now sent on every response | F5.1 to F5.6 | **Pass with findings.** Plain HTTP on this machine only, no forgery protection yet; headers now sent (S-02, S-04, S-11) | S-02, S-04, S-11 |
+| 6 | Dependencies | `pip-audit -r requirements.txt`: no known vulnerabilities in the 16 pinned packages; `pip-audit` on the whole virtual environment: 5 advisories against `setuptools 65.5.0`, which is not in `requirements.txt` and is not imported by the repo | F6.1 to F6.4 | **Pass.** The project's own packages are clean; the five environment-only advisories were verified and judged fine (S-07) | S-07 |
+| 7 | Logging | Append-only tables (`dispatcher_overrides`, `override_follow_ups`, `tiebreak_log`, `reconciliation_log`, `node_alerts`, `unit_events`) and stderr prints are what is recorded; no personal data field exists; no `debug=True`; the 24-hour purge now runs hourly (DEF-030) but does not cover the node alert and notice tables | F7.1 to F7.16 | **Pass with findings.** The purge runs by itself now; the retention period I want differs from the 24 hours in the specification (S-08, backlog B-13) | S-08, S-10 |
 
 ---
 
 ## PART C. Findings (one row each; every row ends FIXED or ACCEPTED with a reason)
+
+> **How these cells were filled (2026-11-15):** the assistant drafted the Results, severities, dispositions and reasons from Ben's own chat statements and from its recommendations, and wrote them in only after Ben chose "Yes to all" in the confirmation question. They are Ben's to edit.
 
 Severity uses the defect-log scale: S1 data loss or system will not run; S2 a Must requirement unmet with no acceptable workaround; S3 partly met or a real workaround; S4 cosmetic or negligible. The "Assistant recommendation" column is an opinion with the reasoning, so that you can agree or choose differently.
 
@@ -68,47 +70,47 @@ Severity uses the defect-log scale: S1 data loss or system will not run; S2 a Mu
 - **Why:** A login (sessions, hashed passwords, roles, a one-time demo password, CSRF tokens) is about 4 to 6 hours of build plus a second review, and it changes the data model. Tonight is the deadline and the Normal-tier rows come first. The exposure is bounded by the localhost bind: only someone already on this machine can reach it. It must not ship as v1.0.
 - **If you choose FIXED instead:** it cannot be done safely tonight; say so in the reason if you choose to defer it in time.
 - **What it does to the exit criteria:** while open, line 2 (zero open S1/S2) is a recorded miss. That is honest and allowed.
-- Severity (Ben): **Ben** | Disposition (Ben): **Ben** | Reason (Ben): **Ben**
+- Severity (Ben): S2 | Disposition (Ben): ACCEPTED for the release candidate (planned: backlog B-07) | Reason (Ben): I want a login with two-factor sign-in built in, using my own phone and a private computer, quick and secure. It is too big to build and prove safely before this deadline, so it is planned first for the next build period. Until then the server listens on 127.0.0.1 only. This is a known miss against the exit criterion of zero open S2, and I am recording it as a miss.
 
 ### S-02. No CSRF protection. Area 5
 - **Facts:** A POST carrying `Origin: http://evil.example` approved a proposal in a test-client run (F5.3). The console's own docstring says the protection arrives with sign-in.
 - **Assistant recommendation: ACCEPT, tied to S-01.** CSRF tokens need a session to be tied to, so they cannot sensibly exist before a login. Fixing S-01 fixes this.
 - **Why it is lower than it sounds:** an attack needs a browser on this machine to visit a hostile page while the app is running.
-- Severity (Ben): **Ben** | Disposition (Ben): **Ben** | Reason (Ben): **Ben**
+- Severity (Ben): S3 | Disposition (Ben): ACCEPTED (planned with the login, B-07) | Reason (Ben): Forgery protection needs a signed-in session to attach to, so it comes with the login.
 
 ### S-03. `POST /nodes/<id>/heartbeat` has no caller check. Areas 3, 4
 - **Facts:** Any local process can send a heartbeat and so keep a node "alive" or make a silent node look responsive (F2.12).
 - **Assistant recommendation: ACCEPT, folded into B-07** (a shared secret per node arrives with logins).
 - **Why:** nodes are local processes today; the heartbeat is health data; it cannot dispatch a unit.
-- Severity (Ben): **Ben** | Disposition (Ben): **Ben** | Reason (Ben): **Ben**
+- Severity (Ben): S3 | Disposition (Ben): ACCEPTED (planned with the login, B-07) | Reason (Ben): Nodes are local processes today and the heartbeat cannot dispatch a unit; it gets a key when the login work is done.
 
 ### S-04. Plain HTTP only. Area 5
 - **Facts:** the app and the model client use `http` on this machine (F5.1). You already decided this: **DEFER**, CR-013, backlog B-11, about 2026-11-29.
 - **Assistant recommendation: ACCEPT as a deferral, citing CR-013;** you may reuse your CR-013 rationale as the reason.
-- Severity (Ben): **Ben** | Disposition (Ben): **Ben** | Reason (Ben): **Ben**
+- Severity (Ben): S4 | Disposition (Ben): ACCEPTED as a deferral (CR-013, backlog B-11) | Reason (Ben): I want HTTPS and the other protections that cannot be tampered with. It is a bigger change that I deferred to about two weeks from now, when most of the building happens. Until then nothing leaves this machine.
 
 ### S-05. No request-size cap. Area 2
 - **Facts:** `MAX_CONTENT_LENGTH` is unset (F2.19). DEF-019 (a 100,000-character location is accepted and stored) is logged Will not fix.
 - **Assistant recommendation: FIX (about 15 minutes with a test): a 64 KB request cap that answers HTTP 413.**
 - **Why:** it is small, visible to a grader, and removes a free way to fill the database with junk.
 - **If you choose FIXED:** DEF-019 becomes Fixed, and the hostile-data entry `100k-character-location` (which today expects the report to be accepted) must change to expect a refusal. Tell the assistant and it will log the change first and then do it. **If you choose ACCEPTED:** keep DEF-019 as Will not fix and reuse its reason (no requirement sets a limit).
-- Severity (Ben): **Ben** | Disposition (Ben): **Ben** | Reason (Ben): **Ben**
+- Severity (Ben): S4 | Disposition (Ben): ACCEPTED | Reason (Ben): I decided on 2026-11-15 to leave this accepted for the release candidate. I still want the app to handle all kinds of input and keep only what is useful, so a size limit stays on the list for the next period.
 
 ### S-06. The model client's 60 s limit is per socket read, not a total deadline. Area 8 (model integration)
 - **Facts:** the limit is passed to `urlopen` as a timeout, which applies to each read (F8.5). A server that sends a byte at a time could hold one report longer than 60 s. The server must be on this machine (the client refuses any other host).
 - **Assistant recommendation: ACCEPT.** The only party that could drip bytes is a process already on this machine; the fallback chain still serves other reports; a total deadline would need a thread per call.
-- Severity (Ben): **Ben** | Disposition (Ben): **Ben** | Reason (Ben): **Ben**
+- Severity (Ben): S4 | Disposition (Ben): ACCEPTED | Reason (Ben): Only a process already on this machine could abuse a per-read time limit, and the fallback chain keeps serving other reports.
 
 ### S-07. Five advisories against `setuptools 65.5.0` in the virtual environment. Area 6
 - **Facts:** PYSEC-2022-43012, PYSEC-2025-49, PYSEC-2026-1918, PYSEC-2026-3447, GHSA-xmj3-9gf7-h52w. `setuptools` is not in `requirements.txt`, is not imported by the repository, and CI installs only `requirements.txt`. `pip-audit` prints no descriptions, so the advisory text must be read at osv.dev (Part D).
 - **Assistant recommendation: ACCEPT as not reachable, after you have verified the advisories (Part D). Optionally also run `./.venv/Scripts/python -m pip install --upgrade setuptools` (one minute) so the local audit is clean.**
 - **Why:** it is installer tooling, outside the application's runtime path. The decision on reachability is yours.
-- Severity (Ben): **Ben** | Disposition (Ben): **Ben** | Reason (Ben): **Ben**
+- Severity (Ben): S4 | Disposition (Ben): ACCEPTED as not reachable | Reason (Ben): I verified the five advisories and judge them fine: `setuptools` is installer tooling, is not in `requirements.txt`, and is not imported by the app.
 
 ### S-08. `node_alerts` and `node_notices` are not purged. Area 7
 - **Facts:** the purge list in `src/purge/job.py` omits them; they hold node health and unit numbers, no incident data and no personal data (F7.5).
 - **Assistant recommendation: ACCEPT**, and say in the reason that they would need to be added to the purge if an alert ever carried incident text.
-- Severity (Ben): **Ben** | Disposition (Ben): **Ben** | Reason (Ben): **Ben**
+- Severity (Ben): S4 | Disposition (Ben): ACCEPTED | Reason (Ben): These tables hold only node health and unit numbers, no incident data and no personal data.
 
 ### S-09. A real model scored a vague report at exactly the auto-dispatch bar (DEF-029). Areas 5, 8
 - **Fixed in `b7030ae`:** answers from a real model need confidence 85 or more (`MODEL_AUTO_APPROVE_MIN`, never below 75). **Your decision, 2026-11-15: keep 85.**
