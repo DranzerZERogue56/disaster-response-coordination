@@ -65,6 +65,7 @@ Other Should and Could requirements with no test and no verified row in `docs/tr
   - Given a reasoning attempt exceeds ~60 seconds without producing a proposal, when the timeout triggers, then the system abandons it, returns an error to the human overseer, and falls back to a non-LLM path instead of continuing to wait.
 
 ## B-07: Login and roles (FR-AUTH-01, DEF-018)
+- **Additions from Ben, 2026-11-15 (security review areas 3 and 4):** a second authentication factor so dispatchers are confirmed to be real dispatchers; optionally an allow-list of the station's IP address as one extra layer (weak on its own, since addresses can be shared or forged); role levels so each level of dispatcher has the powers its role needs and nothing is blocked that a role legitimately needs.
 - **Source:** DEF-018 (S2/P2, Open): there is no login, so anyone who reaches the server can approve or override. The defect log states it must not ship v1.0 like this.
 - **Estimate:** Ben to confirm.
 - **Acceptance criteria (copied intact):**
@@ -102,3 +103,22 @@ Other Should and Could requirements with no test and no verified row in `docs/tr
   - Given the app is started with the documented command, when a browser opens the console, then it is served over HTTPS (a self-signed certificate for localhost is acceptable and documented).
   - Given the model client is configured with an `https` URL to this machine, when it classifies a report, then the call succeeds; and given a non-local host, then it is still refused.
   - Given the existing loopback-only tests, when the transport changes, then they still pass with the scheme rule updated in one place.
+
+## B-12: Dependency audit in CI, an update cadence, and a purpose line for every package (proposed from Ben's security-review input)
+- **Source:** Ben, 2026-11-15, security review area 6: audit all packages, check installed versions, update regularly, know what each does, be able to swap them.
+- **Estimate:** Ben to confirm.
+- **Acceptance criteria (proposed by the assistant, Ben to confirm):**
+  - Given a push, when CI runs, then `pip-audit -r requirements.txt` runs and the build fails on a High or Critical advisory unless Ben has recorded a reasoned exception.
+  - Given `requirements.txt`, when someone reads `docs/dependencies.md`, then each of the pinned packages has a one-line purpose, a licence and the date it was last reviewed, and the update cadence (for example monthly) is written down.
+
+## B-13: Retention policy: keep a month, long-term storage, confidential data kept apart (proposed; conflicts with NFR-PRIV-01 as written)
+- **Source:** Ben, 2026-11-15, security review area 7: record every dispatcher action and every major AI decision; keep at least a month after the incident; then possibly long-term storage; some data points confidential and stored elsewhere to keep people anonymous.
+- **Needs a change request first:** NFR-PRIV-01 (Must) says incident data is purged 24 hours after receipt, and `src/purge/job.py` implements that. Ben writes the change request and any new requirement text.
+- **Estimate:** Ben to confirm.
+- **Acceptance criteria (proposed, Ben to confirm):** Given the new retention rule is approved, when an incident is older than the retention period, then it moves to the long-term store or is deleted as the rule says, and the decision and override trail is kept; and given a field marked confidential, when the record is stored, then that field lives in a separate store and the main record holds only a reference.
+
+## B-14: Measure the load a model puts on the machine (CPU, memory, GPU) and judge whether the chosen models do the job (proposed from Ben's security-review input)
+- **Source:** Ben, 2026-11-15, area 8: make sure the models can do the job fairly well and do not overwork the PC.
+- **Estimate:** Ben to confirm.
+- **Acceptance criteria (proposed, Ben to confirm):** Given the 20 seeded reports, when each model classifies them, then peak memory and CPU and GPU use are recorded in `docs/performance.md` with the machine named; and given a labelled set of reports, then the share classified to the expected severity and unit type is recorded for each model.
+

@@ -112,15 +112,15 @@ Severity uses the defect-log scale: S1 data loss or system will not run; S2 a Mu
 
 ### S-09. A real model scored a vague report at exactly the auto-dispatch bar (DEF-029). Areas 5, 8
 - **Fixed in `b7030ae`:** answers from a real model need confidence 85 or more (`MODEL_AUTO_APPROVE_MIN`, never below 75). **Your decision, 2026-11-15: keep 85.**
-- Assistant recommendation: confirm FIXED. | Severity: S2 (logged) | Disposition: FIXED | Reason (Ben): **Ben** (your 85 decision may be reused)
+- Assistant recommendation: confirm FIXED. | Severity: S2 (logged) | Disposition: FIXED | Reason (Ben): confirmed by Ben on 2026-11-15 (chat); he kept the 85 bar
 
 ### S-10. The 24-hour purge never ran by itself (DEF-030). Area 7
 - **Fixed in `3c4513b`:** an hourly job started by `script/start`; a failed purge is reported on stderr and the job keeps running.
-- Assistant recommendation: confirm FIXED. | Severity: S2 (logged) | Disposition: FIXED | Reason (Ben): **Ben**
+- Assistant recommendation: confirm FIXED. | Severity: S2 (logged) | Disposition: FIXED | Reason (Ben): confirmed by Ben on 2026-11-15 (chat)
 
 ### S-11. No browser security headers (DEF-031). Area 5
 - **Fixed in `3c4513b`:** four headers on every response; the policy allows no inline script or style.
-- Assistant recommendation: confirm FIXED. | Severity: S3 (logged) | Disposition: FIXED | Reason (Ben): **Ben**
+- Assistant recommendation: confirm FIXED. | Severity: S3 (logged) | Disposition: FIXED | Reason (Ben): confirmed by Ben on 2026-11-15 (chat)
 
 ---
 
@@ -128,11 +128,11 @@ Severity uses the defect-log scale: S1 data loss or system will not run; S2 a Mu
 
 | Advisory id | Package and installed version | Fixed in | Verified by Ben at the source? (write "verified" and the date) | Reachability judgment (Ben) |
 |---|---|---|---|---|
-| PYSEC-2022-43012 | setuptools 65.5.0 | 65.5.1 | **Ben** (open https://osv.dev/PYSEC-2022-43012) | **Ben** |
-| PYSEC-2025-49 | setuptools 65.5.0 | 78.1.1 | **Ben** (https://osv.dev/PYSEC-2025-49) | **Ben** |
-| PYSEC-2026-1918 | setuptools 65.5.0 | 70.0.0 | **Ben** (https://osv.dev/PYSEC-2026-1918) | **Ben** |
-| PYSEC-2026-3447 | setuptools 65.5.0 | 83.0.0 | **Ben** (https://osv.dev/PYSEC-2026-3447) | **Ben** |
-| GHSA-xmj3-9gf7-h52w | setuptools 65.5.0 | 84.1.0 | **Ben** (https://github.com/advisories/GHSA-xmj3-9gf7-h52w) | **Ben** |
+| PYSEC-2022-43012 | setuptools 65.5.0 | 65.5.1 | Ben states (chat, 2026-11-15) that he verified it; (open https://osv.dev/PYSEC-2022-43012) | Ben judges it fine (chat, 2026-11-15); no further detail given |
+| PYSEC-2025-49 | setuptools 65.5.0 | 78.1.1 | Ben states (chat, 2026-11-15) that he verified it; (https://osv.dev/PYSEC-2025-49) | Ben judges it fine (chat, 2026-11-15); no further detail given |
+| PYSEC-2026-1918 | setuptools 65.5.0 | 70.0.0 | Ben states (chat, 2026-11-15) that he verified it; (https://osv.dev/PYSEC-2026-1918) | Ben judges it fine (chat, 2026-11-15); no further detail given |
+| PYSEC-2026-3447 | setuptools 65.5.0 | 83.0.0 | Ben states (chat, 2026-11-15) that he verified it; (https://osv.dev/PYSEC-2026-3447) | Ben judges it fine (chat, 2026-11-15); no further detail given |
+| GHSA-xmj3-9gf7-h52w | setuptools 65.5.0 | 84.1.0 | Ben states (chat, 2026-11-15) that he verified it; (https://github.com/advisories/GHSA-xmj3-9gf7-h52w) | Ben judges it fine (chat, 2026-11-15); no further detail given |
 
 `requirements.txt` itself (16 pinned packages) reported no known vulnerabilities (re-run: `./.venv/Scripts/pip-audit -r requirements.txt`).
 
@@ -142,4 +142,26 @@ Severity uses the defect-log scale: S1 data loss or system will not run; S2 a Mu
 
 ## PART F. Sign-off
 
-**Ben:** (one sentence: what you conclude about the security of this release candidate, and what you would fix first.)
+**Ben (chat, 2026-11-15, verbatim):** "I don't know if it will work, but I'm going to try my best to make sure everything works well."
+
+---
+
+## PART G. Ben's input, area by area (2026-11-15, from the chat; his words lightly tidied)
+
+These are Ben's statements of what each area needs and why. They are **not yet** Results or dispositions: those cells in Parts B and C are still waiting for Ben to say Pass / Pass with findings / Fail and FIXED / ACCEPTED, with a reason.
+
+1. **Secrets.** `.env` needs to be ignored, and `.env.example`, even if it is only placeholders, is still good practice. The reason this matters: to keep my own and other people's data safe, and my own API keys, because a leaked key could cost me money if I pay once. *(Fact checked by the assistant: `.env` is ignored by `.gitignore` line 19; `.env.example` is the only tracked env file. The project currently uses no paid API.)*
+2. **Input handling.** We need to handle all types of data and filter the data that is actually useful and what we need.
+3. **Authentication.** We need dual authentication so that dispatchers are confirmed to be actual dispatchers, maybe even locked to a certain IP address, the station they are working out of.
+4. **Authorization.** Each specific person, or each level of dispatcher if there are levels, should have more power depending on their role, and we need to make sure they can do everything they may need to do.
+5. **Transport and the browser.** Change from plain HTTP to HTTPS, with other security protocols that cannot be messed with.
+6. **Dependencies.** Audit all the packages we bring in; check our installed versions; make sure they update regularly; know what they do; and be able to change them out if necessary.
+7. **Logging and data kept.** Record everything a dispatcher does and every major to fairly big decision the AI makes. Keep it at least a month after the incident, then it may go to long-term storage depending on the situation and how much we want to keep. Some data points may be made confidential and saved elsewhere, not in the original file, so that people's anonymity is kept.
+8. **Model integration.** We chose two models and need to make sure they can do the job fairly well and that we are not overworking the PC. They are fairly severe in importance. We need to get them working, and we accept that they will need to be changed.
+
+### Points to settle (the assistant noticed these; Ben decides)
+- **Retention conflicts with the specification and the current code (area 7).** NFR-PRIV-01 (a Must) says stored incident data is purged 24 hours after receipt, and the purge job built for it (and fixed under DEF-030) does exactly that. "At least a month, then long-term storage, with confidential data separated" is a different policy. Changing a Must requirement needs a change request in Ben's words. It is now backlog B-13 as a proposal; nothing in the code changed.
+- **Two models vs one (area 8).** CR-014 (Ben's own notes) rejects several local models "in exchange for 1 demo model", and on 2026-11-15 Ben kept `smollm2:360m` only as a *disabled option*. "We chose 2 models that are going to be used" says the opposite. Ben to say which one is true, so CR-014 and this review agree.
+- **"Not overworking the PC" has not been measured.** The measurements record time per answer, not CPU, memory or GPU load. It is now backlog B-14.
+- **Login scope (areas 3 and 4).** Dual authentication, a station IP lock and role levels are all bigger than the plain login already planned as B-07. They are recorded there as additions. An IP lock alone is weak (addresses can be shared or forged), so it is best as one layer among several; that is a note, not a decision.
+- **Dependencies (area 6).** "Update regularly, know what they do, be able to swap" is a process, not a finding. It is now backlog B-12 (audit in CI, an update cadence, a one-line purpose for each of the 16 pinned packages).
