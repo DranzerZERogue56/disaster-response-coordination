@@ -103,7 +103,7 @@ Severity/priority labels above are those already written in the log; nothing was
 | F3.4 | Routes reachable with no credentials: all 18 (section 2). That includes the state-changing ones: `POST /reports`, `/connectivity`, `/proposals/<id>/decision`, `/assignments/<id>/override`, `/overrides/<id>/follow-up`, `/reconciliations/<id>/override`, `/nodes/<id>/heartbeat`, `/nodes/<id>/confirm-recovery`, and the three `/dispatcher/...` POSTs. Demonstrated with the Flask test client on a temp seeded DB (not the dev DB): `POST /proposals/1/decision {"decision":"approve"}` with no credentials and an `Origin: http://evil.example` header returned 200 with `final_status: approved`, `decided_by: '1'`, and created a notification row. | test-client run (below) |
 | F3.5 | Bind address: `script/start` runs `python -m flask --app src.web_ui.app run --host 127.0.0.1 --port 8080`; `src/web_ui/app.py:463` (`__main__`) uses `app.run(host="127.0.0.1", port=8080)`. Nothing in the repo reads a host or port from the environment. A user can still pass `--host` to `flask run` by hand. | read |
 | F3.6 | The `username` column is `demo-dispatcher`, hash/salt are placeholder strings (`seed/iteration-1.sql:45-48`). The `dispatcher_accounts` table has roles `admin`, `dispatcher`, `observer` (`migrations/0001-initial.sql:27`). | read |
-| F3.7 | The Flask `SECRET_KEY` is not set (no `session` use). The `BANNER_SIGNER` is a separate key (F1.8). | read |
+| F3.7 | No Flask session signing setting is configured (the app does not use `session`). The `BANNER_SIGNER` is a separate key (F1.8). | read |
 
 ---
 
