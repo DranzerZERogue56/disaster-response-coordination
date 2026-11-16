@@ -1,0 +1,27 @@
+{
+  "target": "NFR-REL-03: 2-minute outage, 10 reports, 0 lost, all processed",
+  "reports_submitted": 10,
+  "accepted_while_offline": 10,
+  "queued_at_end_of_outage": 10,
+  "outage_minutes": 2.0,
+  "rows_in_database": 10,
+  "processed_after_reconnection": 10,
+  "still_queued": 0,
+  "lost": 0,
+  "lost_percent": 0.0,
+  "drain_seconds": 0.23,
+  "drain_response_keys": [
+    "connected",
+    "drained",
+    "drained_count"
+  ],
+  "environment": {
+    "os": "Windows-10-10.0.26300-SP0",
+    "python": "3.11.8",
+    "cpu": "12th Gen Intel(R) Core(TM) i5-12450H",
+    "gpu": "Intel(R) UHD Graphics | NVIDIA GeForce GTX 1650",
+    "ram_gb": 63.7,
+    "run": "fresh temp database, started from the terminal outside the editor, real wall clock"
+  },
+  "measured_at": "2026-11-16T03:49:27.440175+00:00"
+}

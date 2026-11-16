@@ -94,7 +94,7 @@ def release(args):
     from src.web_ui.app import start_sweeper
 
     conn, _ = fresh_db(extra_units=8)
-    start_sweeper(5.0)  # the same interval script/start uses
+    start_sweeper(args.sweep)  # the interval script/start uses (5 s before the 2026-11-15 fix, 1 s after)
 
     def proposal(unit_id):
         rid = conn.execute(
@@ -133,12 +133,12 @@ def release(args):
     seconds = [freed.get(u) for u in units]
     done = [s for s in seconds if s is not None]
     save(
-        "rel02",
+        f"rel02-sweep{args.sweep:g}s",
         {
             "target": "NFR-REL-02: a reserved unit whose proposal is rejected or times out returns to available within 4 min (240 s)",
             "rejection_path_ms": rejected_ms,
             "timeout_path_seconds": seconds,
-            "sweeper_interval_seconds": 5.0,
+            "sweeper_interval_seconds": args.sweep,
             "n": len(done),
             "p50": percentile(done, 0.5) if done else None,
             "p95": percentile(done, 0.95) if done else None,
@@ -223,7 +223,9 @@ def model(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="cmd", required=True)
-    sub.add_parser("release").set_defaults(fn=release)
+    r = sub.add_parser("release")
+    r.add_argument("--sweep", type=float, default=1.0, help="sweeper interval in seconds (script/start default)")
+    r.set_defaults(fn=release)
     o = sub.add_parser("outage")
     o.add_argument("--reports", type=int, required=True)
     o.add_argument("--minutes", type=float, required=True)

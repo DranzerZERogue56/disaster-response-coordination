@@ -1,0 +1,21 @@
+{'node_id': 2, 'miss_to_alert_s': 21.0, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+{'node_id': 3, 'miss_to_alert_s': 20.98, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+{'node_id': 4, 'miss_to_alert_s': 20.99, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+{'node_id': 5, 'miss_to_alert_s': 20.95, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+{'node_id': 6, 'miss_to_alert_s': 20.9, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+{'node_id': 7, 'miss_to_alert_s': 20.86, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+{'node_id': 8, 'miss_to_alert_s': 20.85, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+{'node_id': 9, 'miss_to_alert_s': 20.65, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+{'node_id': 10, 'miss_to_alert_s': 20.65, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+{'node_id': 11, 'miss_to_alert_s': 20.74, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+{'node_id': 12, 'miss_to_alert_s': 20.79, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+{'node_id': 13, 'miss_to_alert_s': 20.65, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+{'node_id': 14, 'miss_to_alert_s': 20.62, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+{'node_id': 15, 'miss_to_alert_s': 20.76, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+{'node_id': 16, 'miss_to_alert_s': 20.72, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+{'node_id': 17, 'miss_to_alert_s': 20.78, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+{'node_id': 18, 'miss_to_alert_s': 20.72, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+{'node_id': 19, 'miss_to_alert_s': 20.74, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+{'node_id': 20, 'miss_to_alert_s': 20.67, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+{'node_id': 21, 'miss_to_alert_s': 20.7, 'kill_to_alert_s': 29.06, 'survivor_notices': 20, 'human_notices': 20}
+worst miss-to-alert: 21.0 s (limit 30)

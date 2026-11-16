@@ -42,6 +42,8 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 | DEF-027 | The tiebreak is applied only to same-unit conflicts; FR-COORD-03-AC1 ("other kinds of conflict") is shown by a test of the function alone | FR-COORD-03-AC1 | S3 | P3 | independent review (M11) | Fixed | `eb522c9` | `test_two_live_proposals_on_one_incident_are_settled_by_the_same_tiebreak_and_logged` |
 | DEF-028 | The console's success or error banner is read from the address, so a link can display a false "approved" message | NFR-ACC-01 (console) | S4 | P4 | independent review (M11) | Fixed | `eb522c9` | `test_a_banner_forged_in_the_address_is_not_shown` |
 | DEF-029 | A real model can score a barely informative report at exactly the auto-dispatch confidence (75) and send a unit with no human review | FR-AGENT-03 | S2 | P1 | real-model run (M12) | Fixed | `b7030ae` | `test_decide_auto_holds_a_real_model_proposal_at_75_but_approves_a_rules_proposal_at_75` |
+| DEF-030 | The 24-hour purge never runs by itself: nothing in the app or its start script calls it | NFR-PRIV-01 | S2 | P1 | security fact sheet (M12) | Open | none | none yet |
+| DEF-031 | No browser security headers are sent (CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy) | NFR-SEC-01 (transport/browser hardening) | S3 | P2 | security fact sheet (M12) | Open | none | none yet |
 
 ---
 
@@ -278,3 +280,19 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 - **Evidence:** the 2026-11-11 run recorded in `docs/change-requests/CR-011-ollama-client.md`.
 - **Severity S2:** a unit could be dispatched on almost no information with no human check; **Priority P1:** it only appears now that a real model is wired in, and it is the product's central safety rule.
 - **Traceability and status:** FR-AGENT-03, NFR-SEC-02; Fixed in `b7030ae`. Fix decided by Ben 2026-11-15: answers from a real model need human review below a stricter confidence threshold than the spec's 75 (the spec's 75 stays for the rules tier). Default bar 85 is a provisional number chosen by the assistant because Ben gave none; Ben to confirm or change it (env MODEL_AUTO_APPROVE_MIN, never below 75). Owner: Ben.
+
+### DEF-030 — The 24-hour purge never runs by itself
+- **Environment:** commit `b7030ae`; found while reading the code for the Milestone 12 security review (`docs/security-review-facts.md`).
+- **Steps:** 1. Start the app with `./script/start`. 2. Create reports. 3. Wait more than 24 hours. 4. Look at the database.
+- **Expected vs actual:** Expected (NFR-PRIV-01): incident data is deleted 24 hours after receipt. Actual: the purge job exists and is tested, but only runs when someone runs `tools/purge.py` by hand; nothing in `script/start` or the app calls it, so the data stays.
+- **Evidence:** `grep` for callers of `purge(` finds only the tool and the tests.
+- **Severity S2:** a Must privacy requirement is not met in normal running and there is no automatic workaround; **Priority P1:** it is the privacy promise of the product and the fix is small.
+- **Traceability and status:** NFR-PRIV-01-AC1; Open. Owner: Ben.
+
+### DEF-031 — No browser security headers are sent
+- **Environment:** commit `b7030ae`; found while reading the code for the Milestone 12 security review.
+- **Steps:** 1. Request `/dispatcher` or any route. 2. Read the response headers.
+- **Expected vs actual:** Expected (hardening): the page is not framable, content types are not sniffed, and only same-origin resources load. Actual: none of Content-Security-Policy, X-Frame-Options, X-Content-Type-Options or Referrer-Policy is sent.
+- **Evidence:** the fact sheet's area 5; a test-client request showed no such headers.
+- **Severity S3:** clickjacking and sniffing are possible against a console that has no login; the app listens only on 127.0.0.1; **Priority P2:** small and testable.
+- **Traceability and status:** security review area 5; Open. Owner: Ben.

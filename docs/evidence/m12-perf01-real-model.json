@@ -1,0 +1,54 @@
+{
+  "target": "NFR-PERF-01: classification within 5 s, p95 over 20 seeded reports, on the target hardware (24 GB GPU, local model)",
+  "model": "ollama/qwen3:1.7b v1",
+  "reports": 20,
+  "cold_first_call_seconds": 3.442,
+  "all_20": {
+    "p50": 1.057,
+    "p95": 1.198,
+    "max": 3.442
+  },
+  "warm_19": {
+    "p50": 1.057,
+    "p95": 1.198,
+    "max": 1.198
+  },
+  "per_call_seconds": [
+    3.442,
+    1.052,
+    1.108,
+    0.881,
+    1.131,
+    1.057,
+    1.109,
+    0.965,
+    1.11,
+    1.019,
+    1.113,
+    1.052,
+    1.105,
+    0.873,
+    1.198,
+    0.906,
+    1.054,
+    1.1,
+    1.004,
+    1.074
+  ],
+  "confidence_min_mean_max": [
+    75,
+    89.8,
+    95
+  ],
+  "human_review_share": 0.15,
+  "verdict_note": "this laptop is not the target hardware; the row stays 'unverified on target' whatever the numbers",
+  "environment": {
+    "os": "Windows-10-10.0.26300-SP0",
+    "python": "3.11.8",
+    "cpu": "12th Gen Intel(R) Core(TM) i5-12450H",
+    "gpu": "Intel(R) UHD Graphics | NVIDIA GeForce GTX 1650",
+    "ram_gb": 63.7,
+    "run": "fresh temp database, started from the terminal outside the editor, real wall clock"
+  },
+  "measured_at": "2026-11-16T03:49:45.106531+00:00"
+}

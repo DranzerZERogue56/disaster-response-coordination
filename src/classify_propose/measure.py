@@ -71,6 +71,11 @@ def measure(model=None, texts=None):
                 conn.executescript(f.read())
         with open("seed/iteration-1.sql", encoding="utf-8") as f:
             conn.executescript(f.read())
+        # the demo seed has only Medical units; a real model also recommends Fire, Shelter and Security, and a
+        # timing run must not stop on "no unit of that type", so the measurement database has one of each
+        for unit_type in ("Fire", "Shelter", "Security"):
+            conn.execute("INSERT INTO units (scenario_run_id, unit_type, agent_node_id, status) VALUES (1, ?, 1, 'available')", (unit_type,))
+        conn.commit()
 
         seconds, confidences, human = [], [], 0
         for i, text in enumerate(texts):
