@@ -85,14 +85,21 @@ Release candidate. Exit criteria are in `docs/rc-exit-criteria.md` (written 2026
 - Broadcast and negotiation: updates stranded for a node whose recovery was confirmed first, and false "could not be delivered" warnings for a node that had answered again (FR-RES-03-AC2, DEF-021, DEF-022); a tiebreak loser's replacement left with no unit and no escalation (FR-COORD-01-AC2, DEF-024); proposals ignoring the broadcast view (FR-RES-03-AC3, DEF-026); the tiebreak applied only to same-unit conflicts (FR-COORD-03-AC1, DEF-027); no broadcast to other agents at all (FR-RES-03-AC1 to AC3, DEF-016).
 - Two Must requirements with a literal "[X] seconds" (FR-ALERT-01, FR-INFER-02, DEF-008).
 - A real model could score a barely informative report at exactly 75 and dispatch with no human review (FR-AGENT-03, NFR-SEC-02, DEF-029).
+- The 24-hour purge never ran by itself; it now runs hourly from `script/start`, and a failed purge is reported on stderr (NFR-PRIV-01, DEF-030).
+- No browser security headers were sent; every response now carries Content-Security-Policy, X-Frame-Options, X-Content-Type-Options and Referrer-Policy (NFR-SEC-01 hardening, DEF-031).
+- A reserved unit whose proposal timed out was marked available about 4 seconds after the 4-minute window because the background sweeper woke every 5 seconds; the default is now 1 second (NFR-REL-02, `docs/performance.md`).
 - Every fixed defect above names a regression test that fails on the commit before the fix; `docs/regression-proof.md` records the check.
 
 ### Security
 - The model client refuses any host but 127.0.0.1, localhost or ::1, follows no redirects, uses no proxy, and has a 1 MB reply cap (NFR-SEC-01, CR-011 pending).
 - A real model's confidence can no longer authorize automatic dispatch on its own at 75 (NFR-SEC-02, DEF-029).
+- Every response carries browser security headers (DEF-031); the 24-hour purge runs by itself (DEF-030).
 - A forged address banner can no longer show a false "approved" message in the console (DEF-028).
 - Purge Job and synthetic-data check protect personal data handling (NFR-PRIV-01, NFR-SEC-03, CR-009, CR-005).
 - Still open: there is no login (FR-AUTH-01, DEF-018); see the known issues below.
+
+### Decisions recorded this release (Ben's notes, drafts to confirm)
+- CR-011 ACCEPT (Ollama client, kill switch `OLLAMA_ENABLED`); CR-013 DEFER (HTTPS, about 2026-11-29, backlog B-11); CR-014 REJECT (several or larger local models and the target-hardware sections, in favour of one demo model).
 
 ### Known issues in 0.9.0-rc.1
 - DEF-017 (S3) - the software only writes a notification row; nothing is sent to a responder. Workaround: the dispatcher notifies the responder outside the software. Planned: backlog B-04.
