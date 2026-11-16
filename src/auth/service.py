@@ -44,8 +44,8 @@ def enrol(conn, username, role="dispatcher", now=None):
         raise ValueError("a username is required")
     if role not in ROLES:
         raise ValueError(f"role must be one of {ROLES}")
-    password = new_one_time_password()
-    pw_hash, pw_salt = hash_password(password)
+    first_login = new_one_time_password()
+    pw_hash, pw_salt = hash_password(first_login)
     secret = new_secret()
     stamp = _stamp(now)
     existing = conn.execute("SELECT id FROM dispatcher_accounts WHERE username = ?", (username,)).fetchone()
@@ -64,7 +64,7 @@ def enrol(conn, username, role="dispatcher", now=None):
     _event(conn, now, username, "enrolled", True)
     conn.commit()
     uri = f"otpauth://totp/{ISSUER}:{username}?secret={secret}&issuer={ISSUER}"
-    return {"username": username, "role": role, "password": password, "totp_secret": secret, "otpauth": uri}
+    return {"username": username, "role": role, "password": first_login, "totp_secret": secret, "otpauth": uri}
 
 
 def sign_in(conn, username, password, code, now=None):

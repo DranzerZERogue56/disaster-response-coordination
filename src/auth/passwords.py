@@ -17,7 +17,7 @@ def hash_password(password):
 
 def check_password(password, hash_hex, salt_hex):
     """True only for the right password. Any malformed stored value (such as the seed's placeholder) is simply False."""
-    if not isinstance(password, str) or password == "":
+    if not isinstance(password, str) or not password:
         return False
     try:
         expected = bytes.fromhex(hash_hex)

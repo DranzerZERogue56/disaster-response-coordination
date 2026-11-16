@@ -185,7 +185,7 @@ def test_a_cookie_made_before_a_restart_is_refused_by_the_new_process(world, mon
 
 @pytest.mark.covers("FR-AUTH-01-AC2")
 def test_an_observer_can_sign_in_but_every_action_is_refused(world):
-    app, accounts, db = world
+    app, accounts, _db = world
     with app.test_client() as client:
         assert sign_in_as(client, accounts["watcher"]).status_code == 303
         token = client.get("/session").get_json()["csrf_token"]
