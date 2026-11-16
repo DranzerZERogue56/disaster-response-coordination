@@ -52,6 +52,7 @@ DEFECTS = [
     ("DEF-026", "eb522c9", "tests/unit/test_def026_027.py::test_a_proposal_does_not_start_from_a_unit_the_proposing_agents_view_shows_as_taken"),
     ("DEF-027", "eb522c9", "tests/unit/test_def026_027.py::test_two_live_proposals_on_one_incident_are_settled_by_the_same_tiebreak_and_logged"),
     ("DEF-028", "eb522c9", "tests/integration/test_dispatcher_ui_http.py::test_a_banner_forged_in_the_address_is_not_shown"),
+    ("DEF-029", "b7030ae", "tests/unit/test_def029.py::test_decide_auto_holds_a_real_model_proposal_at_75_but_approves_a_rules_proposal_at_75"),
 ]
 
 

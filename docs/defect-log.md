@@ -41,7 +41,7 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 | DEF-026 | Agents' proposals do not consult the broadcast view: a reserved unit can still be proposed when none is free | FR-RES-03-AC3 | S3 | P3 | independent review (M11) | Fixed | `eb522c9` | `test_a_proposal_does_not_start_from_a_unit_the_proposing_agents_view_shows_as_taken` |
 | DEF-027 | The tiebreak is applied only to same-unit conflicts; FR-COORD-03-AC1 ("other kinds of conflict") is shown by a test of the function alone | FR-COORD-03-AC1 | S3 | P3 | independent review (M11) | Fixed | `eb522c9` | `test_two_live_proposals_on_one_incident_are_settled_by_the_same_tiebreak_and_logged` |
 | DEF-028 | The console's success or error banner is read from the address, so a link can display a false "approved" message | NFR-ACC-01 (console) | S4 | P4 | independent review (M11) | Fixed | `eb522c9` | `test_a_banner_forged_in_the_address_is_not_shown` |
-| DEF-029 | A real model can score a barely informative report at exactly the auto-dispatch confidence (75) and send a unit with no human review | FR-AGENT-03 | S2 | P1 | real-model run (M12) | Open | none | none yet |
+| DEF-029 | A real model can score a barely informative report at exactly the auto-dispatch confidence (75) and send a unit with no human review | FR-AGENT-03 | S2 | P1 | real-model run (M12) | Fixed | `b7030ae` | `test_decide_auto_holds_a_real_model_proposal_at_75_but_approves_a_rules_proposal_at_75` |
 
 ---
 
@@ -277,4 +277,4 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 - **Expected vs actual:** Expected (FR-AGENT-03, NFR-SEC-02 intent): an almost empty report is held for a person. Actual: the real model answered Serious / Shelter with confidence 75, which is exactly the auto-dispatch threshold, so the safety rule lets it go without a human. The fake rules model scored the same text 40 and held it. The rule is correct as written; the model's confidence is not calibrated.
 - **Evidence:** the 2026-11-11 run recorded in `docs/change-requests/CR-011-ollama-client.md`.
 - **Severity S2:** a unit could be dispatched on almost no information with no human check; **Priority P1:** it only appears now that a real model is wired in, and it is the product's central safety rule.
-- **Traceability and status:** FR-AGENT-03, NFR-SEC-02; Open. Fix decided by Ben 2026-11-15: answers from a real model need human review below a stricter confidence threshold than the spec's 75 (the spec's 75 stays for the rules tier). Owner: Ben.
+- **Traceability and status:** FR-AGENT-03, NFR-SEC-02; Fixed in `b7030ae`. Fix decided by Ben 2026-11-15: answers from a real model need human review below a stricter confidence threshold than the spec's 75 (the spec's 75 stays for the rules tier). Default bar 85 is a provisional number chosen by the assistant because Ben gave none; Ben to confirm or change it (env MODEL_AUTO_APPROVE_MIN, never below 75). Owner: Ben.
