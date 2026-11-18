@@ -209,3 +209,12 @@ Wed: decide the questions above; start README and prerequisites (Ben executes co
 - The tester needs their own phone and an authenticator app **before** the clock starts, or that setup time is part of the 60 minutes. Decide and write down which, before the run.
 - Four Medium items is more than "two done well beat five thin" advises, and the rule is that anything claimed must be demonstrated in the repository. Suggested priority if time is short: bootstrap and CI first (they reinforce each other), then the recording, then the accessibility pass.
 - The bootstrap script must be written **after the first clean run** and used by the tester on the second.
+
+### Second round (Ben, 2026-11-18, by button)
+
+| Question | Ben's choice |
+|---|---|
+| Architecture §0: the one thing that would surprise a new reader | **The rules live in the database too:** the safety rules (a unit is assigned only while its proposal is approved; append-only logs) are enforced by database triggers, not only by Python code |
+| Onboarding: the real unclaimed first issue | **pip-audit in CI** (backlog B-12). *Note: it must stay unclaimed and unbuilt, so a stranger could really take it; the Medium item "documentation tested in CI" is a different job and is not the same thing.* |
+| ADR 0008: the decision never recorded | **Two-factor sign-in with time-based codes**, with the alternatives (Duo cloud push, password only, IP allow-list) and the consequences |
+| Runbook failure entries | **Seven:** DEF-002 (reserved unit stuck), DEF-030 (purge never ran), DEF-029 (overconfident model, kill switch), DEF-032 (field reports refused, HTTP 401), the leftover server on port 8080, DEF-021 (node updates stranded), DEF-009/023 (a JSON list crashed routes) |
