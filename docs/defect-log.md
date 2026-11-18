@@ -47,6 +47,7 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 | DEF-032 | With the sign-in on, field reports, the scenario tool and node heartbeats over HTTP are refused: they have no account | FR-INTAKE-01, FR-SIM-01, FR-DEGRADE-01 | S3 | P3 | login build (M12) | Open | none | none (needs a service key; backlog B-07) |
 | DEF-033 | A deeply nested JSON body (tens of thousands of levels) crashes the route with HTTP 500 (RecursionError) | NFR-REL-01 | S3 | P2 | Python-vulnerability probe (M13) | Fixed | `bc0a867` | `test_a_deeply_nested_body_is_refused_cleanly_not_a_500` |
 | DEF-034 | A text field containing a lone surrogate character (JSON escape \ud800) crashes the route with HTTP 500 (UnicodeEncodeError) | NFR-REL-01 | S3 | P2 | Python-vulnerability probe (M13) | Fixed | `bc0a867` | `test_a_lone_surrogate_in_a_text_field_is_refused_cleanly_not_a_500` |
+| DEF-035 | The model client's regex that strips thinking blocks takes quadratic time on many unclosed tags: 109 KB freezes it for 15.7 s | NFR-REL-01 | S3 | P2 | Python-vulnerability probe (M13) | Open | none | none yet |
 
 ---
 
@@ -323,4 +324,12 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 - **Evidence:** the probe's status table; `tests/integration/test_hostile_python_inputs.py`.
 - **Severity S3:** a crash that costs one request; **Priority P2:** one handler covers every route.
 - **Traceability and status:** NFR-REL-01; Fixed in `bc0a867` (a `read_json()` helper catches the RecursionError; a UnicodeEncodeError handler answers HTTP 400 INVALID_TEXT). Owner: Ben.
+
+### DEF-035 — The thinking-block regex takes quadratic time on many unclosed tags
+- **Environment:** commit `59dd756`; Python 3.11.8; found by a timing probe for the Python-vulnerability audit (`docs/python-vulnerability-audit.md`).
+- **Steps:** 1. Give `OllamaModel._parse` a reply made of `<think>` repeated, never closed (a model reply can be steered by report text). 2. Time it at 2,000, 4,000, 8,000 and 16,000 repeats.
+- **Expected vs actual:** Expected: linear time, so a reply of the 1 MB cap cannot hold a worker. Actual: `re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)` rescans to the end from every opening tag: 14 KB took 0.1 s, 27 KB 0.5 s, 55 KB 1.7 s and 109 KB 15.7 s, so the 1 MB cap would take hours.
+- **Evidence:** the timings above; `tests/unit/test_ollama_client.py::test_a_reply_of_many_unclosed_thinking_tags_is_handled_in_linear_time`.
+- **Severity S3:** a denial of service against one report, and only through a model reply; the model server is on this machine; **Priority P2:** a few lines replace the regex.
+- **Traceability and status:** NFR-REL-01, NFR-SEC-01; Open. Owner: Ben.
 

@@ -122,3 +122,28 @@ def test_it_refuses_to_talk_to_anything_but_this_machine_over_plain_http(url):
 @pytest.mark.parametrize("url", ["http://127.0.0.1:11434", "http://localhost:11434", "http://[::1]:11434"])
 def test_it_accepts_the_loopback_addresses(url):
     assert OllamaModel(base_url=url).identifier.startswith("ollama/")
+
+
+# ---- DEF-035: the thinking-block stripper must be linear, not quadratic ------------------------------------
+
+
+@pytest.mark.defect("DEF-035")
+def test_a_reply_of_many_unclosed_thinking_tags_is_handled_in_linear_time():
+    import time
+
+    reply = "<think>" * 30000  # about 210 KB; the old regex needed minutes
+    started = time.perf_counter()
+    assert OllamaModel._parse(reply) is None  # not a valid answer, and quickly so
+    assert time.perf_counter() - started < 1.0
+
+
+def test_a_closed_thinking_block_is_removed_and_everything_else_is_kept():
+    answer = '{"severity": "Serious", "unit_type": "Medical", "confidence": 90, "reasoning": "r"}'
+    assert OllamaModel._parse("<think>a</think>" + answer + "<think>b</think>") is not None
+    assert OllamaModel._parse("<think>one</think><think>two</think>" + answer)["severity"] == "Serious"
+
+
+def test_an_unclosed_thinking_tag_leaves_the_text_alone_so_the_answer_is_refused_not_guessed():
+    answer = '{"severity": "Serious", "unit_type": "Medical", "confidence": 90, "reasoning": "r"}'
+    assert OllamaModel._parse("<think>never closed " + answer) is None
+
