@@ -156,6 +156,8 @@ FR-SIM-01,Must,FR-SIM-01-AC2,tests/unit/test_scenario_reader.py::test_reports_si
 FR-SIM-01,Must,FR-SIM-01-AC2,tests/unit/test_scenario_reader.py::test_the_same_scenario_at_the_same_speed_repeats_order_and_spacing,unit,pass,
 FR-SIM-01,Must,FR-SIM-01-AC2,tests/unit/test_scenario_reader.py::test_uneven_gaps_keep_their_proportions_and_the_first_report_is_not_delayed,unit,pass,
 NFR-PERF-01,Must,NFR-PERF-01-AC1,,,,
+NFR-REL-01,Must,NFR-REL-01-AC1,tests/integration/test_hostile_python_inputs.py::test_a_deeply_nested_body_is_refused_cleanly_not_a_500,integration,pass,DEF-033
+NFR-REL-01,Must,NFR-REL-01-AC1,tests/integration/test_hostile_python_inputs.py::test_a_lone_surrogate_in_a_text_field_is_refused_cleanly_not_a_500,integration,pass,DEF-034
 NFR-REL-01,Must,NFR-REL-01-AC1,tests/integration/test_node_failure_detection.py::test_five_killed_node_processes_are_each_detected_within_thirty_seconds,integration,pass,
 NFR-REL-02,Must,NFR-REL-02-AC1,tests/unit/test_human_decision.py::test_a_held_proposal_whose_clock_runs_out_times_out_and_leaves_the_pending_list,unit,pass,
 NFR-REL-02,Must,NFR-REL-02-AC1,tests/unit/test_human_decision.py::test_reject_frees_the_unit_and_leaves_the_report_for_a_person,unit,pass,
@@ -180,6 +182,8 @@ NFR-ACC-01,Must,NFR-ACC-01-AC1,MANUAL-ACC-01,acceptance,pass,
 NFR-ACC-02,Must,NFR-ACC-02-AC1,tests/unit/test_dispatcher_accessibility.py::test_each_level_also_has_its_own_symbol_so_the_levels_differ_by_shape_not_just_by_word,unit,pass,
 NFR-ACC-02,Must,NFR-ACC-02-AC1,tests/unit/test_dispatcher_accessibility.py::test_five_incidents_one_per_level_are_each_named_in_text_without_colour,unit,pass,
 NFR-USE-01,Should,NFR-USE-01-AC1,,,,
+NFR-MNT-01,Must,NFR-MNT-01-AC1,MANUAL-MNT-01,acceptance,pass,
+NFR-MNT-01,Must,NFR-MNT-01-AC1,MANUAL-MNT-01,acceptance,pass,
 NFR-MNT-01,Must,NFR-MNT-01-AC1,MANUAL-MNT-01,acceptance,pass,
 NFR-MNT-01,Must,NFR-MNT-01-AC1,MANUAL-MNT-01,acceptance,pass,
 NFR-MNT-01,Must,NFR-MNT-01-AC1,MANUAL-MNT-01,acceptance,pass,

@@ -4,11 +4,11 @@ The record of the last full run, written by `python tools/write_test_results.py`
 
 | Item | Value |
 |---|---|
-| Commit tested | `f05529b` (working tree had uncommitted changes to tracked files) |
-| Date | 2026-11-16 05:12 UTC |
+| Commit tested | `ee22259` (working tree had uncommitted changes to tracked files) |
+| Date | 2026-11-18 21:43 UTC |
 | Command | `./script/test` (equivalent: `python -m pytest --cov=src --cov-report=term-missing:skip-covered --cov-fail-under=90`) |
-| Result | 684 passed |
-| Duration | 354.78 s |
+| Result | 815 passed |
+| Duration | 323.61 s |
 | Plan | `docs/test-plan.md` v1.0 |
 
 ## The four coverage numbers (`tools/coverage_report.py` on `docs/traceability.csv`)
@@ -22,7 +22,7 @@ The record of the last full run, written by `python tools/write_test_results.py`
 | Verified Must requirements | 29 |
 | **Verified-Must coverage** | **94%** |
 
-For comparison, and beneath the number that matters: line coverage of `src/` is **96.12%**. High line coverage with low verified-requirement coverage is the course's own warning: the code that exists is well exercised, but many promises in the specification have nothing built behind them yet.
+For comparison, and beneath the number that matters: line coverage of `src/` is **96.19%**. High line coverage with low verified-requirement coverage is the course's own warning: the code that exists is well exercised, but many promises in the specification have nothing built behind them yet.
 
 A requirement is *verified* only if every one of its acceptance criteria has at least one passing test. A criterion that was never written, or that no test covers, counts against it.
 
@@ -33,9 +33,9 @@ A requirement is *verified* only if every one of its acceptance criteria has at 
 | Verified-Must coverage at least 90% | MET | 29 of 31 = 94% |
 | 0 open defects at severity S1 or S2 | MET | open: none |
 | Every open S3/S4 defect has a documented workaround | MET | all documented |
-| Every fixed defect has a regression test that fails on the pre-fix commit | MET | Result: 32 of 32 fixed defects proven |
-| The suite runs from one command (`./script/test`) and passes | MET | 684 passed; CI: the latest completed CI run on GitHub is on commit `5652de9` with result **success** |
-| Line coverage of src/ at least 90% | MET | 96.12% |
+| Every fixed defect has a regression test that fails on the pre-fix commit | MET | Result: 41 of 41 fixed defects proven |
+| The suite runs from one command (`./script/test`) and passes | MET | 815 passed; CI: the latest completed CI run on GitHub is on commit `5b53888` with result **success** |
+| Line coverage of src/ at least 90% | MET | 96.19% |
 
 ### Misses, annotated (not edited away)
 
@@ -59,4 +59,4 @@ A requirement is *verified* only if every one of its acceptance criteria has at 
 
 - The classifier is a rules-based fake. Nothing here says a real language model will classify correctly or fast enough (`docs/measurements.md`).
 - Several "fails before the fix" proofs for the older defects are collection errors because the fixed feature did not exist yet; for DEF-009 to DEF-012 the hostile-data cases give the assertion-level proof (see `docs/regression-proof.md`).
-- CI on the final pushed commit is checked after pushing: the latest completed CI run on GitHub is on commit `5652de9` with result **success**.
+- CI on the final pushed commit is checked after pushing: the latest completed CI run on GitHub is on commit `5b53888` with result **success**.
