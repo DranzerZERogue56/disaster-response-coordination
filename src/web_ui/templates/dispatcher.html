@@ -73,6 +73,7 @@
   {% else %}
   <p>No proposals are waiting.</p>
   {% endfor %}
+  {% if hidden_proposals %}<p class="muted" role="status">{{ hidden_proposals }} more proposals are waiting and are not shown here. Decide the ones above and reload.</p>{% endif %}
 </section>
 
 <section id="assignments" aria-labelledby="h-assignments">

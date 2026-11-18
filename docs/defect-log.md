@@ -48,6 +48,10 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 | DEF-033 | A deeply nested JSON body (tens of thousands of levels) crashes the route with HTTP 500 (RecursionError) | NFR-REL-01 | S3 | P2 | Python-vulnerability probe (M13) | Fixed | `bc0a867` | `test_a_deeply_nested_body_is_refused_cleanly_not_a_500` |
 | DEF-034 | A text field containing a lone surrogate character (JSON escape \ud800) crashes the route with HTTP 500 (UnicodeEncodeError) | NFR-REL-01 | S3 | P2 | Python-vulnerability probe (M13) | Fixed | `bc0a867` | `test_a_lone_surrogate_in_a_text_field_is_refused_cleanly_not_a_500` |
 | DEF-035 | The model client's regex that strips thinking blocks takes quadratic time on many unclosed tags: 109 KB freezes it for 15.7 s | NFR-REL-01 | S3 | P2 | Python-vulnerability probe (M13) | Fixed | `fcf88fa` | `test_a_reply_of_many_unclosed_thinking_tags_is_handled_in_linear_time` |
+| DEF-036 | Any Host name is served: DNS rebinding and Host-header abuse reach the console when the sign-in is off | NFR-SEC (area 5) | S3 | P2 | Flask web-layer audit (M13) | Fixed | `FIX` | `test_a_request_for_a_foreign_host_name_is_refused` |
+| DEF-037 | Signed-in pages and data carry no Cache-Control | NFR-SEC (area 5) | S4 | P3 | Flask web-layer audit (M13) | Fixed | `FIX` | `test_pages_and_data_are_never_stored_by_the_browser_or_a_proxy` |
+| DEF-038 | No request size limit: a 20 MB body is read and stored | NFR-REL-01 | S4 | P3 | Flask web-layer audit (M13) | Fixed | `FIX` | `test_a_request_body_over_one_megabyte_is_refused_with_413_and_stores_nothing` |
+| DEF-039 | The console renders every waiting proposal (3.9 MB for 3,000) | NFR-REL-01 | S4 | P3 | Flask web-layer audit (M13) | Fixed | `FIX` | `test_the_console_shows_at_most_200_waiting_proposals_oldest_first_and_says_how_many_are_hidden` |
 
 ---
 
@@ -333,3 +337,35 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 - **Severity S3:** a denial of service against one report, and only through a model reply; the model server is on this machine; **Priority P2:** a few lines replace the regex.
 - **Traceability and status:** NFR-REL-01, NFR-SEC-01; Fixed in `fcf88fa` (a linear `_strip_thinking`; the same 210 KB reply is now handled in well under a second). Owner: Ben.
 
+
+### DEF-036 — Any Host name is served (DNS rebinding and Host header abuse)
+- **Environment:** commit `7ad03ac`; found by the Flask web-layer audit (`docs/flask-template-audit.md`).
+- **Steps:** 1. Send `GET /healthz` or `POST /reports` with `Host: evil.example` (a rebinding page's request reaches 127.0.0.1 with the attacker's name).
+- **Expected vs actual:** Expected (hardening): only `localhost` and `127.0.0.1` are served, so a web page on another site cannot drive the console. Actual: HTTP 200 for every Host value, and a POST with a foreign Host and Origin ran the route (sign-in off).
+- **Evidence:** the audit probe; `tests/integration/test_flask_web_layer.py::test_a_request_for_a_foreign_host_name_is_refused`.
+- **Severity S3:** with the sign-in off (field-intake demos), a rebinding page could post decisions; the app listens on 127.0.0.1 only and the sign-in is on by default; **Priority P2:** one config key.
+- **Traceability and status:** NFR-SEC (security review area 5); Fixed (`TRUSTED_HOSTS` = localhost and 127.0.0.1, plus names in `ALLOWED_HOSTS`; IPv6 literals are not served because Werkzeug cannot match them). Owner: Ben.
+
+### DEF-037 — Signed-in pages and data carry no Cache-Control
+- **Environment:** commit `7ad03ac`; same audit.
+- **Steps:** 1. Sign in. 2. `GET /dispatcher`. 3. Read the headers.
+- **Expected vs actual:** Expected: `Cache-Control: no-store`, so a shared machine's browser or a proxy never keeps incident data. Actual: no Cache-Control header.
+- **Evidence:** `tests/integration/test_flask_web_layer.py::test_pages_and_data_are_never_stored_by_the_browser_or_a_proxy`.
+- **Severity S4:** needs access to the same browser profile; **Priority P3:** one header.
+- **Traceability and status:** NFR-SEC (security review area 5); Fixed (every non-static response says `no-store`). Owner: Ben.
+
+### DEF-038 — No request size limit
+- **Environment:** commit `7ad03ac`; same audit; the accepted risk S-05 and DEF-019.
+- **Steps:** 1. `POST /reports` with a 20 MB JSON body.
+- **Expected vs actual:** Expected (hardening): refused before it is read. Actual: HTTP 201, the whole body read and stored (about 1 s).
+- **Evidence:** the audit probe; `tests/integration/test_flask_web_layer.py::test_a_request_body_over_one_megabyte_is_refused_with_413_and_stores_nothing`.
+- **Severity S4:** one request costs memory and a second, nothing leaks; **Priority P3:** two config keys. Ben chose to fix it on 2026-11-18, which retires the "accepted" part of S-05; DEF-019 (no per-field length rule) stays Will not fix, because no requirement sets a field length.
+- **Traceability and status:** NFR-REL-01; Fixed (`MAX_CONTENT_LENGTH` 1 MiB, `MAX_FORM_PARTS` 100). Owner: Ben.
+
+### DEF-039 — The console renders every waiting proposal
+- **Environment:** commit `7ad03ac`; same audit.
+- **Steps:** 1. Create 3,000 waiting proposals. 2. `GET /dispatcher`.
+- **Expected vs actual:** Expected: a page a person can use. Actual: a 3.9 MB page (0.08 s on this machine, but a dispatcher cannot act on 3,000 rows).
+- **Evidence:** the audit probe; `tests/integration/test_flask_web_layer.py::test_the_console_shows_at_most_200_waiting_proposals_oldest_first_and_says_how_many_are_hidden`.
+- **Severity S4:** no loss; hidden proposals still time out and free their unit as before; **Priority P3:** a slice and a notice.
+- **Traceability and status:** NFR-REL-01; Fixed (the 200 oldest are shown with a "N more are not shown" notice). Owner: Ben.

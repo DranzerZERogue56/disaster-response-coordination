@@ -230,6 +230,14 @@ SECURITY_HEADERS = {
 
 def create_app():
     app = Flask(__name__, template_folder=str(TEMPLATE_DIR))
+    # DEF-036: only localhost and 127.0.0.1 are served (the app binds 127.0.0.1 only; Werkzeug cannot match IPv6 literals).
+    # DNS rebinding sends a foreign Host name to 127.0.0.1.
+    # ALLOWED_HOSTS (comma separated) adds names for a real deployment.
+    extra = [h.strip() for h in os.environ.get("ALLOWED_HOSTS", "").split(",") if h.strip()]
+    app.config["TRUSTED_HOSTS"] = ["localhost", "127.0.0.1", *extra]
+    # DEF-038: a body over 1 MiB is refused with 413 before it is read; a form may have 100 fields at most.
+    app.config["MAX_CONTENT_LENGTH"] = 1024 * 1024
+    app.config["MAX_FORM_PARTS"] = 100
     # signs the console banner messages; a new random key per start is fine (a banner lives for two minutes)
     app.config["BANNER_SIGNER"] = app.config.get("BANNER_SIGNER") or os.environ.get("BANNER_SIGNER") or os.urandom(32).hex()
 
@@ -253,6 +261,8 @@ def create_app():
         """DEF-031: every response says it must not be framed, sniffed or sent a referrer, and loads only same-origin resources."""
         for name, value in SECURITY_HEADERS.items():
             response.headers.setdefault(name, value)
+        if not request.path.startswith("/static/"):
+            response.headers.setdefault("Cache-Control", "no-store")  # DEF-037: dispatcher pages and data are never cached
         return response
 
     @app.errorhandler(UnicodeEncodeError)

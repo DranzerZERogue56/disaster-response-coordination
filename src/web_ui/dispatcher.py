@@ -89,15 +89,20 @@ def _banner():
         return "", False
 
 
+MAX_CONSOLE_PROPOSALS = 200
+
+
 @bp.get("/dispatcher")
 def console():
     conn = connect()
     try:
         units = unit_clock(conn)  # first: it frees expired holds, which also settles their proposals
         seconds_left = {u["unit_id"]: u["seconds_left"] for u in units}
+        waiting = list_pending(conn)  # oldest first: those are the ones nearest their 4-minute limit
+        hidden = max(0, len(waiting) - MAX_CONSOLE_PROPOSALS)  # DEF-039
         pending = [
             {**p, **_severity(p["severity"]), "seconds_left": seconds_left.get(p["recommended_unit_id"])}
-            for p in list_pending(conn)
+            for p in waiting[:MAX_CONSOLE_PROPOSALS]
         ]
         assignments = [
             {**dict(r), **_severity(r["severity"])}
@@ -117,6 +122,7 @@ def console():
     return render_template(
         "dispatcher.html",
         pending=pending,
+        hidden_proposals=hidden,
         assignments=assignments,
         units=units,
         alerts=alerts,
