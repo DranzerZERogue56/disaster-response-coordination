@@ -1,0 +1,17 @@
+# Ruff configuration. Before 2026-11-18 there was none, so only Ruff's default rules (E4, E7, E9, F) ran.
+# S = flake8-bandit security rules, B = bugbear (likely bugs). Run with: ./script/lint
+target-version = "py311"
+
+[lint]
+select = ["E4", "E7", "E9", "F", "S", "B"]
+
+[lint.per-file-ignores]
+# Tests assert, use throwaway passwords and secrets, build SQL from constants, start local servers and
+# call 127.0.0.1 URLs on purpose. None of that ships.
+"tests/**" = ["E402", "S101", "S105", "S106", "S311", "S603", "S607", "S608", "S310"]
+# Operator tools run by the developer, not served. They start git/ffmpeg/the app by full path (tools/exe.py),
+# talk only to http://127.0.0.1 and use assert as a check; the shell calls in auto_demo.py take fixed strings.
+"tools/**" = ["S101", "S105", "S310", "S311", "S603", "S605", "S607", "S608"]
+# The purge job joins fixed SQL strings (module constants and table names from a hard-coded list). User input only ever
+# travels as the bound :cutoff parameter. tests/unit/test_architecture_boundaries.py lists this file as reviewed.
+"src/purge/job.py" = ["S608"]

@@ -127,7 +127,7 @@ def main():
         "| Command | `./script/test` (equivalent: `python -m pytest --cov=src --cov-report=term-missing:skip-covered --cov-fail-under=90`) |",
         f"| Result | {counts} |",
         f"| Duration | {seconds} s |",
-        f"| Plan | `docs/test-plan.md` v1.0 |",
+        "| Plan | `docs/test-plan.md` v1.0 |",
         "",
         "## The four coverage numbers (`tools/coverage_report.py` on `docs/traceability.csv`)",
         "",

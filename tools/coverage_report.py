@@ -133,7 +133,7 @@ def main(argv):
     unverified_musts = sorted(musts - verified)
     if unverified_musts:
         print("\nUNVERIFIED MUST REQUIREMENTS -- exit criteria not met:")
-        for req_id, priority in unverified_musts:
+        for req_id, _priority in unverified_musts:
             print(f"  {req_id}")
         return 1
     print("\nAll Must requirements verified.")

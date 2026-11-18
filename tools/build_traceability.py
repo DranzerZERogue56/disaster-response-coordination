@@ -108,7 +108,7 @@ def build_rows():
 
 def main():
     if "--list" in sys.argv:
-        for rid, priority, criteria in parse_requirements():
+        for _rid, priority, criteria in parse_requirements():
             for cid, text in criteria:
                 print(f"{cid:22} {priority:7} {(text or '[not written]')[:110]}")
         return

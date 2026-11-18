@@ -119,7 +119,7 @@ class OllamaModel:
                 "messages": messages,
             }
         ).encode("utf-8")
-        request = urllib.request.Request(self.base_url + "/api/chat", data=body, headers={"Content-Type": "application/json"}, method="POST")
+        request = urllib.request.Request(self.base_url + "/api/chat", data=body, headers={"Content-Type": "application/json"}, method="POST")  # noqa: S310 - base_url is http to loopback only (_check_local)
         try:
             with _OPENER.open(request, timeout=self.timeout) as response:
                 raw = response.read(MAX_RESPONSE_BYTES + 1)

@@ -2,4 +2,4 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 source script/common.sh
-"$PYTHON" -m ruff check src tests
+"$PYTHON" -m ruff check src tests tools
