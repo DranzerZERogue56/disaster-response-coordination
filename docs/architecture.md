@@ -315,8 +315,8 @@ Purpose        One row per dispatcher/admin/observer account — all fictional t
 |---|---|---|---|
 | id | INTEGER | NOT NULL | Primary key |
 | username | TEXT | NOT NULL | UNIQUE |
-| password_hash | TEXT | NOT NULL | `hashlib.scrypt` output, hex-encoded |
-| password_salt | TEXT | NOT NULL | Hex-encoded, generated with `os.urandom(16)` per account |
+| password_hash | TEXT | NOT NULL | Argon2id encoded string (`$argon2id$v=19$m=19456,t=2,p=1$...`; the salt is inside it); hashes made before 2026-11-18 are hex scrypt and are upgraded at the next sign-in (DEF-040) |
+| password_salt | TEXT | NOT NULL | Empty for Argon2id hashes (the salt is inside `password_hash`); the hex salt for old scrypt hashes until their owner next signs in |
 | role | TEXT | NOT NULL | `admin` \| `dispatcher` \| `observer` — MVP populates one `admin` plus a small number of fictional `dispatcher` test accounts |
 | is_fictional_test_account | INTEGER | NOT NULL | Always 1 (true) in this release (NFR-SEC-03); the column exists so a real-deployment release has somewhere to flip it |
 | created_at | TEXT | NOT NULL | |

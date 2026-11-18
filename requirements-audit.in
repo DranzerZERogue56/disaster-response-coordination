@@ -1,0 +1,4 @@
+# Tools for the weekly and per-push dependency audit job only (kept out of the app's and the test suite's dependency sets).
+# The compiled, hash-pinned file is requirements-audit.txt. Regenerate with:
+#   python -m piptools compile --generate-hashes requirements-audit.in -o requirements-audit.txt
+pip-audit==2.10.1

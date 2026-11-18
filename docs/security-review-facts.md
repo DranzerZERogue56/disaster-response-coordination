@@ -270,3 +270,7 @@ Source: `src/classify_propose/ollama_client.py`, `src/classify_propose/chain.py`
 4. No security response headers and no `MAX_CONTENT_LENGTH` (F5.4, F2.19).
 5. `pip-audit -r requirements.txt` clean; `pip-audit` of the venv reports setuptools 65.5.0 (F6.1-F6.3).
 6. `DEF-029` fix threshold 85 was set by the assistant, not Ben (F8.9).
+
+## Update 2026-11-18: dependency audit in CI
+
+`.github/workflows/ci.yml` now has an `audit` job (own hash-pinned tool set in `requirements-audit.txt`) that runs `python -m pip_audit --require-hashes --disable-pip -r requirements-dev.txt` on every push, every pull request to `main` and weekly (Mondays 06:17 UTC). Run locally on 2026-11-18: "No known vulnerabilities found" for `requirements.txt` and for `requirements-dev.txt`. This supersedes F1.9 above (no audit in CI).

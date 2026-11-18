@@ -171,3 +171,15 @@ These are Ben's statements of what each area needs and why. They are **not yet**
 - **"Not overworking the PC" has not been measured.** The measurements record time per answer, not CPU, memory or GPU load. It is now backlog B-14.
 - **Login scope (areas 3 and 4).** Dual authentication, a station IP lock and role levels are all bigger than the plain login already planned as B-07. They are recorded there as additions. An IP lock alone is weak (addresses can be shared or forged), so it is best as one layer among several; that is a note, not a decision.
 - **Dependencies (area 6).** "Update regularly, know what they do, be able to swap" is a process, not a finding. It is now backlog B-12 (audit in CI, an update cadence, a one-line purpose for each of the 16 pinned packages).
+
+## Updates after v0.9.0-rc.2 (2026-11-18)
+
+Facts only; each item is in `docs/defect-log.md` with a regression test. Ben to confirm anything he wants to carry into his own security write-up.
+
+- **Python and standard-library audit** (`docs/python-vulnerability-audit.md`): DEF-033 (deeply nested JSON gave HTTP 500), DEF-034 (lone surrogate gave HTTP 500), DEF-035 (quadratic-time regex on model replies), all Fixed. Supply chain: hash-pinned requirements split into runtime, test and audit sets, pinned pip, GitHub Actions pinned to commit hashes, program lookups by full path (`tools/exe.py`). The Python 3.11.18 upgrade is Ben's to install.
+- **Flask and Jinja2 audit** (`docs/flask-template-audit.md`): no template injection or cross-site scripting found; DEF-036 (any Host name served), DEF-037 (no `Cache-Control`), DEF-038 (no request size limit; this ends the "no size cap" part of the accepted risk S-05), DEF-039 (console showed every waiting proposal), all Fixed. CVE-2026-27205 and CVE-2025-27516 are fixed in the pinned versions; CVE-2024-27516 is a different product.
+- **Password hashing** (`docs/password-hashing-audit.md`): Argon2id replaces scrypt at N=2^14 (DEF-040, Fixed); old hashes upgrade at sign-in.
+- **Pipeline and scripts** (`docs/pipeline-security-audit.md`): DEF-041 Fixed (read-only token, no stored checkout credentials, time limit). Area 6 now also has a `pip-audit` job in CI on every push and weekly (backlog B-12, first acceptance line), and Dependabot proposes updates.
+- **Ruff** now runs the security (`S`) and bugbear (`B`) rules over `src`, `tests` and `tools`.
+- **Database direction** (`docs/database-hardening.md`, ADR 0010, draft): MongoDB is the stated target and the checklist is unrun; the app still runs on SQLite.
+- **Still open from this review:** DEF-032 (field intake over HTTP is refused while the sign-in is on), DEF-017, DEF-019 (no per-field length rule, Will not fix), DEF-020 (a 2099 timestamp is accepted). Not checked anywhere: HTTPS, a browser-based scan, the GitHub repository settings.

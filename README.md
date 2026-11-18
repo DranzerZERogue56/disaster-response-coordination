@@ -75,6 +75,10 @@ One command runs the whole suite (unit, integration and acceptance, with the 90%
 
 The test plan is `docs/test-plan.md`; the last full run is `docs/test-results.md`; the requirement-to-test matrix is `docs/traceability.csv` (rebuild it with `python tools/build_traceability.py` after a test run); defects are in `docs/defect-log.md`. The dispatcher console is at `http://127.0.0.1:8080/dispatcher` once the app is running. Test data: `./script/seed-test-data`.
 
+## Security checks
+
+CI runs a secrets scan, Ruff with its security rules, the full suite, a build and a smoke check, and a separate dependency audit (`pip-audit`) on every push and weekly. Dependencies are hash-pinned (`requirements.txt`, `requirements-dev.txt`, `requirements-audit.txt`). The reviews are in `docs/security-review.md`, `docs/python-vulnerability-audit.md`, `docs/flask-template-audit.md`, `docs/password-hashing-audit.md` and `docs/pipeline-security-audit.md`.
+
 ## Current status
 
 Concept and scope locked (Week 1), then pivoted in Week 2 away from an

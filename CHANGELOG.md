@@ -46,6 +46,7 @@ History before this file's first release section: tag `milestone-3` (2026-09-13)
 - Flask web layer: only `localhost` and `127.0.0.1` Host names are served (DEF-036); `Cache-Control: no-store` on pages and data (DEF-037); request bodies over 1 MiB are refused with 413 (DEF-038); the console shows at most 200 waiting proposals (DEF-039). Ruff now runs the security (`S`) and bugbear (`B`) rules. See `docs/flask-template-audit.md`.
 - Passwords are now hashed with Argon2id (OWASP settings, self-describing format, 1,024-character cap); old scrypt hashes upgrade at the next sign-in (DEF-040). New dependency `argon2-cffi` 25.1.0. See `docs/password-hashing-audit.md`.
 - CI workflow: read-only token, no stored checkout credentials, 30-minute limit, Dependabot for actions and packages (DEF-041); tests guard pinning and script hygiene. See `docs/pipeline-security-audit.md`.
+- CI has a separate dependency-audit job (`pip-audit`, own hash-pinned tool set) on every push, pull request and weekly (backlog B-12, first line).
 - Dependencies are hash-pinned and installed with `--require-hashes`; runtime and developer requirements are split; pip is pinned; the two GitHub Actions are pinned to commit hashes.
 - Helper scripts start programs by full path and never from the current directory (`tools/exe.py`).
 - Build checks: no SQL in `src/` is built from variables except one reviewed line; `src/` uses no `assert`; the unit registry's SQL lives behind `src/data/units_repo.py` (ADR 0009).

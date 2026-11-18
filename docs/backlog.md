@@ -112,6 +112,7 @@ Other Should and Could requirements with no test and no verified row in `docs/tr
 - **Source:** Ben, 2026-11-15, security review area 6: audit all packages, check installed versions, update regularly, know what each does, be able to swap them.
 - **Estimate:** Ben to confirm.
 - **Acceptance criteria (proposed by the assistant, Ben to confirm):**
+  - **Progress, 2026-11-18:** this first line is built: a separate `audit` CI job runs `pip-audit` on every push, pull request and weekly, and Dependabot proposes updates. `docs/dependencies.md` (purpose, licence, review date, cadence) is not written.
   - Given a push, when CI runs, then `pip-audit -r requirements.txt` runs and the build fails on a High or Critical advisory unless Ben has recorded a reasoned exception.
   - Given `requirements.txt`, when someone reads `docs/dependencies.md`, then each of the pinned packages has a one-line purpose, a licence and the date it was last reviewed, and the update cadence (for example monthly) is written down.
 
