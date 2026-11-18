@@ -53,6 +53,7 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 | DEF-038 | No request size limit: a 20 MB body is read and stored | NFR-REL-01 | S4 | P3 | Flask web-layer audit (M13) | Fixed | `4de41e2` | `test_a_request_body_over_one_megabyte_is_refused_with_413_and_stores_nothing` |
 | DEF-039 | The console renders every waiting proposal (3.9 MB for 3,000) | NFR-REL-01 | S4 | P3 | Flask web-layer audit (M13) | Fixed | `4de41e2` | `test_the_console_shows_at_most_200_waiting_proposals_oldest_first_and_says_how_many_are_hidden` |
 | DEF-040 | Passwords hashed with scrypt at N=2^14 in a bare hex format: below the current OWASP cost, settings not stored with the hash, no upgrade path, no length cap | NFR-SEC (area 3) | S4 | P3 | password-hashing audit (M13) | Fixed | `eea20c5` | `test_signing_in_with_an_old_scrypt_hash_upgrades_it_to_argon2id` |
+| DEF-041 | The CI workflow sets no token permissions, leaves the checkout token in the git config and has no job time limit | NFR-SEC (supply chain) | S4 | P3 | pipeline audit (M13) | Fixed | `FIX` | `test_the_token_is_limited_to_reading_the_repository` |
 
 ---
 
@@ -378,3 +379,11 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 - **Evidence:** the timings; `tests/unit/test_password_hashing.py`.
 - **Severity S4:** every password is system-generated with 128 random bits, so offline guessing was already impractical; **Priority P3:** Ben asked for Argon2 on 2026-11-18.
 - **Traceability and status:** NFR-SEC (security review area 3); Fixed (Argon2id with `m=19456, t=2, p=1`, self-describing encoded hash, 1,024-character cap; old scrypt hashes still verify and are replaced at the next sign-in). Owner: Ben.
+
+### DEF-041 — The CI workflow grants the default token permissions
+- **Environment:** commit `f94435c`; found by the pipeline audit on 2026-11-18 (`docs/pipeline-security-audit.md`).
+- **Steps:** 1. Read `.github/workflows/ci.yml`.
+- **Expected vs actual:** Expected (least privilege): a top-level `permissions: contents: read`, `persist-credentials: false` on checkout, and a job time limit. Actual: none of the three, so the token got the repository's default permissions (read/write on older repositories), stayed in `.git/config` for every later step, and a hung job could run for six hours.
+- **Evidence:** `tests/unit/test_pipeline_and_script_hygiene.py` (three tests fail on the old file).
+- **Severity S4:** no step runs untrusted code or uses a secret, and the repository setting was not checked; **Priority P3:** three lines.
+- **Traceability and status:** NFR-SEC (supply chain, with the 2026-11-18 pinning work); Fixed (`permissions: contents: read`, `persist-credentials: false`, `timeout-minutes: 30`; Dependabot proposes action and package updates weekly). Owner: Ben.
