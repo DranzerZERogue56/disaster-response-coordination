@@ -53,7 +53,7 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 | DEF-038 | No request size limit: a 20 MB body is read and stored | NFR-REL-01 | S4 | P3 | Flask web-layer audit (M13) | Fixed | `4de41e2` | `test_a_request_body_over_one_megabyte_is_refused_with_413_and_stores_nothing` |
 | DEF-039 | The console renders every waiting proposal (3.9 MB for 3,000) | NFR-REL-01 | S4 | P3 | Flask web-layer audit (M13) | Fixed | `4de41e2` | `test_the_console_shows_at_most_200_waiting_proposals_oldest_first_and_says_how_many_are_hidden` |
 | DEF-040 | Passwords hashed with scrypt at N=2^14 in a bare hex format: below the current OWASP cost, settings not stored with the hash, no upgrade path, no length cap | NFR-SEC (area 3) | S4 | P3 | password-hashing audit (M13) | Fixed | `eea20c5` | `test_signing_in_with_an_old_scrypt_hash_upgrades_it_to_argon2id` |
-| DEF-041 | The CI workflow sets no token permissions, leaves the checkout token in the git config and has no job time limit | NFR-SEC (supply chain) | S4 | P3 | pipeline audit (M13) | Fixed | `FIX` | `test_the_token_is_limited_to_reading_the_repository` |
+| DEF-041 | The CI workflow sets no token permissions, leaves the checkout token in the git config and has no job time limit | NFR-SEC (supply chain) | S4 | P3 | pipeline audit (M13) | Fixed | `414fe16` | `test_the_token_is_limited_to_reading_the_repository` |
 
 ---
 
