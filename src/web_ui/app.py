@@ -62,9 +62,18 @@ from src.web_ui.dispatcher import bp as dispatcher_bp
 TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
 
 
+def read_json():
+    """The request's JSON body, or None if it is missing, malformed or nested so deeply that the parser gives up
+    (DEF-033: a body of 100,000 opening brackets raises RecursionError, which silent=True does not catch)."""
+    try:
+        return request.get_json(silent=True)
+    except RecursionError:
+        return None
+
+
 def json_object():
     """The request's JSON body if it is an object, otherwise an empty one (a list or a number is not a body)."""
-    body = request.get_json(silent=True)
+    body = read_json()
     return body if isinstance(body, dict) else {}
 
 
@@ -246,6 +255,12 @@ def create_app():
             response.headers.setdefault(name, value)
         return response
 
+    @app.errorhandler(UnicodeEncodeError)
+    def text_that_cannot_be_stored(_error):
+        """DEF-034: a lone surrogate character (JSON escape \\ud800) cannot be encoded as UTF-8 and so cannot be stored."""
+        error = {"code": "INVALID_TEXT", "message": "A text field contains characters that cannot be stored."}
+        return jsonify({"error": error}), 400
+
     @app.get("/healthz")
     def healthz():
         conn = connect()
@@ -280,7 +295,7 @@ def create_app():
         conn = connect()
         try:
             run_id = ensure_scenario_run(conn)
-            fields = request.get_json(silent=True) or request.form
+            fields = read_json() or request.form
             result = submit_report(conn, run_id, fields, queued=not is_connected())
             if result["status"] == "queued":
                 # Slice 6: offline. The report is saved and waits in the queue.
@@ -432,8 +447,7 @@ def create_app():
     @app.post("/reconciliations/<int:report_id>/override")
     def reconciliation_override(report_id):
         """FR-COORD-02-AC2. Same stand-in dispatcher as the other human actions; the caller cannot name one."""
-        body = request.get_json(silent=True)
-        body = body if isinstance(body, dict) else {}
+        body = json_object()
         version_id = body.get("version_id")
         if not isinstance(version_id, int) or isinstance(version_id, bool):
             error = {"code": "VERSION_REQUIRED", "message": "version_id must be a whole number."}
