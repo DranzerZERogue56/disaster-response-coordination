@@ -52,6 +52,7 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 | DEF-037 | Signed-in pages and data carry no Cache-Control | NFR-SEC (area 5) | S4 | P3 | Flask web-layer audit (M13) | Fixed | `4de41e2` | `test_pages_and_data_are_never_stored_by_the_browser_or_a_proxy` |
 | DEF-038 | No request size limit: a 20 MB body is read and stored | NFR-REL-01 | S4 | P3 | Flask web-layer audit (M13) | Fixed | `4de41e2` | `test_a_request_body_over_one_megabyte_is_refused_with_413_and_stores_nothing` |
 | DEF-039 | The console renders every waiting proposal (3.9 MB for 3,000) | NFR-REL-01 | S4 | P3 | Flask web-layer audit (M13) | Fixed | `4de41e2` | `test_the_console_shows_at_most_200_waiting_proposals_oldest_first_and_says_how_many_are_hidden` |
+| DEF-040 | Passwords hashed with scrypt at N=2^14 in a bare hex format: below the current OWASP cost, settings not stored with the hash, no upgrade path, no length cap | NFR-SEC (area 3) | S4 | P3 | password-hashing audit (M13) | Fixed | `FIX` | `test_signing_in_with_an_old_scrypt_hash_upgrades_it_to_argon2id` |
 
 ---
 
@@ -369,3 +370,11 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 - **Evidence:** the audit probe; `tests/integration/test_flask_web_layer.py::test_the_console_shows_at_most_200_waiting_proposals_oldest_first_and_says_how_many_are_hidden`.
 - **Severity S4:** no loss; hidden proposals still time out and free their unit as before; **Priority P3:** a slice and a notice.
 - **Traceability and status:** NFR-REL-01; Fixed (the 200 oldest are shown with a "N more are not shown" notice). Owner: Ben.
+
+### DEF-040 — Password hashing is below current guidance and cannot be upgraded
+- **Environment:** commit `3e962c6`; found by the password-hashing review on 2026-11-18 (`docs/password-hashing-audit.md`).
+- **Steps:** 1. Read `src/auth/passwords.py`. 2. Time one hash.
+- **Expected vs actual:** Expected (hardening): Argon2id or scrypt at the current OWASP cost, settings stored with each hash so they can be raised, a length cap. Actual: scrypt at N=2^14 (0.043 s here against 0.37 s for the N=2^17 OWASP setting), the hash and salt as bare hex in two columns with the settings only in code, and no password length cap.
+- **Evidence:** the timings; `tests/unit/test_password_hashing.py`.
+- **Severity S4:** every password is system-generated with 128 random bits, so offline guessing was already impractical; **Priority P3:** Ben asked for Argon2 on 2026-11-18.
+- **Traceability and status:** NFR-SEC (security review area 3); Fixed (Argon2id with `m=19456, t=2, p=1`, self-describing encoded hash, 1,024-character cap; old scrypt hashes still verify and are replaced at the next sign-in). Owner: Ben.

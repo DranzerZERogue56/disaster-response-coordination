@@ -7,7 +7,7 @@ password and the code are never written anywhere.
 """
 from datetime import UTC, datetime, timedelta
 
-from src.auth.passwords import check_password, hash_password, new_one_time_password
+from src.auth.passwords import check_password, hash_password, needs_rehash, new_one_time_password
 from src.auth.totp import new_secret, verify
 
 LOCK_AFTER = 5
@@ -77,6 +77,9 @@ def sign_in(conn, username, password, code, now=None):
     step = verify(row["totp_secret"], code, moment.timestamp(), row["totp_last_step"]) if row and row["totp_secret"] else None
     if row and password_ok and step is not None and not locked:
         conn.execute("UPDATE dispatcher_accounts SET failed_attempts = 0, locked_until = NULL, totp_last_step = ? WHERE id = ?", (step, row["id"]))
+        if needs_rehash(row["password_hash"]):  # an old scrypt hash (or weaker settings) is replaced now that the password is known
+            new_hash, new_salt = hash_password(password)
+            conn.execute("UPDATE dispatcher_accounts SET password_hash = ?, password_salt = ? WHERE id = ?", (new_hash, new_salt, row["id"]))
         _event(conn, moment, username, "sign_in", True)
         conn.commit()
         return row["id"]

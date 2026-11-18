@@ -16,7 +16,7 @@ Flask 3.1.3, Jinja2 3.1.6, Werkzeug 3.1.9, MarkupSafe 3.0.4, itsdangerous 2.2.0,
 | CVE-2025-27516 | Jinja2: sandbox breakout through the `\|attr` filter reaching `str.format`. Moderate. Fixed in 3.1.6. | No: we run 3.1.6, and we do not use the sandbox, `\|attr` or render user-supplied templates. |
 | CVE-2024-27516 | Does not match Flask or Jinja2: it is a template injection in the product Live Helper Chat (before 4.34v). | Not applicable. |
 
-Other Pallets advisories since late 2024 (Flask `SECRET_KEY_FALLBACKS`, Jinja2 sandbox filename and `str.format` issues, four Werkzeug `safe_join` Windows device-name issues) are all fixed at or below the versions we pin. The Werkzeug ones matter because this runs on Windows, and `safe_join` is how Flask serves `/static/`.
+Other Pallets advisories since late 2024 (the Flask signing-key fallback setting, Jinja2 sandbox filename and `str.format` issues, four Werkzeug `safe_join` Windows device-name issues) are all fixed at or below the versions we pin. The Werkzeug ones matter because this runs on Windows, and `safe_join` is how Flask serves `/static/`.
 
 ## Findings by class
 
