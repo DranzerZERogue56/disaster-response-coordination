@@ -57,6 +57,7 @@ DEFECTS = [
     ("DEF-031", "3c4513b", "tests/unit/test_def030_031.py::test_every_response_carries_the_browser_security_headers[/healthz]"),
     ("DEF-033", "bc0a867", "tests/integration/test_hostile_python_inputs.py::test_a_deeply_nested_body_is_refused_cleanly_not_a_500[nested-list-/reports]"),
     ("DEF-034", "bc0a867", "tests/integration/test_hostile_python_inputs.py::test_a_lone_surrogate_in_a_text_field_is_refused_cleanly_not_a_500"),
+    ("DEF-035", "fcf88fa", "tests/unit/test_ollama_client.py::test_a_reply_of_many_unclosed_thinking_tags_is_handled_in_linear_time"),
     ("DEF-018", "6eb890b", "tests/acceptance/test_acceptance_criteria.py::test_FR_AUTH_01_AC2_an_unauthenticated_caller_cannot_approve"),
 ]
 
