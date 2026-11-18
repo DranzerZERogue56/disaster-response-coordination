@@ -45,6 +45,8 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 | DEF-030 | The 24-hour purge never runs by itself: nothing in the app or its start script calls it | NFR-PRIV-01 | S2 | P1 | security fact sheet (M12) | Fixed | `3c4513b` | `test_the_scheduled_run_deletes_what_is_older_than_24_hours_and_keeps_the_rest` |
 | DEF-031 | No browser security headers are sent (CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy) | NFR-SEC-01 (transport/browser hardening) | S3 | P2 | security fact sheet (M12) | Fixed | `3c4513b` | `test_every_response_carries_the_browser_security_headers` |
 | DEF-032 | With the sign-in on, field reports, the scenario tool and node heartbeats over HTTP are refused: they have no account | FR-INTAKE-01, FR-SIM-01, FR-DEGRADE-01 | S3 | P3 | login build (M12) | Open | none | none (needs a service key; backlog B-07) |
+| DEF-033 | A deeply nested JSON body (tens of thousands of levels) crashes the route with HTTP 500 (RecursionError) | NFR-REL-01 | S3 | P2 | Python-vulnerability probe (M13) | Open | none | none yet |
+| DEF-034 | A text field containing a lone surrogate character (JSON escape \ud800) crashes the route with HTTP 500 (UnicodeEncodeError) | NFR-REL-01 | S3 | P2 | Python-vulnerability probe (M13) | Open | none | none yet |
 
 ---
 
@@ -305,3 +307,20 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 - **Evidence:** `tests/integration/test_login_http.py::test_every_route_except_health_and_login_refuses_a_caller_with_no_session_and_changes_nothing`.
 - **Severity S3:** field intake over HTTP and the scenario tool do not work while the gate is on, but the workaround is real; **Priority P3:** a shared service key for these callers is planned with the rest of the login work.
 - **Traceability and status:** FR-INTAKE-01, FR-SIM-01, FR-DEGRADE-01; Open; workaround: run with `AUTH_ENFORCED=0` (field-intake and scenario demos, tests), or sign in and use the session token. Owner: Ben.
+
+### DEF-033 — A deeply nested JSON body crashes the route with HTTP 500
+- **Environment:** commit `449bfaf`; Python 3.11.8; found by a hostile-input probe run for the Python-vulnerability audit (`docs/python-vulnerability-audit.md`).
+- **Steps:** 1. `POST /reports` (or `/proposals/1/decision`) with a body of 100,000 `[` followed by 100,000 `]` and `Content-Type: application/json`.
+- **Expected vs actual:** Expected (NFR-REL-01, no unhandled exception reaches the user): a clean HTTP 400. Actual: HTTP 500 from an unhandled `RecursionError` raised by the JSON parser; the same class of problem as DEF-009 and DEF-023, which handled lists but not depth.
+- **Evidence:** the probe's status table; `tests/integration/test_hostile_python_inputs.py`.
+- **Severity S3:** a crash that costs one request, no data loss or exposure; **Priority P2:** one helper fixes every route.
+- **Traceability and status:** NFR-REL-01; Open. Owner: Ben.
+
+### DEF-034 — A lone surrogate character in a text field crashes the route with HTTP 500
+- **Environment:** commit `449bfaf`; Python 3.11.8; found by the same probe.
+- **Steps:** 1. `POST /reports` with the JSON text `{"location":"\ud800", ...}` (a UTF-16 surrogate half with no partner).
+- **Expected vs actual:** Expected: a clean HTTP 400. Actual: HTTP 500 (`UnicodeEncodeError: 'utf-8' codec can't encode character '\ud800'`) when the value is stored; any route that stores free text has the same weakness.
+- **Evidence:** the probe's status table; `tests/integration/test_hostile_python_inputs.py`.
+- **Severity S3:** a crash that costs one request; **Priority P2:** one handler covers every route.
+- **Traceability and status:** NFR-REL-01; Open. Owner: Ben.
+
