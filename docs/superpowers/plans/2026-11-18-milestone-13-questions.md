@@ -191,3 +191,21 @@ Four jobs: name what a successor still cannot learn (specific); price each gap i
 ## Suggested order of work (to be agreed)
 
 Wed: decide the questions above; start README and prerequisites (Ben executes commands). Thu: architecture section 0, runbook, ADRs, onboarding. Fri: ai-usage successor section; freeze documentation; **first clean-machine run**. Sat: friction fixes, **second run**, Medium items. Sun: final commit, SHA, status block, submit.
+
+---
+
+## Decisions recorded (Ben, 2026-11-18, by button)
+
+| Question | Ben's choice |
+|---|---|
+| 9a Clean environment | **A borrowed laptop** (a computer that has never had the project) |
+| 9b Acceptance action (fixed before the run) | **"Sign in and approve a proposal":** the tester signs in as a dispatcher with a phone code, then approves one proposal from the seeded scenario on the console |
+| 9c Phone-code login | **The tester's own phone**, with an authenticator app and the setup key typed in |
+| Medium tier | **One-command bootstrap, documentation tested in CI, a demo GIF or recording, an accessibility pass on the docs** (four items) |
+| Tester | still to be chosen by Ben |
+
+**Assistant's notes on these choices (not decisions):**
+- The acceptance action must work without Ollama (the rules tier answers), so a 1.4 GB model download cannot use up the 60 minutes. The README's default path must say so.
+- The tester needs their own phone and an authenticator app **before** the clock starts, or that setup time is part of the 60 minutes. Decide and write down which, before the run.
+- Four Medium items is more than "two done well beat five thin" advises, and the rule is that anything claimed must be demonstrated in the repository. Suggested priority if time is short: bootstrap and CI first (they reinforce each other), then the recording, then the accessibility pass.
+- The bootstrap script must be written **after the first clean run** and used by the tester on the second.
