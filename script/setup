@@ -8,8 +8,10 @@ cd "$(dirname "$0")/.."
 python3 -m venv .venv
 if [ -f .venv/bin/python ]; then PY=.venv/bin/python; else PY=.venv/Scripts/python.exe; fi
 
-"$PY" -m pip install --upgrade pip -q
-"$PY" -m pip install -r requirements.txt -q
+# pip itself is pinned, and every package is installed only if its hash matches requirements-dev.txt (a superset of the
+# runtime requirements.txt: it adds pytest, coverage, hypothesis and ruff). Both files are generated from the .in files.
+"$PY" -m pip install "pip==26.2.2" -q
+"$PY" -m pip install --require-hashes -r requirements-dev.txt -q
 
 mkdir -p data
 DB_PATH="${DB_PATH:-data/dev.sqlite}"

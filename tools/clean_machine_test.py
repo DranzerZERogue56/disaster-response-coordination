@@ -16,7 +16,6 @@ the logic is tested with fakes, without a five-minute install.
 """
 import json
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -24,6 +23,7 @@ import time
 import urllib.request
 from datetime import date
 from pathlib import Path
+from exe import find, path_of
 
 ROOT = Path(__file__).resolve().parent.parent
 LIMIT_SECONDS = 300
@@ -38,7 +38,7 @@ def readme_steps(readme_text):
 
 
 def find_bash():
-    git = shutil.which("git")
+    git = find("git")
     candidates = []
     if git:
         root = Path(git).resolve().parent.parent
@@ -47,7 +47,7 @@ def find_bash():
     for c in candidates:
         if c.exists():
             return str(c)
-    return shutil.which("bash") or "bash"
+    return find("bash") or "bash"
 
 
 def default_run(command, cwd):
@@ -66,7 +66,7 @@ def stop(app):
         return
     pid = getattr(app, "pid", None)
     if sys.platform == "win32" and pid:
-        subprocess.run(["taskkill", "/T", "/F", "/PID", str(pid)], capture_output=True, check=False)
+        subprocess.run([path_of("taskkill"), "/T", "/F", "/PID", str(pid)], capture_output=True, check=False)
         _stop_leftover_servers()
     else:
         app.terminate()
@@ -80,7 +80,7 @@ def _stop_leftover_servers():
         f"Get-NetTCPConnection -LocalPort {PORT} -State Listen -ErrorAction SilentlyContinue | "
         "ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }"
     )
-    subprocess.run(["powershell", "-NoProfile", "-Command", script], capture_output=True, check=False)
+    subprocess.run([path_of("powershell"), "-NoProfile", "-Command", script], capture_output=True, check=False)
 
 
 def port_in_use():
@@ -140,7 +140,7 @@ def main():
 
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         clone = Path(tmp) / "clean-clone"
-        cloned = subprocess.run(["git", "clone", "--quiet", str(ROOT), str(clone)], capture_output=True, text=True, check=False)
+        cloned = subprocess.run([path_of("git"), "clone", "--quiet", str(ROOT), str(clone)], capture_output=True, text=True, check=False)
         if cloned.returncode != 0:
             sys.exit("clone failed: " + cloned.stderr)
         os.environ.pop("DB_PATH", None)  # a clean machine has no leftover settings
@@ -150,7 +150,7 @@ def main():
     evidence.parent.mkdir(parents=True, exist_ok=True)
     evidence.write_text(
         "# NFR-MNT-01 clean-machine run\n\n"
-        f"- Date: {date.today().isoformat()}\n- Commit cloned: `{subprocess.run(['git', 'rev-parse', '--short', 'HEAD'], cwd=ROOT, capture_output=True, text=True, check=False).stdout.strip()}`\n"
+        f"- Date: {date.today().isoformat()}\n- Commit cloned: `{subprocess.run([path_of('git'), 'rev-parse', '--short', 'HEAD'], cwd=ROOT, capture_output=True, text=True, check=False).stdout.strip()}`\n"
         f"- README steps followed: {', '.join(f'`{s}`' for s in result['steps'])}\n"
         f"- Time from first step to a healthy app: **{result['seconds']:.1f} s** (limit {LIMIT_SECONDS} s)\n"
         f"- Result: **{'PASS' if result['ok'] else 'FAIL'}**" + (f" (failed at: {result['failed_step']})" if result["failed_step"] else "") + "\n"

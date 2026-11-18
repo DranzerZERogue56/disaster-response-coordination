@@ -1,0 +1,4 @@
+# Runtime dependencies of the dispatcher app (what a real deployment installs).
+# The compiled, hash-pinned file is requirements.txt. Regenerate with:
+#   python -m piptools compile --generate-hashes requirements.in -o requirements.txt
+Flask==3.1.3

@@ -34,7 +34,6 @@ import ctypes
 import ctypes.wintypes
 import json
 import os
-import shutil
 import socket
 import subprocess
 import sys
@@ -43,6 +42,7 @@ import textwrap
 import time
 import wave
 from pathlib import Path
+from exe import find, path_of
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "docs" / "demo" / "auto-demo-script.json"
@@ -86,7 +86,7 @@ def synthesize(steps, outdir):
         encoding="utf-8",
     )
     subprocess.run(
-        ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(ps1), str(outdir)],
+        [path_of("powershell"), "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(ps1), str(outdir)],
         check=True,
         capture_output=True,
     )
@@ -164,7 +164,7 @@ def find_bash():
     the WSL launcher in System32, which would run commands in the wrong place,
     and a normal cmd window often has no bash on PATH at all."""
     candidates = []
-    git = shutil.which("git")
+    git = find("git")
     if git:
         root = Path(git).resolve().parent.parent
         if root.name.lower() in {"mingw64", "cmd", "bin"}:
@@ -176,7 +176,7 @@ def find_bash():
     for candidate in candidates:
         if candidate.exists():
             return str(candidate)
-    found = shutil.which("bash")
+    found = find("bash")
     if found and "system32" not in found.lower():
         return found
     sys.exit("Could not find Git's bash.exe. Install Git for Windows, or run this from Git Bash.")
@@ -309,7 +309,7 @@ def capture_input(full_screen):
 def black_share(path):
     """Fraction of the video that is black, from ffmpeg's blackdetect."""
     probe = subprocess.run(
-        ["ffmpeg", "-hide_banner", "-i", str(path), "-vf", "blackdetect=d=1:pix_th=0.05", "-an", "-f", "null", "-"],
+        [path_of("ffmpeg"), "-hide_banner", "-i", str(path), "-vf", "blackdetect=d=1:pix_th=0.05", "-an", "-f", "null", "-"],
         check=False,
         capture_output=True,
         text=True,
@@ -334,7 +334,7 @@ def test_capture(full_screen):
     with tempfile.TemporaryDirectory() as tmp:
         clip = Path(tmp) / "test.mp4"
         subprocess.run(
-            ["ffmpeg", "-y", *source, "-t", "3", "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2",
+            [path_of("ffmpeg"), "-y", *source, "-t", "3", "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2",
              "-c:v", "libx264", "-pix_fmt", "yuv420p", str(clip)],
             check=False,
             capture_output=True,
@@ -397,7 +397,7 @@ def main():
         (ROOT / DEMO_DB).unlink(missing_ok=True)
         return
 
-    if shutil.which("ffmpeg") is None:
+    if find("ffmpeg") is None:
         sys.exit("ffmpeg is not on PATH.")
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -417,7 +417,7 @@ def main():
         video = tmp / "video.mp4"
         launch = time.time()
         ffmpeg = subprocess.Popen(
-            ["ffmpeg", "-y", *source,
+            [path_of("ffmpeg"), "-y", *source,
              "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2", "-c:v", "libx264", "-preset", "veryfast",
              "-pix_fmt", "yuv420p", str(video)],
             stdin=subprocess.PIPE,
@@ -446,7 +446,7 @@ def main():
         build_audio(events, clips, lead, audio)
         write_captions(events, lead, CAPTIONS)
         subprocess.run(
-            ["ffmpeg", "-y", "-i", str(video), "-i", str(audio), "-c:v", "copy", "-c:a", "aac",
+            [path_of("ffmpeg"), "-y", "-i", str(video), "-i", str(audio), "-c:v", "copy", "-c:a", "aac",
              "-b:a", "128k", "-shortest", str(out_path)],
             check=True,
             capture_output=True,

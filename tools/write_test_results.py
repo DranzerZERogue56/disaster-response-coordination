@@ -18,6 +18,7 @@ import subprocess
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
+from exe import path_of
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "test-results.md"
@@ -37,7 +38,7 @@ def run(cmd, **kw):
 
 
 def git(*args):
-    return run(["git", *args]).stdout.strip()
+    return run([path_of("git"), *args]).stdout.strip()
 
 
 def main():
@@ -92,7 +93,7 @@ def main():
     proven = re.search(r"\*\*Result:\*\* (\d+) of (\d+) fixed defects proven", proof)
     proof_ok = bool(proven) and proven.group(1) == proven.group(2) and int(proven.group(2)) >= len(fixed)
 
-    gh = run(["gh", "run", "list", "--limit", "1", "--json", "conclusion,headSha,status"]).stdout
+    gh = run([path_of("gh"), "run", "list", "--limit", "1", "--json", "conclusion,headSha,status"]).stdout
     try:
         last = json.loads(gh)[0]
         ci = f"the latest completed CI run on GitHub is on commit `{last['headSha'][:7]}` with result **{last['conclusion'] or last['status']}**"

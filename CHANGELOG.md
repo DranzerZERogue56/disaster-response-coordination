@@ -41,6 +41,12 @@ History before this file's first release section: tag `milestone-3` (2026-09-13)
 
 ## [Unreleased]
 
+### Security (Python audit, 2026-11-18)
+- Deeply nested JSON bodies no longer crash routes with HTTP 500 (NFR-REL-01, DEF-033); a lone surrogate character in text is refused with HTTP 400 (DEF-034); the model client's thinking-block stripper is linear, not quadratic (DEF-035). See `docs/python-vulnerability-audit.md`.
+- Dependencies are hash-pinned and installed with `--require-hashes`; runtime and developer requirements are split; pip is pinned; the two GitHub Actions are pinned to commit hashes.
+- Helper scripts start programs by full path and never from the current directory (`tools/exe.py`).
+- Build checks: no SQL in `src/` is built from variables except one reviewed line; `src/` uses no `assert`; the unit registry's SQL lives behind `src/data/units_repo.py` (ADR 0009).
+
 ### Added
 - `docs/backlog.md`: ten deferred or cut items B-01 to B-10, each with its source, estimate and acceptance criteria copied intact (proposed by the assistant; dispositions are Ben's) (CR-012, DEF-017, DEF-018, DEF-020).
 - Draft change request CR-012, a retroactive record of the Milestone 7 deferrals (FR-INTAKE-03, FR-INFER-03, FR-MAP-01), and a Status line under each of those three requirements.

@@ -17,6 +17,7 @@ import sys
 import tempfile
 from datetime import date
 from pathlib import Path
+from exe import path_of
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "regression-proof.md"
@@ -63,7 +64,7 @@ DEFECTS = [
 
 
 def git(*args, cwd=ROOT):
-    return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, check=False)
+    return subprocess.run([path_of("git"), *args], cwd=cwd, capture_output=True, text=True, check=False)
 
 
 def run_test(directory, node):

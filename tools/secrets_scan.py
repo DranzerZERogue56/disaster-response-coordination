@@ -8,6 +8,7 @@ a tracked file matches — this is the check that never gets tired.
 import re
 import subprocess
 import sys
+from exe import path_of
 
 PATTERN = re.compile(
     r"(api[_-]?key|secret[_-]?key|password\s*=|AKIA[0-9A-Z]{16}"
@@ -23,7 +24,7 @@ ALLOWLIST = ("password_hash", "password_salt")
 
 def tracked_files():
     out = subprocess.run(
-        ["git", "ls-files"], capture_output=True, text=True, check=True
+        [path_of("git"), "ls-files"], capture_output=True, text=True, check=True
     )
     return [line for line in out.stdout.splitlines() if line]
 

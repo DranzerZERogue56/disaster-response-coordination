@@ -21,6 +21,7 @@ import tempfile
 import time
 from datetime import UTC, datetime
 from pathlib import Path
+from exe import path_of
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -55,9 +56,9 @@ def environment():
     return {
         "os": platform.platform(),
         "python": platform.python_version(),
-        "cpu": " ".join(sh(["powershell", "-NoProfile", "-Command", "(Get-CimInstance Win32_Processor).Name"]).split()),
-        "gpu": " | ".join(x.strip() for x in sh(["powershell", "-NoProfile", "-Command", "(Get-CimInstance Win32_VideoController).Name"]).splitlines() if x.strip()),
-        "ram_gb": round(int(sh(["powershell", "-NoProfile", "-Command", "(Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory"]) or 0) / 2**30, 1),
+        "cpu": " ".join(sh([path_of("powershell"), "-NoProfile", "-Command", "(Get-CimInstance Win32_Processor).Name"]).split()),
+        "gpu": " | ".join(x.strip() for x in sh([path_of("powershell"), "-NoProfile", "-Command", "(Get-CimInstance Win32_VideoController).Name"]).splitlines() if x.strip()),
+        "ram_gb": round(int(sh([path_of("powershell"), "-NoProfile", "-Command", "(Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory"]) or 0) / 2**30, 1),
         "run": "fresh temp database, started from the terminal outside the editor, real wall clock",
     }
 
@@ -198,7 +199,7 @@ def model(args):
     from src.classify_propose.measure import SEED_REPORTS, measure
     from src.classify_propose.ollama_client import DEFAULT_MODEL, OllamaModel
 
-    subprocess.run(["ollama", "stop", DEFAULT_MODEL], capture_output=True, check=False)  # noqa: S603, S607
+    subprocess.run([path_of("ollama"), "stop", DEFAULT_MODEL], capture_output=True, check=False)  # noqa: S603, S607
     time.sleep(2)
     result = measure(model=OllamaModel(timeout=60.0), texts=SEED_REPORTS[:20])
     seconds = result["seconds"]
