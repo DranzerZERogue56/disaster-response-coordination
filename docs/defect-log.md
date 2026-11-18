@@ -48,10 +48,10 @@ Environment for all unless stated: Windows 11, Python 3.11.8, SQLite 3.43.1, fak
 | DEF-033 | A deeply nested JSON body (tens of thousands of levels) crashes the route with HTTP 500 (RecursionError) | NFR-REL-01 | S3 | P2 | Python-vulnerability probe (M13) | Fixed | `bc0a867` | `test_a_deeply_nested_body_is_refused_cleanly_not_a_500` |
 | DEF-034 | A text field containing a lone surrogate character (JSON escape \ud800) crashes the route with HTTP 500 (UnicodeEncodeError) | NFR-REL-01 | S3 | P2 | Python-vulnerability probe (M13) | Fixed | `bc0a867` | `test_a_lone_surrogate_in_a_text_field_is_refused_cleanly_not_a_500` |
 | DEF-035 | The model client's regex that strips thinking blocks takes quadratic time on many unclosed tags: 109 KB freezes it for 15.7 s | NFR-REL-01 | S3 | P2 | Python-vulnerability probe (M13) | Fixed | `fcf88fa` | `test_a_reply_of_many_unclosed_thinking_tags_is_handled_in_linear_time` |
-| DEF-036 | Any Host name is served: DNS rebinding and Host-header abuse reach the console when the sign-in is off | NFR-SEC (area 5) | S3 | P2 | Flask web-layer audit (M13) | Fixed | `FIX` | `test_a_request_for_a_foreign_host_name_is_refused` |
-| DEF-037 | Signed-in pages and data carry no Cache-Control | NFR-SEC (area 5) | S4 | P3 | Flask web-layer audit (M13) | Fixed | `FIX` | `test_pages_and_data_are_never_stored_by_the_browser_or_a_proxy` |
-| DEF-038 | No request size limit: a 20 MB body is read and stored | NFR-REL-01 | S4 | P3 | Flask web-layer audit (M13) | Fixed | `FIX` | `test_a_request_body_over_one_megabyte_is_refused_with_413_and_stores_nothing` |
-| DEF-039 | The console renders every waiting proposal (3.9 MB for 3,000) | NFR-REL-01 | S4 | P3 | Flask web-layer audit (M13) | Fixed | `FIX` | `test_the_console_shows_at_most_200_waiting_proposals_oldest_first_and_says_how_many_are_hidden` |
+| DEF-036 | Any Host name is served: DNS rebinding and Host-header abuse reach the console when the sign-in is off | NFR-SEC (area 5) | S3 | P2 | Flask web-layer audit (M13) | Fixed | `4de41e2` | `test_a_request_for_a_foreign_host_name_is_refused` |
+| DEF-037 | Signed-in pages and data carry no Cache-Control | NFR-SEC (area 5) | S4 | P3 | Flask web-layer audit (M13) | Fixed | `4de41e2` | `test_pages_and_data_are_never_stored_by_the_browser_or_a_proxy` |
+| DEF-038 | No request size limit: a 20 MB body is read and stored | NFR-REL-01 | S4 | P3 | Flask web-layer audit (M13) | Fixed | `4de41e2` | `test_a_request_body_over_one_megabyte_is_refused_with_413_and_stores_nothing` |
+| DEF-039 | The console renders every waiting proposal (3.9 MB for 3,000) | NFR-REL-01 | S4 | P3 | Flask web-layer audit (M13) | Fixed | `4de41e2` | `test_the_console_shows_at_most_200_waiting_proposals_oldest_first_and_says_how_many_are_hidden` |
 
 ---
 

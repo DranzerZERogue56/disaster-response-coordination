@@ -59,6 +59,10 @@ DEFECTS = [
     ("DEF-033", "bc0a867", "tests/integration/test_hostile_python_inputs.py::test_a_deeply_nested_body_is_refused_cleanly_not_a_500[nested-list-/reports]"),
     ("DEF-034", "bc0a867", "tests/integration/test_hostile_python_inputs.py::test_a_lone_surrogate_in_a_text_field_is_refused_cleanly_not_a_500"),
     ("DEF-035", "fcf88fa", "tests/unit/test_ollama_client.py::test_a_reply_of_many_unclosed_thinking_tags_is_handled_in_linear_time"),
+    ("DEF-036", "4de41e2", "tests/integration/test_flask_web_layer.py::test_a_request_for_a_foreign_host_name_is_refused[evil.example]"),
+    ("DEF-037", "4de41e2", "tests/integration/test_flask_web_layer.py::test_pages_and_data_are_never_stored_by_the_browser_or_a_proxy[/dispatcher]"),
+    ("DEF-038", "4de41e2", "tests/integration/test_flask_web_layer.py::test_a_request_body_over_one_megabyte_is_refused_with_413_and_stores_nothing"),
+    ("DEF-039", "4de41e2", "tests/integration/test_flask_web_layer.py::test_the_console_shows_at_most_200_waiting_proposals_oldest_first_and_says_how_many_are_hidden"),
     ("DEF-018", "6eb890b", "tests/acceptance/test_acceptance_criteria.py::test_FR_AUTH_01_AC2_an_unauthenticated_caller_cannot_approve"),
 ]
 
