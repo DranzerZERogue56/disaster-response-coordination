@@ -63,6 +63,7 @@ DEFECTS = [
     ("DEF-037", "4de41e2", "tests/integration/test_flask_web_layer.py::test_pages_and_data_are_never_stored_by_the_browser_or_a_proxy[/dispatcher]"),
     ("DEF-038", "4de41e2", "tests/integration/test_flask_web_layer.py::test_a_request_body_over_one_megabyte_is_refused_with_413_and_stores_nothing"),
     ("DEF-039", "4de41e2", "tests/integration/test_flask_web_layer.py::test_the_console_shows_at_most_200_waiting_proposals_oldest_first_and_says_how_many_are_hidden"),
+    ("DEF-040", "eea20c5", "tests/unit/test_password_hashing.py::test_signing_in_with_an_old_scrypt_hash_upgrades_it_to_argon2id"),
     ("DEF-018", "6eb890b", "tests/acceptance/test_acceptance_criteria.py::test_FR_AUTH_01_AC2_an_unauthenticated_caller_cannot_approve"),
 ]
 
