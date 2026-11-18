@@ -2,7 +2,7 @@
 # The compiled, hash-pinned file is requirements-dev.txt. Regenerate with:
 #   python -m piptools compile --generate-hashes requirements-dev.in -o requirements-dev.txt
 -r requirements.in
-pytest==9.1.1
+pytest==9.2.0
 pytest-cov==7.1.0
 hypothesis==6.170.14
 ruff==0.17.2
