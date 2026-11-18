@@ -126,7 +126,7 @@ Other Should and Could requirements with no test and no verified row in `docs/tr
 - **Estimate:** Ben to confirm.
 - **Acceptance criteria (proposed, Ben to confirm):** Given the 20 seeded reports, when each model classifies them, then peak memory and CPU and GPU use are recorded in `docs/performance.md` with the machine named; and given a labelled set of reports, then the share classified to the expected severity and unit type is recorded for each model.
 
-## B-15: Migrate the data store from SQLite to PostgreSQL (ADR 0009; needs a change request first)
+## B-15: SUPERSEDED by B-17 (PostgreSQL migration; ADR 0009 was replaced by ADR 0010). Kept for history.
 - **Source:** Ben, 2026-11-18, for a real multi-user deployment. Staged after Milestone 13.
 - **Steps:** (1) put the rest of the SQL behind repositories (units is done: `src/data/units_repo.py`): proposals, reports, accounts, logs, nodes; (2) port the nine migrations and the 11 triggers to PostgreSQL; (3) a second repository implementation with the same methods; (4) run the whole suite against both; (5) re-measure NFR-MNT-01 and the timing NFRs; (6) a change request in Ben's words (it changes the stack).
 - **Estimate:** Ben to confirm (the assistant's rough view: several days).
@@ -136,4 +136,10 @@ Other Should and Could requirements with no test and no verified row in `docs/tr
 - **Source:** Ben, 2026-11-18: include data input filtering so that no one can use SQL injection. The database already receives every value as a bound parameter; this adds a second layer.
 - **Estimate:** Ben to confirm.
 - **Acceptance criteria (proposed, Ben to confirm):** Given any route that takes text, when a value contains SQL-looking text, operator-looking keys (a dollar sign key) or control characters, then it is either stored as plain text or refused with a clear error, never run as a command. Given a field outside the allowed names, types or lengths, then it is refused. A test fails the build if a route skips the validation.
+
+## B-17: Migrate the data store from SQLite to MongoDB, hardened (ADR 0010; needs a change request first)
+- **Source:** Ben, 2026-11-18, reversing the PostgreSQL choice. Staged after Milestone 13.
+- **Steps:** (1) finish the repository layer (units done; proposals, reports, accounts, logs, nodes remain); (2) a MongoDB repository implementation with the same methods; (3) move each of the 11 triggers and the CHECK/foreign-key rules into code plus `$jsonSchema` validators and unique indexes, one rule at a time, each with a test that fails first; (4) a single-node replica set, because multi-document transactions need one; (5) apply `docs/database-hardening.md`; (6) run the whole suite against both stores; (7) re-measure NFR-MNT-01 and the timing NFRs; (8) a change request in Ben's words (it changes the stack).
+- **Estimate:** Ben to confirm (the assistant's rough view: longer than the PostgreSQL port, because rules move from the database into code).
+- **Acceptance criteria (proposed, Ben to confirm):** Given the app is configured for MongoDB, when the suite runs, then it passes. Given two dispatchers reserve the same unit at once, then exactly one succeeds. Given the hardening checklist, then every line has a recorded check Ben ran.
 

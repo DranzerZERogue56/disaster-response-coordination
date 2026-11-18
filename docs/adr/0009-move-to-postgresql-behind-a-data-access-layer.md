@@ -1,6 +1,6 @@
 # ADR 0009 — Move to PostgreSQL behind a data-access layer (MongoDB evaluated, not chosen)
 
-- **Status:** Accepted as a direction (Ben, 2026-11-18); the migration itself is not scheduled (backlog B-15). It supersedes the "SQLite for v1" part of ADR 0002 only once the migration is done.
+- **Status:** SUPERSEDED by ADR 0010 on 2026-11-18 (Ben chose MongoDB later the same day). The data-access layer decision in point 2 still stands. Originally: accepted as a direction (Ben, 2026-11-18); the migration itself is not scheduled (backlog B-15). It supersedes the "SQLite for v1" part of ADR 0002 only once the migration is done.
 - **Date:** 2026-11-18
 - **Decider:** Dranzer Rogue
 - **Requirements affected:** NFR-PRIV-01, NFR-MNT-01, NFR-SEC-01, FR-RES-01, FR-RES-03, FR-AUDIT-01, FR-AUDIT-02
