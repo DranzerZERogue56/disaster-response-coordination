@@ -16,7 +16,6 @@ Rules this module keeps (each is tested in tests/unit/test_ollama_client.py agai
   * Only the report text is sent (location, severity text, description, time), not who sent it.
 """
 import json
-import re
 import socket
 import urllib.error
 import urllib.request
@@ -56,6 +55,25 @@ class OllamaBusy(OllamaError):
 
 class OllamaBadResponse(OllamaError):
     """The reply was malformed, oversized, redirected, or not an answer of the right shape."""
+
+
+def _strip_thinking(text):
+    """Remove closed <think>...</think> blocks in one linear pass. (A lazy regex for this takes quadratic time on many
+    unclosed tags: 109 KB of them froze it for 15.7 s, DEF-035.) An opening tag with no closing tag is left as it is,
+    so the reply then fails validation instead of being guessed at."""
+    kept, position = [], 0
+    while True:
+        start = text.find("<think>", position)
+        if start == -1:
+            kept.append(text[position:])
+            break
+        end = text.find("</think>", start + len("<think>"))
+        if end == -1:
+            kept.append(text[position:])
+            break
+        kept.append(text[position:start])
+        position = end + len("</think>")
+    return "".join(kept)
 
 
 class _NoRedirects(urllib.request.HTTPRedirectHandler):
@@ -138,7 +156,7 @@ class OllamaModel:
             _validate,
         )
 
-        text = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL).strip()
+        text = _strip_thinking(content).strip()
         try:
             answer = json.loads(text)
         except ValueError:

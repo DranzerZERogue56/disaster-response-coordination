@@ -57,3 +57,15 @@ def test_the_unit_registry_service_has_no_sql_on_the_units_table():
     text = Path("src/unit_registry/service.py").read_text(encoding="utf-8")
     touches_units = re.findall(r"\b(?:FROM|UPDATE|INTO|JOIN)\s+units\b", text)
     assert touches_units == [], f"unit_registry/service.py still touches the units table directly: {touches_units}"
+
+
+def test_no_security_or_validation_check_in_src_relies_on_assert():
+    """`python -O` removes assert statements, so a check written as an assert would silently vanish. The running app
+    (src/) must use none: validation raises real exceptions instead."""
+    offenders = []
+    for path in sorted(SRC.rglob("*.py")):
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            if isinstance(node, ast.Assert):
+                offenders.append(f"{path.as_posix()}:{node.lineno}")
+    assert offenders == [], f"assert statements in the running app: {offenders}"
+
