@@ -126,3 +126,14 @@ Other Should and Could requirements with no test and no verified row in `docs/tr
 - **Estimate:** Ben to confirm.
 - **Acceptance criteria (proposed, Ben to confirm):** Given the 20 seeded reports, when each model classifies them, then peak memory and CPU and GPU use are recorded in `docs/performance.md` with the machine named; and given a labelled set of reports, then the share classified to the expected severity and unit type is recorded for each model.
 
+## B-15: Migrate the data store from SQLite to PostgreSQL (ADR 0009; needs a change request first)
+- **Source:** Ben, 2026-11-18, for a real multi-user deployment. Staged after Milestone 13.
+- **Steps:** (1) put the rest of the SQL behind repositories (units is done: `src/data/units_repo.py`): proposals, reports, accounts, logs, nodes; (2) port the nine migrations and the 11 triggers to PostgreSQL; (3) a second repository implementation with the same methods; (4) run the whole suite against both; (5) re-measure NFR-MNT-01 and the timing NFRs; (6) a change request in Ben's words (it changes the stack).
+- **Estimate:** Ben to confirm (the assistant's rough view: several days).
+- **Acceptance criteria (proposed, Ben to confirm):** Given the app is configured for PostgreSQL, when the test suite runs, then it passes. Given two dispatchers act at the same moment, then no unit is double-booked. Given a clean clone, then the README's steps reach a running app within the NFR-MNT-01 limit.
+
+## B-16: An allow-list input-validation layer at the web boundary (proposed from Ben's database request)
+- **Source:** Ben, 2026-11-18: include data input filtering so that no one can use SQL injection. The database already receives every value as a bound parameter; this adds a second layer.
+- **Estimate:** Ben to confirm.
+- **Acceptance criteria (proposed, Ben to confirm):** Given any route that takes text, when a value contains SQL-looking text, operator-looking keys (a dollar sign key) or control characters, then it is either stored as plain text or refused with a clear error, never run as a command. Given a field outside the allowed names, types or lengths, then it is refused. A test fails the build if a route skips the validation.
+

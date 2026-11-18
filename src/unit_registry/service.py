@@ -12,6 +12,8 @@ FR-COORD-01).
 import json
 from datetime import UTC, datetime, timedelta
 
+from src.data.units_repo import UnitRepository
+
 RESERVATION_MINUTES = 4
 
 
@@ -40,26 +42,23 @@ def release_expired(conn, now=None):
     """
     now = now or _now()
     stamp = now.isoformat()
-    expired = conn.execute(
-        "SELECT id, reserved_by_proposal_id FROM units "
-        "WHERE status = 'reserved' AND released_expected_by <= ?",
-        (stamp,),
-    ).fetchall()
-    for unit in expired:
-        _free(conn, unit["id"])
-        if unit["reserved_by_proposal_id"] is not None:
+    units = UnitRepository(conn)
+    expired = units.expired_reservations(stamp)
+    for unit_id, proposal_id in expired:
+        units.free_reserved(unit_id)
+        if proposal_id is not None:
             conn.execute(
                 "UPDATE agent_proposals SET final_status = 'rejected', decided_by = 'timeout', "
                 "decided_at = ? WHERE id = ? AND final_status IS NULL",
-                (stamp, unit["reserved_by_proposal_id"]),
+                (stamp, proposal_id),
             )
     conn.commit()
-    return [u["id"] for u in expired]
+    return [unit_id for unit_id, _ in expired]
 
 
 def release_unit(conn, unit_id):
     """Free one unit right away (a rejected proposal will call this)."""
-    _free(conn, unit_id)
+    UnitRepository(conn).free_reserved(unit_id)
     conn.commit()
 
 
@@ -67,26 +66,13 @@ def release_for_proposal(conn, proposal_id, commit=True):
     """Free whatever unit this proposal is holding (a rejection calls this).
     Only touches a unit still reserved by this exact proposal. Pass
     commit=False to make it part of the caller's transaction."""
-    ids = [
-        r["id"]
-        for r in conn.execute(
-            "SELECT id FROM units WHERE status = 'reserved' AND reserved_by_proposal_id = ?",
-            (proposal_id,),
-        ).fetchall()
-    ]
+    units = UnitRepository(conn)
+    ids = units.reserved_by(proposal_id)
     for unit_id in ids:
-        _free(conn, unit_id)
+        units.free_reserved(unit_id)
     if commit:
         conn.commit()
     return ids
-
-
-def _free(conn, unit_id):
-    conn.execute(
-        "UPDATE units SET status = 'available', reserved_by_proposal_id = NULL, "
-        "reserved_at = NULL, released_expected_by = NULL WHERE id = ? AND status = 'reserved'",
-        (unit_id,),
-    )
 
 
 def reserve(conn, unit_id, proposal_id, now=None):
@@ -94,23 +80,17 @@ def reserve(conn, unit_id, proposal_id, now=None):
     matches an available unit, so two callers can never both win."""
     now = now or _now()
     until = (now + timedelta(minutes=RESERVATION_MINUTES)).isoformat()
-    cur = conn.execute(
-        "UPDATE units SET status = 'reserved', reserved_by_proposal_id = ?, "
-        "reserved_at = ?, released_expected_by = ? WHERE id = ? AND status = 'available'",
-        (proposal_id, now.isoformat(), until, unit_id),
-    )
-    if cur.rowcount == 1:
+    units = UnitRepository(conn)
+    if units.try_reserve(unit_id, proposal_id, now.isoformat(), until):
         conn.commit()
         return {"unit_id": unit_id, "reserved_until": until}
 
-    row = conn.execute("SELECT status FROM units WHERE id = ?", (unit_id,)).fetchone()
-    if row is None:
+    status = units.status_of(unit_id)
+    if status is None:
         raise RegistryError("UNIT_NOT_FOUND", f"No unit with id {unit_id}", [unit_id])
-    if row["status"] in ("reserved", "assigned"):
-        raise RegistryError(
-            "UNIT_ALREADY_RESERVED", f"Unit {unit_id} is already {row['status']}", [unit_id]
-        )
-    raise RegistryError("UNIT_UNAVAILABLE", f"Unit {unit_id} is {row['status']}", [unit_id])
+    if status in ("reserved", "assigned"):
+        raise RegistryError("UNIT_ALREADY_RESERVED", f"Unit {unit_id} is already {status}", [unit_id])
+    raise RegistryError("UNIT_UNAVAILABLE", f"Unit {unit_id} is {status}", [unit_id])
 
 
 def assign_unit(conn, unit_id, proposal_id, commit=True):
@@ -124,12 +104,7 @@ def assign_unit(conn, unit_id, proposal_id, commit=True):
     window expired and someone else took it, raise UNIT_NO_LONGER_AVAILABLE
     and change nothing.
     """
-    cur = conn.execute(
-        "UPDATE units SET status = 'assigned', released_expected_by = NULL "
-        "WHERE id = ? AND status = 'reserved' AND reserved_by_proposal_id = ?",
-        (unit_id, proposal_id),
-    )
-    if cur.rowcount != 1:
+    if not UnitRepository(conn).try_assign(unit_id, proposal_id):
         raise RegistryError(
             "UNIT_NO_LONGER_AVAILABLE",
             f"Unit {unit_id} is no longer reserved for proposal {proposal_id}",
@@ -146,9 +121,7 @@ def unit_clock(conn, now=None):
     now = now or _now()
     release_expired(conn, now)
     units = []
-    for r in conn.execute(
-        "SELECT id, unit_type, status, released_expected_by FROM units ORDER BY id"
-    ).fetchall():
+    for r in UnitRepository(conn).all_units():
         until = r["released_expected_by"] if r["status"] == "reserved" else None
         seconds_left = None
         if until:
@@ -173,56 +146,36 @@ def reassign(conn, proposal_id, new_unit_id, now=None, commit=True):
     the unit already assigned is allowed and changes nothing.
     """
     now = now or _now()
-    current = conn.execute(
-        "SELECT id FROM units WHERE reserved_by_proposal_id = ? AND status = 'assigned'",
-        (proposal_id,),
-    ).fetchone()
+    units = UnitRepository(conn)
+    current = units.assigned_unit_of(proposal_id)
     if current is None:
         raise RegistryError(
             "ASSIGNMENT_NOT_FOUND", f"Proposal {proposal_id} has no assigned unit", [new_unit_id]
         )
-    if current["id"] == new_unit_id:
+    if current == new_unit_id:
         return {"unit_id": new_unit_id, "changed": False}
 
-    target = conn.execute("SELECT status FROM units WHERE id = ?", (new_unit_id,)).fetchone()
-    if target is None:
+    status = units.status_of(new_unit_id)
+    if status is None:
         raise RegistryError("UNIT_NOT_FOUND", f"No unit with id {new_unit_id}", [new_unit_id])
-    if target["status"] != "available":
-        code = (
-            "UNIT_ALREADY_RESERVED"
-            if target["status"] in ("reserved", "assigned")
-            else "UNIT_UNAVAILABLE"
-        )
-        raise RegistryError(code, f"Unit {new_unit_id} is {target['status']}", [new_unit_id])
+    if status != "available":
+        code = "UNIT_ALREADY_RESERVED" if status in ("reserved", "assigned") else "UNIT_UNAVAILABLE"
+        raise RegistryError(code, f"Unit {new_unit_id} is {status}", [new_unit_id])
 
-    conn.execute(
-        "UPDATE units SET status = 'available', reserved_by_proposal_id = NULL, "
-        "reserved_at = NULL, released_expected_by = NULL WHERE id = ? AND status = 'assigned'",
-        (current["id"],),
-    )
-    cur = conn.execute(
-        "UPDATE units SET status = 'assigned', reserved_by_proposal_id = ?, reserved_at = ?, "
-        "released_expected_by = NULL WHERE id = ? AND status = 'available'",
-        (proposal_id, now.isoformat(), new_unit_id),
-    )
-    if cur.rowcount != 1:
+    units.release_assigned(current)
+    if not units.try_assign_available(new_unit_id, proposal_id, now.isoformat()):
         raise RegistryError(
             "UNIT_ALREADY_RESERVED", f"Unit {new_unit_id} was taken first", [new_unit_id]
         )
     if commit:
         conn.commit()
-    return {"unit_id": new_unit_id, "changed": True, "released_unit_id": current["id"]}
+    return {"unit_id": new_unit_id, "changed": True, "released_unit_id": current}
 
 
 def _undecided_holder(conn, unit_id):
-    """The proposal holding this unit as a reservation (not an assignment) that nobody has decided yet,
-    or None. Only such a reservation can be contested by a tiebreak; an assigned unit never can."""
-    row = conn.execute(
-        "SELECT u.reserved_by_proposal_id FROM units u JOIN agent_proposals p ON p.id = u.reserved_by_proposal_id "
-        "WHERE u.id = ? AND u.status = 'reserved' AND p.final_status IS NULL",
-        (unit_id,),
-    ).fetchone()
-    return row["reserved_by_proposal_id"] if row else None
+    """The proposal holding this unit as a reservation (not an assignment) that nobody has decided yet, or None.
+    Only such a reservation can be contested by a tiebreak; an assigned unit never can."""
+    return UnitRepository(conn).undecided_holder(unit_id)
 
 
 def reserve_for_proposal(conn, proposal_id, now=None, on_conflict=None):

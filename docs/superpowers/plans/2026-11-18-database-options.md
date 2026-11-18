@@ -79,3 +79,14 @@ Net: about half the guarantees survive unchanged, three become "the application 
 1. What is driving this: injection safety, scale, a multi-user deployment, learning MongoDB, or something a reviewer said?
 2. Is it acceptable that the migration happens after Sunday's documentation milestone?
 3. Should the data-access layer start now as a pilot (Option A.3)?
+
+## Decisions recorded (Ben, 2026-11-18, by button)
+
+| Question | Ben's choice |
+|---|---|
+| Direction | **C: PostgreSQL** (not MongoDB) |
+| Reason | **A real multi-user deployment** |
+| Pilot data-access layer | **Yes, pilot on the units module** |
+
+**Done the same day:** the pilot (`src/data/units_repo.py`) with 17 new tests; the registry service refactored onto it with the existing tests passing unchanged (691 passed in the run after the refactor); the architecture and SQL-safety scan tests; ADR 0009; backlog B-15 (the migration) and B-16 (input validation). **Not started:** the migration itself, the validation layer, and a change request for the stack change.
+
