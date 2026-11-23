@@ -42,6 +42,9 @@ jobs:
       - name: Lint
         run: script/lint
 
+      - name: Documentation check
+        run: python tools/check_docs.py
+
       - name: Test
         run: script/test
 

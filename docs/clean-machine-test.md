@@ -42,9 +42,9 @@ Not timed. No checkpoint times were recorded for run 1, so none are stated here.
 
 > Create a dispatcher account, add the phone code to an authenticator app, sign in, and approve the waiting proposal at `http://127.0.0.1:8080/dispatcher` before its 4-minute hold runs out.
 
-The action was chosen by the author on 2026-11-22, after run 1, and run 1 used the README as it then stood, which did not include the step that puts a proposal in front of the console. **Run 1 therefore did not test this action.** The tester reported verbally that the project "ran without a hitch"; no one recorded which checks that covered.
+The author reports, on 2026-11-22, that the tester **did run this acceptance action** in run 1 (sign-in with a phone code and approval of a waiting proposal) and that **the only thing not tested was the time**. Two cautions the record keeps: the action was written down after run 1, and the README the tester followed on 2026-11-21 did not yet contain the step that puts a proposal in front of the console (`python tools/add_demo_proposal.py`), so how a proposal appeared for the tester was not recorded. The tester has not confirmed this in writing.
 
-Result of run 1: not established.
+Result of run 1, as reported by the author: PASS for the action, time not measured.
 
 ## 4. Friction log: run 1
 
@@ -71,6 +71,8 @@ The README, runbook and onboarding guide were rewritten on 2026-11-22 after run 
 | Time to acceptance action | |
 | Remaining blockers | |
 
-## 7. Signed statement
+## 7. Statement
 
-To be written after run 2, and only if it is true. What can honestly be said now: on 2026-11-21 LW cloned this repository into a Docker container on a personal Windows laptop and, using only the README, reported that it ran without a hitch. The author did not observe the run, the times were not recorded, and the acceptance action above was not part of it.
+> On 2026-11-21, LW cloned this repository into a Docker container on a personal Windows laptop and, using only the README as it then stood, reached the acceptance action (signed in with a phone code and approved a waiting proposal) without assistance from the author. The time taken was not measured.
+
+This statement is the author's report of what the tester did. **It is not signed by LW**: the tester has not confirmed it in writing, and the author did not observe the run. The README was rewritten on 2026-11-22 after run 1, so the submitted README has not been followed by an outside tester yet: run 2 (section 6) is still to do, and this record says "not run" there rather than imply it.

@@ -152,7 +152,7 @@ Each entry comes from `docs/defect-log.md`. Commands marked UNVERIFIED have not 
 - **Data loss suspected:** stop. Do not restart and do not run `./script/seed --reset`. Copy the database file somewhere safe first.
 - **A third-party service is down:** the only optional one is the local Ollama model; if it is down or slow the report is classified by the next tier (the rules stand-in) and the reasoning says so. Nothing else outside the machine is called.
 - **A secret may be exposed** (a password, phone key or session signer): reset the account with `python tools/enrol_dispatcher.py <username> dispatcher`, restart the app (new random session key), then investigate `auth_events`.
-- **Contact:** the author, Dranzer Rogue, through an issue at https://github.com/DranzerZERogue56/disaster-response-coordination. After handoff, the owner is whoever `docs/handoff.md` names (written in Week 14).
+- **Contact:** the author, Dranzer Rogue, through an issue at https://github.com/DranzerZERogue56/disaster-response-coordination. After handoff, the owner is whoever the handoff document written in Week 14 names.
 
 ## 8. Last verified
 

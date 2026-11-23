@@ -46,12 +46,12 @@ Database rules (triggers, constraints) live in `migrations/*.sql`, not only in P
 
 ## 6. Your first issue
 
-**B-12 (second half): write `docs/dependencies.md`.** Nobody has claimed it.
+**B-12 (second half): write a new file named `dependencies.md` in the `docs` folder.** Nobody has claimed it.
 
 *Why:* the project pins every package so installs are repeatable (`requirements.txt`, hash-checked) and CI audits them for known vulnerabilities, but nothing says what each package is for or when someone last looked at it. A new maintainer cannot tell which ones are safe to swap or remove.
 
-*What to do:* create `docs/dependencies.md` with one row for each package in `requirements.txt` (there are 11 pins today): its name and pinned version, a one-line purpose in plain words, its licence (read it from the package's own metadata, for example `python -m pip show <name>` after `./script/setup`), the date you reviewed it, and a short paragraph stating how often the list is reviewed. Dependabot already opens weekly update pull requests (`.github/dependabot.yml`); say how you will handle them.
+*What to do:* create that file with one row for each package in `requirements.txt` (there are 11 pins today): its name and pinned version, a one-line purpose in plain words, its licence (read it from the package's own metadata, for example `python -m pip show <name>` after `./script/setup`), the date you reviewed it, and a short paragraph stating how often the list is reviewed. Dependabot already opens weekly update pull requests (`.github/dependabot.yml`); say how you will handle them.
 
-*How you know you are done:* every package in `requirements.txt` appears in the file exactly once, `./script/test` and `./script/lint` still pass, and a reviewer can read one row and know what removing that package would break. The acceptance criteria are in `docs/backlog.md` under B-12.
+*How you know you are done:* every package in `requirements.txt` appears in the file exactly once, `./script/test` and `./script/lint` still pass, and a reviewer can read one row and know what removing that package would break. The acceptance criteria are in `docs/backlog.md` under B-12, where it is called docs/dependencies.md (it does not exist yet; that is the task).
 
 *If you get stuck:* the defect log shows how this project records what it found, and `docs/runbook.md` shows the day-to-day commands.

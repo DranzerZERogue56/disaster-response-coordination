@@ -13,7 +13,9 @@ A dispatcher gets incident reports (a place, what happened, a time). The softwar
 
 ## 2. Demo
 
-A recording of the first increment (before the sign-in existed) is in `docs/demo/iteration-1-demo.mp4`. The steps in section 6 reproduce the current flow: sign in with a password and a phone code, then approve a waiting proposal.
+![Four captioned screenshots: the sign-in page, the password and phone code filled in, the console with one proposal waiting, and the console after Approve showing the unit assigned](docs/demo/signin-and-approve.gif)
+
+The animation above (`docs/demo/signin-and-approve.gif`) shows the current flow: sign in with a password and a phone code, then approve a waiting proposal. The same steps are written out in section 6, so nothing depends on the picture. `python tools/make_demo_gif.py` re-records it (optional; it needs Playwright, see the top of that file). A recording of the first increment, before the sign-in existed, is in `docs/demo/iteration-1-demo.mp4`.
 
 ## 3. Prerequisites
 
@@ -35,6 +37,8 @@ cd disaster-response-coordination
 ```
 
 Expected: `./script/setup` ends with `migrate.py: 9 migration(s) applied, database at data/dev.sqlite` and then `setup complete`. pip may also print a `[notice] A new release of pip is available` line; that is harmless. It took about 1 to 2 minutes on the machine that recorded `docs/evidence/m13-command-outputs.md`.
+
+**Shortcut:** `./script/bootstrap` runs setup, seed and the account step below in one go (`./script/bootstrap --start` also starts the app). It prints the one-time password and phone key once. It ends with `bootstrap complete`.
 
 ## 5. Configure
 
@@ -66,7 +70,7 @@ python tools/enrol_dispatcher.py demo-dispatcher dispatcher
 2. Open `http://127.0.0.1:8080/login` in a browser and sign in as `demo-dispatcher` with the password and the six-digit code from the phone.
 3. In the second window run `python tools/add_demo_proposal.py`. It prints `Proposal 1 is waiting for a person (unit 1 is held for it).` (the number may differ).
 4. Reload `http://127.0.0.1:8080/dispatcher`. The proposal is listed under "Proposals waiting for a decision".
-5. Press the **Approve** button on it **within 4 minutes**, or the unit is released and the proposal times out (run step 3 again for a fresh one). The proposal leaves the waiting list and the unit shows as assigned.
+5. Press the **Approve** button on it **within 4 minutes**, or the unit is released and the proposal times out (run step 3 again for a fresh one). The page shows `Proposal 1 approved; unit 1 notified.`, the proposal leaves the waiting list and the unit shows as assigned.
 
 Stop the app with Ctrl+C in the window where `./script/start` runs.
 
