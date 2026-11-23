@@ -128,7 +128,6 @@ THINGS TO TALK ABOUT
 
 ---
 
-<
 CHECKLIST BEFORE YOU COMMIT
 [ ] Every HTML comment deleted.
 [ ] Between 2 and 3 pages (about 700 to 1,100 words).

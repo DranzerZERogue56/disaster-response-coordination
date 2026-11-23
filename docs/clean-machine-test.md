@@ -42,7 +42,7 @@ Not timed. No checkpoint times were recorded for run 1, so none are stated here.
 
 > Create a dispatcher account, add the phone code to an authenticator app, sign in, and approve the waiting proposal at `http://127.0.0.1:8080/dispatcher` before its 4-minute hold runs out.
 
-The author reports, on 2026-11-22, that the tester **did run this acceptance action** in run 1 (sign-in with a phone code and approval of a waiting proposal) and that **the only thing not tested was the time**. Two cautions the record keeps: the action was written down after run 1, and the README the tester followed on 2026-11-21 did not yet contain the step that puts a proposal in front of the console (`python tools/add_demo_proposal.py`), so how a proposal appeared for the tester was not recorded. The tester has not confirmed this in writing.
+The author reports, on 2026-11-22, that the tester **did run this acceptance action** in run 1 (sign-in with a phone code and approval of a waiting proposal) and that **the only thing not tested was the time**. Two cautions the record keeps: the action was written down after run 1, and the README the tester followed on 2026-11-21 did not yet contain the step that puts a proposal in front of the console (`python tools/add_demo_proposal.py`), so how a proposal appeared for the tester was not recorded. The tester confirmed it verbally to the author on 2026-11-22 (reported by the author); there is nothing in writing.
 
 Result of run 1, as reported by the author: PASS for the action, time not measured.
 
@@ -75,4 +75,4 @@ The README, runbook and onboarding guide were rewritten on 2026-11-22 after run 
 
 > On 2026-11-21, LW cloned this repository into a Docker container on a personal Windows laptop and, using only the README as it then stood, reached the acceptance action (signed in with a phone code and approved a waiting proposal) without assistance from the author. The time taken was not measured.
 
-This statement is the author's report of what the tester did. **It is not signed by LW**: the tester has not confirmed it in writing, and the author did not observe the run. The README was rewritten on 2026-11-22 after run 1, so the submitted README has not been followed by an outside tester yet: run 2 (section 6) is still to do, and this record says "not run" there rather than imply it.
+This statement is the author's report of what the tester did. **It is not signed by LW**: the tester signed off verbally to the author on 2026-11-22 (the author's report), there is nothing in writing, and the author did not observe the run. The README was rewritten on 2026-11-22 after run 1, so the submitted README has not been followed by an outside tester yet: run 2 (section 6) is still to do, and this record says "not run" there rather than imply it.
