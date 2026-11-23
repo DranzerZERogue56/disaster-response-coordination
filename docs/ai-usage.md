@@ -424,3 +424,36 @@ Format: `Checked N of M claims in the verification log; N-x held up as stated. T
 **What I asked for:** (1) Build an Ollama client for my local Qwen 3 model with a kill switch. (2) Log and fix DEF-029: a real model answered a vague report at confidence 75, exactly the auto-dispatch bar; I chose a stricter bar for real-model answers (the number 85 was picked by the assistant because I gave none, and I still have to confirm it). (3) Write my disposition for the Ollama change request in rough notes and have the assistant widen it into full sentences with specifics, which I then rewrite.
 **What I kept/changed:** The assistant wrote the client, the wiring, the stub-server tests and the DEF-029 fix and regression test. My three decisions on CR-011 were mine (accept almost all; defer HTTPS to about two weeks out; reject several or larger local models and the hardware sections in favour of one demo model). The assistant turned those notes into CR-011, CR-013 and CR-014, keeping my original words verbatim at the bottom of each and marking anything it added beyond my meaning "assistant, Ben to confirm". The three change requests are drafts until I rewrite and sign them. A worker wrote documents (seam map, failure-mode table, changelog, backlog, a security fact sheet); none of them wrote the security findings or any change-request disposition, which the assignment says must be mine.
 **Why:** It is the due date and the assignment's AI policy forbids the assistant from deciding a change request or being the source of a security claim. Honest limits: the code and test volume is far beyond what I have read, the independent review from last week was another AI model, and the CR wording above is an expansion of my notes, not yet my own prose.
+
+---
+
+**Date:** 2026-11-22
+**Zone:** Amber: the assistant drafted; the author verifies every command and number against recorded output
+**Tool:** Claude Code (Claude Sonnet 5.5)
+**What I asked for:** Milestone 13 documents: `README.md` (eleven sections), the section 0 overview in `docs/architecture.md`, `docs/runbook.md`, `docs/onboarding.md`, `docs/adr/README.md` and ADR 0008, the clean-machine record `docs/clean-machine-test.md`, and the tools `tools/m13_capture.py` and `tools/add_demo_proposal.py`. The assistant also ran `tools/m13_capture.py` itself at my request (I did not execute it); every command and output in the README and runbook comes from `docs/evidence/m13-command-outputs.md`, which that run wrote.
+**What I kept/changed:** To be filled in by me after I read each document against the evidence: what I found wrong. Errors the assistant caught in its own drafts before I saw them: (1) its first draft of the architecture overview said a proposal is auto-approved when confidence is high enough; the code also forces a person for Severe and Critical severities, so it was corrected; (2) the first capture run showed a fresh clone has no demo data, so `add_demo_proposal.py` failed until `./script/seed` was added to the steps; (3) the capture tool's first redaction pattern hid the line `secrets check: 0 matches ...`, so it was narrowed; (4) rewriting the README broke `tools/clean_machine_test.py`, which reads the README, so that tool and its tests were updated; (5) `doc_lint.py` reports a false positive on the prerequisites section (its pattern swallows the table), which was checked by hand. Not verified by anyone but the assistant: the claims in section 0 of the architecture overview about triggers, which come from reading `migrations/*.sql`.
+**Why:** The assignment allows drafting by an assistant but not an assistant as the source of a command or output. The clean-machine test itself was run by a human tester, not the assistant (`docs/clean-machine-test.md`).
+
+---
+
+## Successor guide: the AI dependencies of this project
+
+For whoever maintains this after the author. Facts are from `src/classify_propose/`, `.env.example` and the defect log.
+
+| Item | What it is | Where |
+|---|---|---|
+| Model | `qwen3:1.7b`, a small local model served by Ollama; one optional smaller fallback (`OLLAMA_SMALLER_MODEL`) | `src/classify_propose/ollama_client.py`, `.env.example` |
+| Server | Ollama, tested with 0.40.16, on this machine only (`http://127.0.0.1:11434`; any other host is refused) | `OLLAMA_URL` |
+| Switch | `OLLAMA_ENABLED=1` uses the model first; `0` or unset turns it off with no restart | `.env.example` |
+| Prompt | one system prompt asking for a JSON object with `severity`, `unit_type`, `confidence`, `reasoning`; the report text is the user message | `SYSTEM_PROMPT` in `ollama_client.py` |
+| Settings sent | temperature 0.2, at most 512 tokens, thinking off, JSON output, one retry that restates the schema | `OllamaModel._post` |
+| Fallback | model, then the smaller model, then the rules stand-in; any failure (down, slow, busy, malformed) moves to the next tier and the reasoning says so | `src/classify_propose/chain.py` |
+| Cost | none per request: it runs locally. The cost is machine time and a download of about 1.4 GB | README |
+| Time limit | 60 seconds per answer by default (`OLLAMA_TIMEOUT`) | `.env.example` |
+
+**What must not be assumed stable:**
+- **The model's confidence number is not calibrated.** A real model once scored an almost empty report 75, exactly the auto-dispatch bar (DEF-029). Real-model answers therefore need 85 to skip a person (`MODEL_AUTO_APPROVE_MIN`, never below 75), and Severe or Critical always waits for a person.
+- **Model and server versions.** A different model tag or a new Ollama release can change answers and the response format; the client treats a changed format as a failure and falls to the next tier, but accuracy can drift without any error.
+- **The requirements that name the 24 GB target GPU** (FR-INFER-02, NFR-PERF-01) are unverified on purpose; the timing numbers in `docs/performance.md` come from a laptop.
+- **Model replies are untrusted text.** The client strips thinking blocks in linear time and validates the answer's shape (DEF-015, DEF-035); keep those checks if the client changes.
+
