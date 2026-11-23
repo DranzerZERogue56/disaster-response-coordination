@@ -91,6 +91,7 @@ def main():
             for label, command in [("lint", "./script/lint"), ("secrets", "./script/secrets-check"), ("build", "./script/build"), ("smoke", "./script/smoke")]:
                 run_step(label, command, clone, bash, results)
             run_step("create an account (secrets hidden)", f"{py} tools/enrol_dispatcher.py demo-dispatcher", clone, bash, results)
+            run_step("put one proposal in front of the console", f"{py} tools/add_demo_proposal.py", clone, bash, results)
             app = subprocess.Popen([bash, "-c", "./script/start"], cwd=clone, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)  # noqa: S603
             try:
                 healthy = default_wait_healthy(90)
