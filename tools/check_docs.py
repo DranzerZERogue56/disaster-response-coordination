@@ -71,7 +71,7 @@ def check_paths(name, text, root):
     problems = []
     prose = strip_fences(text)
     for token in set(PATH_TOKEN.findall(prose)):
-        if token.startswith(GENERATED) or "*" in token or token.startswith(("http", "docs/img/")):
+        if token.startswith(GENERATED) or "*" in token or "..." in token or token.startswith(("http", "docs/img/")):  # "..." is a placeholder (Windows even resolves it as a path)
             continue
         if not (root / token).exists():
             problems.append(f"{name}: `{token}` does not exist in the repository")

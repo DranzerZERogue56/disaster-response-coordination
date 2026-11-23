@@ -41,3 +41,10 @@ def test_a_path_or_script_that_does_not_exist_is_reported(tmp_path):
 def test_the_readme_must_have_eleven_numbered_sections():
     assert check_docs.check_readme_sections("## 1. A\n## 2. B\n") != []
     assert check_docs.check_readme_sections("".join(f"## {n}. S\n" for n in range(1, 12))) == []
+
+
+def test_a_placeholder_with_three_dots_is_not_treated_as_a_path(tmp_path):
+    assert check_docs.check_paths("README.md", "# T
+
+Run the `./script/...` commands.
+", tmp_path) == []
