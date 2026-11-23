@@ -80,7 +80,7 @@ Stop the app with Ctrl+C in the window where `./script/start` runs.
 ./script/test
 ```
 
-Expected on the recorded run: `820 passed`, `Total coverage: 96.19%` and `Required test coverage of 90% reached`, in about 7 minutes. The command fails if line coverage of `src/` drops below 90%. Other checks CI runs: `./script/lint` prints `All checks passed!`, `./script/secrets-check` prints `secrets check: 0 matches across N tracked files`, `./script/build` prints `build ok`, `./script/smoke` ends with `smoke: all checks passed`. Known failing or skipped tests: none.
+Expected on the latest run (2026-11-22): `831 passed`, `Total coverage: 96.19%` and `Required test coverage of 90% reached`, in about 7 minutes (the count grows as tests are added; the earlier recorded capture run showed 820). The command fails if line coverage of `src/` drops below 90%. Other checks CI runs: `./script/lint` prints `All checks passed!`, `./script/secrets-check` prints `secrets check: 0 matches across N tracked files`, `./script/build` prints `build ok`, `./script/smoke` ends with `smoke: all checks passed`. Known failing or skipped tests: none.
 
 ## 8. Project layout
 
