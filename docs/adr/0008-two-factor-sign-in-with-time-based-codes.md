@@ -1,7 +1,7 @@
 # ADR 0008 — Dispatcher sign-in: password plus a time-based code from the person's own phone
 
 - **Status:** DRAFT for Ben to confirm (the choice is Ben's, made 2026-11-15; the assistant recorded it from the plan and the code).
-- **Date:** 2026-11-15
+- **Date:** 2026-11-15 (Ben here: I CONFIRM!)
 - **Decider:** Dranzer Rogue
 - **Requirements affected:** FR-AUTH-01, NFR-SEC-02; closes DEF-018 and security-review findings S-01 to S-03
 - **Related ADRs:** 0002 (the sign-in data lives in the same database), 0010 (the data store direction)

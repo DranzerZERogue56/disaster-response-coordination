@@ -3,7 +3,7 @@
 Version: v0.1   Date: 2026-09-30   Author: Dranzer Rogue   Status: Draft
 Requirements baseline this design satisfies: `docs/requirements.md` v1.2
 
-## 0. Overview (read this first)
+## 0. Overview (read this first) (BEN: I CONFIRM)
 
 *Written 2026-11-22 from the code in this repository, for a reader who has never seen the project. The numbered sections below are the full design; where they differ from the built system, this overview and the code are right, and the differences are listed in `docs/baseline.md` and `CHANGELOG.md`.*
 
