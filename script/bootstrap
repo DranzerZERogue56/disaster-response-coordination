@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# One command from a fresh clone to a running app: install, demo data, a dispatcher account, and (with --start) the app.
+#   ./script/bootstrap            installs, seeds and creates the account, then tells you what to do next
+#   ./script/bootstrap --start    the same, then starts the app on http://127.0.0.1:8080 (runs until Ctrl+C)
+# The one-time password and phone setup key are printed ONCE by the account step: write them down.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+./script/setup
+./script/seed
+source script/common.sh
+"$PYTHON" tools/enrol_dispatcher.py demo-dispatcher dispatcher
+
+echo "bootstrap complete"
+if [ "${1:-}" = "--start" ]; then
+  exec ./script/start
+fi
+echo "Next: type the phone setup key into your authenticator app, run ./script/start, then in a second window run"
+echo "  python tools/add_demo_proposal.py"
+echo "and open http://127.0.0.1:8080/login"
