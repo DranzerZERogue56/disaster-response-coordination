@@ -5,7 +5,7 @@ using only the README.
     python tools/clean_machine_test.py            # clone, follow the README, time it, record it
 
 It clones this repository into a fresh temporary folder, runs exactly the commands the README's
-"Run it" block lists (today: ./script/setup, then ./script/start), waits for GET /healthz to answer
+"Install" and "Run" blocks list (today: ./script/setup, ./script/seed, then ./script/start), waits for GET /healthz to answer
 {"status": "ok"}, and stops the app it started. The clock runs from the first README command to the
 first healthy answer. Under 300 seconds is a pass. The result and a short evidence file are written to
 tests/manual/evidence/ and recorded in tests/manual/results.csv (see tools/record_manual_result.py).
@@ -31,10 +31,16 @@ PORT = 8080
 
 
 def readme_steps(readme_text):
-    """The commands in the README's 'Run it' fenced block, in order (lines that start with ./script/)."""
-    section = re.search(r"## Run it(.*?)(?=\n## )", readme_text, re.S)
-    block = re.search(r"```\n(.*?)```", section.group(1), re.S)
-    return [line.split("#")[0].strip() for line in block.group(1).splitlines() if line.strip().startswith("./script/")]
+    """The ./script/ commands in the README's Install and Run code blocks, in order (other commands are skipped)."""
+    steps = []
+    for heading in ("Install", "Run"):
+        section = re.search(rf"\n## (?:\d+\. )?{heading}\b(.*?)(?=\n## )", readme_text, re.S)
+        if section:
+            block = re.search(r"```\n(.*?)```", section.group(1), re.S)
+            if block:
+                steps += [line.split("#")[0].strip() for line in block.group(1).splitlines() if line.strip().startswith("./script/")]
+    return steps
+
 
 
 def find_bash():

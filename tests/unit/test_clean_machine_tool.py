@@ -18,25 +18,25 @@ class Clock:
 
 
 def test_the_steps_are_the_readme_steps():
-    assert cm.readme_steps(README) == ["./script/setup", "./script/start"]
+    assert cm.readme_steps(README) == ["./script/setup", "./script/seed", "./script/start"]
 
 
 def test_it_passes_when_setup_is_fast_and_the_app_answers():
     clock = Clock()
 
     def run_command(step, cwd):
-        clock.now += 90  # setup takes 90 seconds
+        clock.now += 90  # each step before the server starts (setup, seed) takes 90 seconds
         return True
 
     result = cm.run(README, "x", run_command, lambda step, cwd: object(), lambda: True, clock)
-    assert result["ok"] is True and result["seconds"] == 90 and result["steps"] == ["./script/setup", "./script/start"]
+    assert result["ok"] is True and result["seconds"] == 180 and result["steps"] == ["./script/setup", "./script/seed", "./script/start"]
 
 
 def test_it_fails_when_setup_takes_five_minutes():
     clock = Clock()
 
     def run_command(step, cwd):
-        clock.now += 300  # exactly at the limit is not "under 5 minutes"
+        clock.now += 150  # two steps before the server starts: exactly at the limit is not "under 5 minutes"
         return True
 
     result = cm.run(README, "x", run_command, lambda step, cwd: object(), lambda: True, clock)
