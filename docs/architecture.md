@@ -3,6 +3,35 @@
 Version: v0.1   Date: 2026-09-30   Author: Dranzer Rogue   Status: Draft
 Requirements baseline this design satisfies: `docs/requirements.md` v1.2
 
+## 0. Overview (read this first)
+
+*Written 2026-11-22 from the code in this repository, for a reader who has never seen the project. The numbered sections below are the full design; where they differ from the built system, this overview and the code are right, and the differences are listed in `docs/baseline.md` and `CHANGELOG.md`.*
+
+```mermaid
+flowchart LR
+    B[Dispatcher's browser] -->|HTTP, localhost, signed in| W[Web UI: Flask routes and sign-in gate]
+    F[Field report: JSON or scenario file] -->|POST /reports| I[Intake Gateway: validation and offline queue]
+    W --> I
+    I -->|report| C[Classify and Propose: model chain, rules fallback]
+    C -->|proposal with confidence| D[Decide Proposal: safety rule]
+    D -->|reserve and assign unit| U[Unit Registry: 4-minute clock]
+    D -->|approved| N[Notify Responder: records a row]
+    U --> S[(SQLite: tables, constraints, triggers)]
+    D --> S
+    I --> S
+    W -->|approve, modify, reject| D
+```
+
+**What it is.** Decision support for an emergency dispatcher. A report comes in (a place, what happened, a time); the system classifies how serious it is and what kind of responder is needed, proposes one available unit with a confidence from 0 to 100, and a person approves, modifies or rejects the proposal on the dispatcher console. It runs on one machine, over plain `http://127.0.0.1`, with a local database file and no outside network calls.
+
+**How a report travels.** The Intake Gateway checks the report and stamps it in UTC; if the connection is marked down it queues the report and drains the queue on reconnection. Classify and Propose asks a chain of models in order (a local Ollama model if enabled, an optional smaller one, then a rules-based stand-in that is always there), so a slow or broken model degrades to the next tier instead of failing the report. Decide Proposal then applies the safety rule: a person must decide whenever the confidence is below the bar (75 for the rules tier; 85 by default for a real model, never less than 75) **or the severity is Severe or Critical, whatever the confidence**. Only a proposal that clears both may be approved without a person.
+
+**What a unit goes through.** Proposing a unit reserves it. A reserved unit is released after 4 minutes if nobody decides (a sweeper checks every second), and released at once on a rejection. An approved proposal assigns the unit and records a notification row; nothing is sent to a real responder yet (DEF-017). Incident data is purged 24 hours after it was received.
+
+**Who may do what.** Every page and action except `/healthz` and `/login` needs a signed-in dispatcher: a password plus a six-digit code from the person's own phone (ADR 0008), and every form carries a forgery token. A person decides through the console or the JSON routes; overrides and follow-ups are appended to logs and cannot be edited.
+
+**The part that would surprise you.** The safety rules live in the database, not only in the Python. SQLite triggers refuse to mark a unit assigned unless its proposal is approved (both on insert and on update), refuse to un-approve a proposal while its unit is assigned, and refuse to edit or delete the override, tiebreak, reconciliation and sign-in logs; CHECK constraints and foreign keys back them up. So a bug in the application, or a second program writing to the same file, still cannot double-book a unit or rewrite history; it gets an error. The cost is that moving to another data store (ADR 0010 chooses MongoDB as the direction) means re-creating each of these rules by hand as code and validators, one test at a time (backlog B-17).
+
 ## 1. Purpose and Scope
 
 This document is the blueprint for the system described in `docs/requirements.md`: a tool that takes a disaster scenario, works out which responder types it needs, runs several candidate team sizes against a simulated version of that scenario with agents negotiating assignments in plain language, and writes up whichever team size performed best as a response plan a dispatcher could keep on file. It runs in two modes that share the same simulation and negotiation core: **batch mode**, which runs the team-size competition unattended (used for the graded evaluation runs in `PROJECT.md`'s Roster Competition), and **interactive mode**, a single live, slowed-down playback used for the capstone defense demo, where a real human dispatcher reviews and can override the agents' decisions through a web UI. The two modes exist because of a real conflict between two already-written documents: `PROJECT.md` calls for 5-10 unattended runs per team size (no human could plausibly sit through all of them), while `docs/requirements.md`'s FR-AGENT-03 requires a human to approve any low-confidence or high-severity proposal. Batch mode resolves this with a documented, logged stand-in auto-decide policy instead of a real human (see §5, Approval Gateway interface, and the Dependency Specification in §9 for why this is not "pretending a human approved it").

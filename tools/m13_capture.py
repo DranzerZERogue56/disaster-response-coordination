@@ -30,7 +30,7 @@ from exe import find, path_of
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "evidence" / "m13-command-outputs.md"
-SECRET_LINE = re.compile(r"(password|setup key|otpauth|secret)", re.I)
+SECRET_LINE = re.compile(r"(password|setup key|otpauth|secret=)", re.I)
 TAIL_LINES = 14
 
 
@@ -42,8 +42,8 @@ def tail(text, lines=TAIL_LINES):
 def run_step(label, command, cwd, bash, results, timeout=900, head=False):
     started = time.monotonic()
     try:
-        proc = subprocess.run([bash, "-c", command], cwd=cwd, capture_output=True, text=True, timeout=timeout, check=False)  # noqa: S603
-        code, output = proc.returncode, (proc.stdout or "") + (proc.stderr or "")
+        proc = subprocess.run([bash, "-c", command], cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=timeout, check=False)  # noqa: S603
+        code, output = proc.returncode, proc.stdout or ""  # one stream, in the order the lines were printed
     except subprocess.TimeoutExpired:
         code, output = -1, f"(timed out after {timeout} s)"
     seconds = time.monotonic() - started
