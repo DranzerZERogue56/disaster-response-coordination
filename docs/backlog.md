@@ -144,3 +144,13 @@ Other Should and Could requirements with no test and no verified row in `docs/tr
 - **Estimate:** Ben to confirm (the assistant's rough view: longer than the PostgreSQL port, because rules move from the database into code).
 - **Acceptance criteria (proposed, Ben to confirm):** Given the app is configured for MongoDB, when the suite runs, then it passes. Given two dispatchers reserve the same unit at once, then exactly one succeeds. Given the hardening checklist, then every line has a recorded check Ben ran.
 
+
+## B-18: A terminal-free dispatcher dashboard (proposed from the clean-machine tester's suggestion, 2026-11-22)
+- **Source:** LW (the clean-machine tester, 2026-11-21), relayed by Ben on 2026-11-22: most dispatchers would not know how to use a terminal, so there should be a working dashboard that is much easier to use, with a minimal number of buttons to streamline their workflow.
+- **What exists today (facts):** the console at `/dispatcher` already has Approve, Modify and Reject buttons for each waiting proposal, a unit view with the 4-minute clock, node-recovery confirmation and a sign-out button. Still needing a terminal: creating an account (`tools/enrol_dispatcher.py`), starting the app (`./script/start`), and putting a report in front of the console (`tools/add_demo_proposal.py`; field reports over HTTP are refused while the sign-in is on, DEF-032).
+- **Estimate:** Ben to confirm.
+- **Acceptance criteria (proposed by the assistant, Ben to confirm or rewrite):**
+  - Given a signed-in dispatcher, when they open the console, then they can enter a report (place, what happened) with one form and see its proposal appear without using a terminal.
+  - Given an admin, when they use an account page, then they can create a dispatcher and see the phone setup key once, without a terminal.
+  - Given the console, when a dispatcher handles a waiting proposal, then every common action is reachable in at most two clicks and the page has no more than five buttons per proposal.
+- **Decision (Ben, 2026-11-22):** logged now, built after Milestone 13 on the `features` branch.
