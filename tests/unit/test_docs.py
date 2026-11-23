@@ -44,7 +44,5 @@ def test_the_readme_must_have_eleven_numbered_sections():
 
 
 def test_a_placeholder_with_three_dots_is_not_treated_as_a_path(tmp_path):
-    assert check_docs.check_paths("README.md", "# T
-
-Run the `./script/...` commands.
-", tmp_path) == []
+    text = "# T\n\nRun the `./script/...` commands.\n"
+    assert check_docs.check_paths("README.md", text, tmp_path) == []
